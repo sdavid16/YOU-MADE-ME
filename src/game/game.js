@@ -85,6 +85,7 @@
     }
     solidsWorld1(){const L=YMM.Levels.world1;return [...L.floors.map(f=>({x:f.x,y:L.groundY,w:f.w,h:180,oneWay:false})),...this.world1Platforms.filter(p=>p.state!=='gone').map(p=>({...p,y:p.y+(p.fallY||0),h:p.h,oneWay:true,_source:p}))];}
     advanceCollapses(items,dt){
+      if(this.runModifiers)dt*=this.runModifiers.collapseRate;
       for(const item of items||[]){
         if(item.state==='warning'){
           item.timer-=dt;
