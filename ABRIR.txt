@@ -1,14 +1,17 @@
-YOU MADE ME — para empezar
+YOU MADE ME — INICIO RÁPIDO
 
-1. Descarga el repositorio completo o usa Code > Download ZIP.
-2. Descomprime los archivos.
+1. Descarga el ZIP del repositorio.
+2. Descomprime la carpeta completa manteniendo la estructura de archivos.
 3. Abre index.html con doble clic.
-4. No necesitas ejecutar Python, una terminal, npm ni instalar bibliotecas.
+4. No necesitas Python, terminal, npm, servidor local ni bibliotecas externas.
 
-Controles:
-Mundo 1: flechas o A/D para moverte, Espacio/W/↑ para saltar, T para provocar, Esc para pausar.
-Mundo 2: flechas o WASD, E en el terminal después de reunir los tres fragmentos.
-Mundo 3: flechas o WASD, J para atacar cuando el núcleo esté expuesto, Shift para esquivar.
-R reinicia la partida.
+CONTROLES
+Mundo 1: flechas/A-D mover · Espacio/W/↑ saltar · Shift esquivar · T burla · G desafío de alto riesgo · Esc pausa.
+Mundo 2: flechas o WASD mover · recoger 3 fragmentos · E junto al terminal · ir al portal.
+Mundo 3: flechas o WASD mover · Shift esquivar · J atacar mientras el núcleo está expuesto.
+R reinicia. Los botones de sonido, pantalla completa y reinicio aparecen arriba a la derecha.
 
-Consulta README.md para la arquitectura y los detalles del juego.
+IA
+El antagonista registra patrones recientes, elige contraestrategias y ajusta el valor de sus políticas según si sus ataques alcanzan al jugador. No usa servicios en la nube; es una IA adaptativa de juego implementada en JavaScript.
+
+Si quieres ejecutar las pruebas de desarrollo, necesitas Node.js; no es necesario para jugar.

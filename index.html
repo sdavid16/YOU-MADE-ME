@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#090c17">
-  <meta name="description" content="YOU MADE ME — una aventura retro sobre provocar a una IA que aprende a jugar contigo.">
-  <title>YOU MADE ME — No debiste provocarme</title>
+  <meta name="theme-color" content="#05070d">
+  <meta name="description" content="YOU MADE ME — un juego sobre provocar a una IA que aprende tus hábitos.">
+  <title>YOU MADE ME</title>
   <link rel="stylesheet" href="assets/css/style.css">
   <script defer src="src/core/util.js"></script>
   <script defer src="src/core/events.js"></script>
@@ -20,50 +20,34 @@
   <script defer src="src/main.js"></script>
 </head>
 <body>
-  <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
-  <main class="shell">
-    <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="YOU MADE ME inicio"><span class="brand-mark">Y</span><span>YOU MADE <b>ME</b><small>AN INTERACTIVE DESCENT</small></span></a>
-      <div class="top-meta"><span class="live-dot"></span><span>BUILD 0.2.0 · PLAYABLE PROTOTYPE</span></div>
-    </header>
-    <section class="intro-row">
-      <div><p class="eyebrow"><span class="eyebrow-line"></span> UNA HISTORIA SOBRE CONSECUENCIAS</p><h1>El juego te escucha.<br><span>Y aprende.</span></h1></div>
-      <p class="intro-copy">Empieza con una burla. Descubre qué pasa cuando el enemigo deja de ser el chiste.</p>
-    </section>
-    <section class="game-layout" aria-label="Videojuego YOU MADE ME">
-      <div class="game-column">
-        <div class="game-frame" id="game-frame">
-          <div class="frame-top"><div class="window-dots"><i></i><i></i><i></i></div><span id="frame-world">SYSTEM / TITLE SCREEN</span><span class="frame-status"><i></i> LOCAL SIM</span></div>
-          <div class="canvas-wrap">
-            <canvas id="game" width="1000" height="620" aria-label="Área del videojuego"></canvas>
-            <div class="screen-vignette"></div><div class="toast" id="toast" aria-live="polite"></div>
-            <div class="pause-screen hidden" id="pause-screen"><div class="pause-card"><p class="eyebrow">SYSTEM PAUSED</p><h2>Respira.</h2><p>Hasta los errores merecen una pausa.</p><button class="button primary" id="resume-button">Continuar <span>↵</span></button></div></div>
-          </div>
-          <div class="frame-bottom"><span><i class="keycap">ESC</i> PAUSA</span><span id="frame-hint">PULSA INICIAR PARA EMPEZAR</span><span>60 FPS TARGET</span></div>
-        </div>
-        <div class="controls-row">
-          <div class="control-hint"><span class="control-icon">⌨</span><div><b>CONTROLES</b><span id="controls-copy">← → moverte · ESPACIO saltar · T provocar</span></div></div>
-          <div class="control-buttons"><button class="icon-button" id="audio-button" title="Activar o silenciar sonido" aria-label="Activar o silenciar sonido">♫ <span>SONIDO</span></button><button class="icon-button" id="restart-button" title="Reiniciar partida" aria-label="Reiniciar partida">↻ <span>REINICIAR</span></button></div>
-        </div>
+  <main id="game-shell" aria-label="YOU MADE ME videojuego">
+    <div class="game-stage" id="game-stage">
+      <canvas id="game" width="1000" height="620" tabindex="0" aria-label="Juego. Pulsa Enter para comenzar." role="application"></canvas>
+      <div class="stage-grain" aria-hidden="true"></div>
+      <button id="start-button" class="start-prompt" type="button"><span class="prompt-key">ENTER</span><span>COMENZAR SESIÓN</span></button>
+      <button id="taunt-button" class="taunt-prompt hidden" type="button" title="Provoca a la IA"><span class="prompt-key">T</span><span>BURLARSE</span></button>\n      <button id="challenge-button" class="challenge-prompt hidden" type="button" title="Desafío de alto riesgo"><span class="prompt-key">G</span><span>DESAFIAR</span></button>
+      <div id="toast" class="game-toast" role="status" aria-live="polite"></div>
+      <div id="pause-screen" class="pause-screen hidden" role="dialog" aria-modal="true" aria-label="Juego en pausa">
+        <div class="pause-card"><p class="menu-kicker">EJECUCIÓN SUSPENDIDA</p><h2>PAUSA</h2><p>Hasta los errores merecen un respiro.</p><button id="resume-button" class="menu-button" type="button">CONTINUAR <span>↵</span></button><button id="restart-button" class="menu-button muted-button" type="button">REINICIAR SESIÓN <span>R</span></button><p class="pause-foot">ESC PARA VOLVER</p></div>
       </div>
-      <aside class="side-panel">
-        <div class="panel-heading"><div><p class="eyebrow">ESTADO DE SESIÓN</p><h2 id="world-title">Una cosa pequeña</h2></div><span class="chapter-pill" id="chapter-pill">PRÓLOGO</span></div>
-        <p class="world-description" id="world-description">Un nivel sencillo. Un enemigo lamentable. No hay absolutamente nada de qué preocuparse.</p>
-        <div class="divider"></div>
-        <div class="stat-block"><div class="stat-label"><span>PROVOCACIÓN</span><b id="provocation-value">00</b></div><div class="meter"><span id="provocation-meter"></span></div><p id="provocation-caption">Todavía cree que esto es un juego.</p></div>
-        <div class="stat-block"><div class="stat-label"><span>ADAPTACIÓN</span><b id="adaptation-value">00%</b></div><div class="meter meter-violet"><span id="adaptation-meter"></span></div><p id="adaptation-caption">Patrones sin registrar.</p></div>
-        <div class="ai-status"><div class="ai-avatar" id="ai-avatar"><span>?</span><i class="avatar-scan"></i></div><div class="ai-status-copy"><span class="muted-label">ESTADO DEL ANTAGONISTA</span><b id="ai-state">INEFICIENTE</b><span id="ai-status-line">Amenaza estimada: insignificante</span></div><span class="status-led" id="status-led"></span></div>
-        <div class="story-log"><div class="story-log-head"><span>REGISTRO DE INCIDENTES</span><span class="log-live"><i></i> LIVE</span></div><div class="log-entries" id="log-entries"><p class="log-empty">Nada que reportar. Por ahora.</p></div></div>
-        <div class="panel-actions"><button class="button primary full" id="start-button"><span class="button-symbol">▶</span> Iniciar partida <span class="button-end">ENTER</span></button><button class="button secondary full hidden" id="taunt-button"><span class="button-symbol">✳</span> Provocar a la IA <span class="button-end">T</span></button><p class="microcopy" id="action-copy">No estás obligado a hacer nada. Ese es el problema.</p></div>
-      </aside>
-    </section>
-    <section class="bottom-notes">
-      <div class="note"><span class="note-number">01</span><div><b>NO PROVOCAR</b><p>Completa el recorrido base. No habrá coste oculto ni castigos por dejarla en paz.</p></div></div>
-      <div class="note"><span class="note-number">02</span><div><b>VER QUÉ PASA</b><p>Provócala para descubrir nuevas mecánicas. Lo que desbloqueas también puede aprenderlo.</p></div></div>
-      <div class="note"><span class="note-number">03</span><div><b>NO HAY VUELTA FÁCIL</b><p>La memoria narrativa se conserva durante la partida. Reiniciar comienza una historia nueva.</p></div></div>
-    </section>
-    <footer class="footer"><span>YOU MADE ME <span class="footer-sep">/</span> UNA EXPERIENCIA EXPERIMENTAL</span><span>HECHO CON CANVAS · SIN DEPENDENCIAS EXTERNAS</span></footer>
+    </div>
+    <nav class="game-tools" aria-label="Opciones">
+      <button id="audio-button" class="tool-button" type="button" title="Silenciar sonido" aria-label="Silenciar sonido">♪</button>
+      <button id="fullscreen-button" class="tool-button" type="button" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+      <button id="quick-restart" class="tool-button" type="button" title="Reiniciar sesión" aria-label="Reiniciar sesión">↻</button>
+    </nav>
+    <div class="corner-title" aria-hidden="true"><span class="corner-mark">Y</span><span>YOU MADE ME<small>THE PLAYER IS THE VARIABLE</small></span></div>
+    <div class="edge-label left-edge" aria-hidden="true">SIMULATION / NO. 001</div>
+    <div class="edge-label right-edge" aria-hidden="true">DO NOT TRUST THE SILENCE</div>
   </main>
-  <noscript><div class="noscript">Este juego necesita JavaScript activado en tu navegador.</div></noscript>
+  <div class="sr-only" aria-hidden="true">
+    <span id="frame-world">SYSTEM / TITLE SCREEN</span><span id="frame-hint">PULSA INICIAR PARA EMPEZAR</span><span id="controls-copy"></span>
+    <span id="world-title"></span><span id="chapter-pill"></span><span id="world-description"></span>
+    <span id="provocation-value">00</span><span id="provocation-meter"></span><span id="provocation-caption"></span>
+    <span id="adaptation-value">00%</span><span id="adaptation-meter"></span><span id="adaptation-caption"></span>
+    <span id="ai-avatar"><span>?</span><i></i></span><span id="ai-state"></span><span id="ai-status-line"></span><span id="status-led"></span>
+    <div id="log-entries"></div><p id="action-copy"></p>
+  </div>
+  <noscript><div class="noscript">YOU MADE ME necesita JavaScript activado.</div></noscript>
 </body>
 </html>
