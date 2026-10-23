@@ -72,7 +72,11 @@ El dossier de campaña se abre con **M** o desde el botón **DOSSIER**. El perfi
 
 El progreso no requiere cuenta ni servidor y permanece en ese navegador. Borrar los datos del sitio elimina el perfil. La detección de bajas usa cambios en los grupos de enemigos y es una métrica aproximada, no un sistema de estadísticas autoritativo.
 
-## Guía contextual\n\nEl botón **AYUDA** o la tecla **H** muestra consejos por mundo y sugerencias contextuales cuando detecta salud crítica o hábitos repetitivos. Las pistas se pueden cerrar y no bloquean la campaña; los consejos ya mostrados se registran localmente para evitar repetirlos en cada sesión.\n\n## Archivo narrativo y accesibilidad
+## Guía contextual
+
+El botón **AYUDA** o la tecla **H** muestra consejos por mundo y sugerencias contextuales cuando detecta salud crítica o hábitos repetitivos. Las pistas se pueden cerrar y no bloquean la campaña; los consejos ya mostrados se registran localmente para evitar repetirlos en cada sesión.
+
+## Archivo narrativo y accesibilidad
 
 El archivo narrativo se abre con **ARCHIVO** o la tecla **O**. Incluye registros principales, secretos y epílogos que se desbloquean al avanzar por la campaña o recoger suficientes objetos. El archivo persiste en el navegador. La pantalla de **AJUSTES** (botón o tecla **P**) permite reducir movimiento, activar alto contraste, desactivar partículas y vibración visual, ampliar texto y ajustar el volumen maestro. Las preferencias se guardan localmente.
 
