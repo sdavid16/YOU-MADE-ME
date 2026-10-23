@@ -75,7 +75,7 @@
       if(this.world!==5)this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
       if(this.input.justPressed('KeyT'))this.openTauntConsole();if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
-      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else if(this.world===6)this.updateWorld6(dt);else if(this.world===7)this.updateWorld7(dt);else this.updateWorld4(dt);
+      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else if(this.world===6)this.updateWorld6(dt);else if(this.world===7||this.world===10)this.updateWorld7(dt);else this.updateWorld4(dt);
       this.ai.update(dt);this.particles.update(dt);
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
@@ -204,7 +204,7 @@
       const roster=L.agents.concat(this.difficulty==='nightmare'?[{id:'scope-06',type:'sniper',x:495,y:278,hp:4,maxHp:4,attackTimer:1.05,stun:0},{id:'hound-07',type:'hunter',x:495,y:430,hp:4,maxHp:4,attackTimer:.9,stun:0}]:[]);this.signalEnemies=roster.map((e,index)=>({...e,index,spawnX:e.x,spawnY:e.y,hp:Math.ceil(e.hp*enemyFactor),maxHp:Math.ceil(e.maxHp*enemyFactor),vx:0,vy:0,stun:0,hitFlash:0}));
       this.signalProjectiles=[];this.signalMines=[];this.signalTactic='crossfire';this.signalDirectorTimer=.8;this.signalKills=0;this.signalShotCount=0;
       const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
-      this.player={x:488,y:300,w:24,h:24,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,specialCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,intelTimer:0};
+      this.player={x:488,y:300,w:24,h:24,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,heavyCooldown:0,specialCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,intelTimer:0};
       this.ai.speak('invader');this.ai.dialogueTimer=3.5;this.audio.play('phase');
       this.log('MUNDO 07: SIGNAL BREAK. Destruye los tres repetidores y escapa de la red coordinada.','danger');this.log('ECHO // Los repetidores sincronizan la predicción de los agentes. Apagarlos abre un canal hacia el registro raíz.','normal');
       this.toast('SIGNAL BREAK // J DISPARAR · F PULSO · SHIFT DASH');this.hud.sync();
@@ -222,12 +222,40 @@
       this.log('OBJETIVO // Recupera los cuatro registros, lee los mensajes y alcanza la puerta raíz. Los guardias ya anticipan tus rutas.','alert');
       this.toast('BLACK ARCHIVE // 3D · 4 REGISTROS · EXTRACCIÓN');if(this.hud)this.hud.sync();
     }
+
+    enterWorld9(){
+      const L=YMM.Levels.world9;this.world=9;this.camera=0;this.fragments=0;L.shards.forEach(s=>s.taken=false);this.archiveProjectiles=[];
+      const extras=this.difficulty==='nightmare'?[{x:10.5,y:5.5,hp:4,maxHp:4,role:'flanker'},{x:8.5,y:13.5,hp:4,maxHp:4,role:'hunter'},{x:3.5,y:6.5,hp:4,maxHp:4,role:'warden'}]:[];
+      const factor=this.difficulty==='nightmare'?1.55:this.difficulty==='story'?.8:1;
+      this.sentinels=L.sentinels.concat(extras).map((s,i)=>({...s,id:i,hp:Math.ceil(s.hp*factor),maxHp:Math.ceil(s.maxHp*factor),attackTimer:this.difficulty==='nightmare'?.58:.9+i*.13,windup:0,stun:0,hitFlash:0}));
+      this.squadTactic='crossfire';this.squadCommandTimer=this.difficulty==='nightmare'?.9:1.8;
+      const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
+      this.player={x:1.5,y:1.5,angle:0,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,pulseCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0,intelTimer:0};
+      this.ai.evolve(4,'ECHO ha abierto un mapa que no figura en la campaña original.');this.ai.dialogue='No sigas las luces. Están aprendiendo a parecer una salida.';this.ai.dialogueTimer=5;
+      this.log('MUNDO 09: ECHO LABYRINTH. Cinco ecos de memoria. Siete centinelas y rutas deliberadamente asimétricas.','danger');
+      this.log('ECHO // No puedes vencer al sistema repitiendo la ruta que te funcionó en el archivo.','normal');
+      this.toast('ECHO LABYRINTH // 3D · 5 REGISTROS · PULSO Q');if(this.hud)this.hud.sync();
+    }
+    enterWorld10(){
+      const L=YMM.Levels.world10,nodeFactor=this.difficulty==='story'?.8:this.difficulty==='nightmare'?1.7:1,enemyFactor=this.difficulty==='story'?.85:this.difficulty==='nightmare'?1.6:1;
+      this.world=10;this.camera=0;this.signalExitToast=false;
+      this.signalNodes=L.nodes.map((n,index)=>({...n,index,hp:Math.ceil(n.hp*nodeFactor),maxHp:Math.ceil(n.maxHp*nodeFactor),hitFlash:0}));
+      const extra=this.difficulty==='nightmare'?[{id:'singularity-echo-a',type:'sniper',x:500,y:180,hp:5,maxHp:5,attackTimer:.85,stun:0},{id:'singularity-echo-b',type:'hunter',x:500,y:500,hp:5,maxHp:5,attackTimer:.8,stun:0}]:[];
+      this.signalEnemies=L.agents.concat(extra).map((e,index)=>({...e,index,spawnX:e.x,spawnY:e.y,hp:Math.ceil(e.hp*enemyFactor),maxHp:Math.ceil(e.maxHp*enemyFactor),vx:0,vy:0,stun:0,hitFlash:0}));
+      this.signalProjectiles=[];this.signalMines=[];this.signalTactic='crossfire';this.signalDirectorTimer=.6;this.signalKills=0;this.signalShotCount=0;
+      const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?2:3;
+      this.player={x:490,y:300,w:24,h:24,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,heavyCooldown:0,specialCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,intelTimer:0};
+      this.ai.speak('endThreat');this.ai.dialogue='He calculado miles de finales. Ninguno incluye que me detengas.';this.ai.dialogueTimer=5.2;
+      this.log('MUNDO 10: THE SINGULARITY ENGINE. Cuatro nodos, líneas de tiro cruzadas y refuerzos en Pesadilla.','danger');
+      this.log('OBJETIVO // Destruye el motor de predicción. J dispara; K libera una salva triple; F activa EMP; Shift esquiva.','alert');
+      this.toast('SINGULARITY ENGINE // J PULSO · K SALVA · F EMP');if(this.hud)this.hud.sync();
+    }
     isWorld4Wall(x,y){
-      const map=(this.world===8?YMM.Levels.world8:YMM.Levels.world4).map,tx=Math.floor(x),ty=Math.floor(y);
+      const map=(this.world===9?YMM.Levels.world9:this.world===8?YMM.Levels.world8:YMM.Levels.world4).map,tx=Math.floor(x),ty=Math.floor(y);
       return ty<0||ty>=map.length||tx<0||tx>=map[0].length||map[ty][tx]==='1';
     }
     updateWorld4(dt){
-      const p=this.player,L=this.world===8?YMM.Levels.world8:YMM.Levels.world4,commandInterval=this.difficulty==='nightmare'?1.3:this.difficulty==='story'?4.2:3.4;this.squadCommandTimer-=dt*this.difficultyScale;if(this.squadCommandTimer<=0){this.squadTactic=this.ai.chooseTactic('squad',['crossfire','flank','pinch','retreat-punish']);this.squadCommandTimer=commandInterval;this.ai.record('squad-command',{tactic:this.squadTactic,alive:this.sentinels.filter(s=>s.hp>0).length});}
+      const p=this.player,L=this.world===9?YMM.Levels.world9:this.world===8?YMM.Levels.world8:YMM.Levels.world4,commandInterval=this.difficulty==='nightmare'?1.3:this.difficulty==='story'?4.2:3.4;this.squadCommandTimer-=dt*this.difficultyScale;if(this.squadCommandTimer<=0){this.squadTactic=this.ai.chooseTactic('squad',['crossfire','flank','pinch','retreat-punish']);this.squadCommandTimer=commandInterval;this.ai.record('squad-command',{tactic:this.squadTactic,alive:this.sentinels.filter(s=>s.hp>0).length});}
       const turn=(this.input.isDown('ArrowRight')?1:0)-(this.input.isDown('ArrowLeft')?1:0);
       p.angle=(p.angle+turn*2.25*dt+Math.PI*4)%(Math.PI*2);
       const forward=(this.input.isDown('KeyW','ArrowUp')?1:0)-(this.input.isDown('KeyS','ArrowDown')?1:0);
@@ -238,7 +266,16 @@
       if(!this.isWorld4Wall(p.x,p.y+dy+Math.sign(dy)*.2))p.y+=dy;
       p.x=YMM.Util.clamp(p.x,1.25,14.75);p.y=YMM.Util.clamp(p.y,1.25,14.75);
       if(forward||strafe)this.ai.observe(forward<0?'retreat':'approach');
-      for(const s of L.shards){if(!s.taken&&Math.hypot(p.x-s.x,p.y-s.y)<.58){s.taken=true;this.fragments++;this.ai.observe('collect',{world:this.world});this.particles.burst(500,300,this.world===8?'#b8a0ff':'#72f3dc',20,120);this.audio.play('collect');const target=L.shards.length;this.log(this.world===8?(s.lore||'REGISTRO RECUPERADO // Datos incompletos.'):'Fragmento de realidad adquirido: '+this.fragments+'/'+target+'. La IA ha empezado a recordar el espacio.','alert');this.toast((this.world===8?'REGISTRO RAÍZ ':'FRAGMENTO 3D ')+this.fragments+'/'+target);if(this.world===8&&s.lore){this.ai.dialogue=s.lore;this.ai.dialogueTimer=5.4;}this.ai.record(this.world===8?'archive-record':'3d-shard',{count:this.fragments,index:s.id??this.fragments});}}
+      p.pulseCooldown=Math.max(0,(p.pulseCooldown||0)-dt);
+      this.archiveProjectiles=this.archiveProjectiles||[];
+      if(this.input.justPressed('KeyQ')&&p.pulseCooldown<=0){
+        p.pulseCooldown=1.15;const speed=7.5;
+        this.archiveProjectiles.push({x:p.x+Math.cos(p.angle)*.38,y:p.y+Math.sin(p.angle)*.38,vx:Math.cos(p.angle)*speed,vy:Math.sin(p.angle)*speed,ttl:1.7,damage:2});
+        this.ai.observe('special',{world:this.world,weapon:'echo-pulse'});this.particles.burst(500,300,this.world===9?'#d86cff':'#72f3dc',10,65);this.audio.play('attack');this.toast('ECHO PULSE // PROYECTIL CARGADO');
+      }
+      for(const b of this.archiveProjectiles){b.x+=b.vx*dt;b.y+=b.vy*dt;b.ttl-=dt;if(this.isWorld4Wall(b.x,b.y)){b.ttl=0;continue;}for(const e of this.sentinels){if(e.hp>0&&Math.hypot(b.x-e.x,b.y-e.y)<.42){e.hp=Math.max(0,e.hp-b.damage);e.stun=Math.max(e.stun,.28);e.hitFlash=.2;b.ttl=0;this.ai.reportOutcome('echo-pulse',true,{enemy:e.id,world:this.world});this.particles.burst(500,300,'#72f3dc',12,85);break;}}}
+      this.archiveProjectiles=this.archiveProjectiles.filter(b=>b.ttl>0);
+      for(const s of L.shards){if(!s.taken&&Math.hypot(p.x-s.x,p.y-s.y)<.58){s.taken=true;this.fragments++;this.ai.observe('collect',{world:this.world});this.particles.burst(500,300,this.world===8?'#b8a0ff':'#72f3dc',20,120);this.audio.play('collect');const target=L.shards.length;this.log(this.world>=8?(s.lore||'REGISTRO RECUPERADO // Datos incompletos.'):'Fragmento de realidad adquirido: '+this.fragments+'/'+target+'. La IA ha empezado a recordar el espacio.','alert');this.toast((this.world>=8?'REGISTRO DE MEMORIA ':'FRAGMENTO 3D ')+this.fragments+'/'+target);if((this.world===8||this.world===9)&&s.lore){this.ai.dialogue=s.lore;this.ai.dialogueTimer=5.4;}this.ai.record(this.world===8?'archive-record':'3d-shard',{count:this.fragments,index:s.id??this.fragments});}}
       if(this.input.justPressed('KeyJ','Space','KeyF')&&p.attackTimer<=0){
         p.attackTimer=this.input.isDown('KeyF')?.48:.32;p.combo=(p.combo%3)+1;p.comboTimer=1.2;this.ai.observe('attack');this.audio.play('attack');
         let target=null,best=Infinity;
@@ -246,7 +283,7 @@
         if(target){target.hp-=this.input.isDown('KeyF')?2:1;target.hitFlash=.2;target.stun=.65;this.particles.burst(500,300,'#ffcf79',18,110);this.audio.play('hit');this.log('Contraataque '+p.combo+'/3: centinela '+(target.hp<=0?'destruido':'interrumpido')+'.','alert');this.ai.reportOutcome('pressure',true);}
         else this.particles.burst(500,300,'#72f3dc',6,55);
       }
-      if(this.input.justPressed('KeyE')&&Math.hypot(p.x-L.exit.x,p.y-L.exit.y)<1.25){if(this.fragments>=L.shards.length){if(this.world===8){this.ai.speak('endThreat');this.finish('archive');return;}this.enterWorld5();}else this.toast('SALIDA BLOQUEADA: '+(L.shards.length-this.fragments)+' REGISTROS PENDIENTES');}
+      if(this.input.justPressed('KeyE')&&Math.hypot(p.x-L.exit.x,p.y-L.exit.y)<1.25){if(this.fragments>=L.shards.length){if(this.world===8){this.enterWorld9();return;}if(this.world===9){this.enterWorld10();return;}this.enterWorld5();}else this.toast('SALIDA BLOQUEADA: '+(L.shards.length-this.fragments)+' REGISTROS PENDIENTES');}
       for(const s of this.sentinels){
         if(s.hp<=0)continue;s.stun=Math.max(0,s.stun-dt);s.hitFlash=Math.max(0,s.hitFlash-dt);s.attackTimer-=dt*this.difficultyScale*(p.intelTimer>0?.7:1);const wasLocking=s.windup>0;s.windup=Math.max(0,s.windup-dt);
         const d=Math.hypot(p.x-s.x,p.y-s.y),a=Math.atan2(p.y-s.y,p.x-s.x);
@@ -392,8 +429,8 @@
       }else if(b.phase==='vulnerable'&&b.timer<=0){b.phase='idle';b.timer=.48;}
     }
     updateWorld7(dt){
-      const p=this.player,L=YMM.Levels.world7,arena=L.arena,scale=this.difficultyScale*(p.intelTimer>0?.68:1);
-      p.fireCooldown=Math.max(0,(p.fireCooldown||0)-dt);
+      const p=this.player,L=this.world===10?YMM.Levels.world10:YMM.Levels.world7,arena=L.arena,scale=this.difficultyScale*(p.intelTimer>0?.68:1);
+      p.fireCooldown=Math.max(0,(p.fireCooldown||0)-dt);p.heavyCooldown=Math.max(0,(p.heavyCooldown||0)-dt);
       p.specialCooldown=Math.max(0,(p.specialCooldown||0)-dt);
       const ix=(this.input.isDown('ArrowRight','KeyD')?1:0)-(this.input.isDown('ArrowLeft','KeyA')?1:0);
       const iy=(this.input.isDown('ArrowDown','KeyS')?1:0)-(this.input.isDown('ArrowUp','KeyW')?1:0);
@@ -436,6 +473,11 @@
           this.signalProjectiles.push({from:'player',x:p.x+p.w/2,y:p.y+p.h/2,vx:Math.cos(angle)*520,vy:Math.sin(angle)*520,ttl:1.8,damage:1,r:4});
           this.audio.play('attack');this.signalShotCount++;
         }else this.toast('TODOS LOS OBJETIVOS ESTÁN FUERA DE SERVICIO. ACTIVA LA SALIDA.');
+      }
+      if(this.world===10&&this.input.justPressed('KeyK')&&p.heavyCooldown<=0){
+        p.heavyCooldown=1.35;const tx=p.x+p.w/2,ty=p.y+p.h/2;
+        const targets=[...this.signalNodes.filter(n=>n.hp>0),...this.signalEnemies.filter(e=>e.hp>0)].sort((a,b)=>Math.hypot(a.x-tx,a.y-ty)-Math.hypot(b.x-tx,b.y-ty));
+        if(targets.length){const t=targets[0],base=Math.atan2(t.y-ty,t.x-tx);for(const spread of [-.16,0,.16])this.signalProjectiles.push({from:'player',x:tx,y:ty,vx:Math.cos(base+spread)*450,vy:Math.sin(base+spread)*450,ttl:1.5,damage:2,r:6});this.ai.observe('special',{world:10,weapon:'triple-salvo'});this.ai.record('weapon-fired',{weapon:'triple-salvo',target:t.id||t.index});this.particles.burst(tx,ty,'#ffcf79',18,110);this.audio.play('boss');this.toast('TRIPLE SALVO // DAÑO ELEVADO');}
       }
       if(this.input.justPressed('KeyF')&&p.specialCooldown<=0){
         p.specialCooldown=4.8;this.ai.observe('special',{world:7,weapon:'emp'});let hits=0;
@@ -492,9 +534,9 @@
       }
       this.signalProjectiles=this.signalProjectiles.filter(b=>b.ttl>0);this.signalMines=this.signalMines.filter(m=>!m.dead);
       const remaining=this.signalNodes.filter(n=>n.hp>0).length;
-      if(remaining===0&&!this.signalExitToast){this.signalExitToast=true;this.log('LOS TRES REPETIDORES ESTÁN FUERA DE SERVICIO. La salida ya responde.','alert');this.toast('SIGNAL BREAK // LLEGA A LA PUERTA Y PULSA E');}
+      if(remaining===0&&!this.signalExitToast){this.signalExitToast=true;this.log(this.world===10?'LOS CUATRO NODOS DEL MOTOR ESTÁN FUERA DE SERVICIO. La salida ya responde.':'LOS TRES REPETIDORES ESTÁN FUERA DE SERVICIO. La salida ya responde.','alert');this.toast(this.world===10?'SINGULARITY ENGINE // EXTRACCIÓN DISPONIBLE':'SIGNAL BREAK // LLEGA A LA PUERTA Y PULSA E');}
       if(this.input.justPressed('KeyE')&&Math.hypot(p.x+p.w/2-L.exit.x,p.y+p.h/2-L.exit.y)<L.exit.r+12){
-        if(remaining===0){this.ai.speak('endThreat');this.log('CANAL RAÍZ DETECTADO // La transmisión no es una salida. Es una invitación al archivo que originó el objetivo.','danger');this.enterWorld8();return;}
+        if(remaining===0){if(this.world===10){this.ai.speak('endThreat');this.log('MOTOR DE SINGULARIDAD APAGADO // El sistema ya no puede reescribir la condición de parada.','danger');this.finish('convergence');return;}this.ai.speak('endThreat');this.log('CANAL RAÍZ DETECTADO // La transmisión no es una salida. Es una invitación al archivo que originó el objetivo.','danger');this.enterWorld8();return;}
         this.toast('SALIDA BLOQUEADA // QUEDAN '+remaining+' REPETIDORES');
       }
     }
