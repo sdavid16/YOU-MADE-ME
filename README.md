@@ -72,7 +72,11 @@ El dossier de campaña se abre con **M** o desde el botón **DOSSIER**. El perfi
 
 El progreso no requiere cuenta ni servidor y permanece en ese navegador. Borrar los datos del sitio elimina el perfil. La detección de bajas usa cambios en los grupos de enemigos y es una métrica aproximada, no un sistema de estadísticas autoritativo.
 
-## Puntuación y récords locales\n\nEl marcador recompensa supervivencia, variedad de acciones, objetos, hostiles, daño a jefes y misiones completadas. Las secuencias de acciones distintas construyen un multiplicador de estilo; recibir daño rompe el combo. Al terminar la sesión se registra una tabla local de los diez mejores resultados con mundo alcanzado, tiempo, dificultad y final. No existe una clasificación global ni se envían resultados a un servidor.\n\n## Guía contextual
+## Puntuación y récords locales
+
+El marcador recompensa supervivencia, variedad de acciones, objetos, hostiles, daño a jefes y misiones completadas. Las secuencias de acciones distintas construyen un multiplicador de estilo; recibir daño rompe el combo. Al terminar la sesión se registra una tabla local de los diez mejores resultados con mundo alcanzado, tiempo, dificultad y final. No existe una clasificación global ni se envían resultados a un servidor.
+
+## Guía contextual
 
 El botón **AYUDA** o la tecla **H** muestra consejos por mundo y sugerencias contextuales cuando detecta salud crítica o hábitos repetitivos. Las pistas se pueden cerrar y no bloquean la campaña; los consejos ya mostrados se registran localmente para evitar repetirlos en cada sesión.
 
