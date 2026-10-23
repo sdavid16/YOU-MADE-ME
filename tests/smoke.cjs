@@ -55,4 +55,20 @@ g.enterWorld3();g.ai.observations=Array.from({length:18},(_,i)=>({action:'still'
 assert(g.boss.attackType==='pulse','stationary profile triggers area pulse');
 g.boss.phase='idle';g.boss.timer=0;g.ai.observations=Array.from({length:18},(_,i)=>({action:i%3===0?'dash':i%2?'dashLeft':'dashRight',t:i,meta:{}}));g.updateWorld3(.04);
 assert(g.boss.attackType==='feint','dash-heavy profile triggers feint');
-console.log('PASS: boot, controls-ready, taunt cooldown, staged evolution, adaptive counter-policy, platform landing, memory shards, terminal, portal, adaptive boss, both endings.');
+// The 3D chapter must load a collision map, collect shards, and render without a WebGL dependency.
+g.enterWorld4();
+assert(g.world===4&&g.player.angle===0,'3D cathedral initializes in first person');
+assert(g.isWorld4Wall(0,0)&&!g.isWorld4Wall(1.5,1.5),'3D map collision distinguishes walls and corridors');
+g.player.x=3.5;g.player.y=3.5;g.updateWorld4(.016);
+assert(g.fragments===1,'3D shard pickup updates objective progress');
+g.renderer.render(g);
+assert(g.sentinels.length===3,'3D chapter initializes three adaptive sentinels');
+// The final arena supports a fifth world, multi-phase boss patterns, and the timed parry.
+g.enterWorld5();
+assert(g.world===5&&g.boss.maxHp===14,'final arena initializes the multi-phase core');
+g.ai.observations=Array.from({length:18},(_,i)=>({action:'still',t:i,meta:{}}));g.boss.timer=0;g.updateWorld5(.04);
+assert(g.boss.phase==='telegraph'&&g.boss.attackType==='ring','final boss selects an area attack against stationary play');
+g.renderer.render(g);
+g.boss.phase='vulnerable';g.boss.timer=1;g.boss.x=g.player.x+20;g.boss.y=g.player.y;g.player.attackTimer=0;g.input.pressed.add('KeyF');g.input.down.add('KeyF');g.updateWorld5(.016);g.input.pressed.clear();g.input.down.clear();
+assert(g.boss.hp===12,'heavy attack deals two damage during vulnerability');
+console.log('PASS: 5 worlds, 3D raycasting, map collision, shards, sentinel initialization, adaptive final boss, heavy attacks, parry state, legacy routes.');
