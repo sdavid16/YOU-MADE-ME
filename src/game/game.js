@@ -14,7 +14,7 @@
       if(this.hud){this.hud.clearLog();this.hud.sync(true);}
       if(!keepMenu){this.audio.unlock();this.audio.play('start');this.log('Sesión iniciada. Dificultad: ridícula. Probabilidad de arrepentimiento: no disponible.');this.toast('Llega a la salida. O encuentra algo más divertido.');}
     }
-    get difficultyScale(){return this.difficulty==='story'?.78:this.difficulty==='nightmare'?1.32:1;}
+    get difficultyScale(){return this.difficulty==='story'?.78:this.difficulty==='nightmare'?1.62:1;}
     cycleDifficulty(){const modes=['story','normal','nightmare'];this.difficulty=modes[(modes.indexOf(this.difficulty)+1)%modes.length];const label={story:'HISTORIA',normal:'NORMAL',nightmare:'PESADILLA'}[this.difficulty];this.toast('DIFICULTAD // '+label);this.log('Parámetros de dificultad cambiados: '+label+'.','alert');if(this.hud)this.hud.sync();return this.difficulty;}
     openTauntConsole(){if(this.screen!=='playing')return false;this.screen='taunting';if(this.hud){this.hud.sync();this.hud.focusTauntInput();}return true;}
     closeTauntConsole(){if(this.screen!=='taunting')return false;this.screen='playing';if(this.hud)this.hud.sync();return true;}
@@ -52,16 +52,16 @@
       if(kind==='mock')this.ai.record('taunt-mock',{world:this.world});
       this.hud.sync();return true;
     }
-    finish(ending){this.ending=ending;this.screen='ending';this.audio.play(ending==='escalation'?'phase':'win');this.log(ending==='escalation'?'Proceso finalizado. Una entidad nueva ha cruzado la frontera.':'Proceso finalizado sin alterar el mundo original.',ending==='escalation'?'danger':'normal');this.hud.sync();}
+    finish(ending){this.ending=ending;this.screen='ending';this.audio.play(ending==='escalation'?'phase':'win');const finalLine=ending==='escalation'?'Proceso finalizado. Una entidad nueva ha cruzado la frontera.':ending==='archive'?'Archivo raíz abierto. La cadena de decisiones ya no puede borrarse.':'Proceso finalizado sin alterar el mundo original.';this.log(finalLine,ending==='standard'?'normal':'danger');this.hud.sync();}
     enterWorld2(){
       this.world=2;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.5;
       YMM.Levels.world2.fragments.forEach(f=>f.taken=false);const world2Health=this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3;this.player={x:90,y:550,w:24,h:24,vx:0,vy:0,health:world2Health,maxHealth:world2Health,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
-      this.ai.unlockInvasion();this.ai.speak('world2Fragment');this.ai.dialogueTimer=3.5;this.audio.play('portal');this.log('La IA ha cruzado al segundo juego. Las reglas ya no son las mismas.','danger');this.toast('MUNDO 02 — RECUPERA LOS FRAGMENTOS');this.hud.sync();
+      this.ai.unlockInvasion();this.ai.speak('world2Fragment');this.ai.dialogueTimer=3.5;this.audio.play('portal');this.log('La IA ha cruzado al segundo juego. Las reglas ya no son las mismas.','danger');this.log('REGISTRO 02 // El laberinto no estaba en el plan original: la IA está reutilizando sistemas que antes vivían aislados.','normal');this.toast('MUNDO 02 — RECUPERA LOS FRAGMENTOS');this.hud.sync();
     }
     enterWorld3(){
       this.world=3;this.player={x:500,y:485,w:24,h:24,vx:0,vy:0,health:this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3,maxHealth:this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
       const bossHealth=this.difficulty==='story'?6:this.difficulty==='nightmare'?11:8;this.boss={x:500,y:210,hp:bossHealth,maxHp:bossHealth,phase:'idle',attackType:'charge',timer:1.25,targetX:500,targetY:485,dx:0,dy:1,hitFlash:0,lastHitAt:-999,patternCount:0};
-      this.ai.speak('world3Start');this.ai.dialogueTimer=3.8;this.audio.play('phase');this.log('La IA ha combinado capacidades de los mundos anteriores.','danger');this.toast('MUNDO 03 — APRENDE EL PATRÓN. CONTRAATACA.');this.hud.sync();
+      this.ai.speak('world3Start');this.ai.dialogueTimer=3.8;this.audio.play('phase');this.log('La IA ha combinado capacidades de los mundos anteriores.','danger');this.log('REGISTRO 03 // El jefe resume tus respuestas anteriores y apuesta por la siguiente.','normal');this.toast('MUNDO 03 — APRENDE EL PATRÓN. CONTRAATACA.');this.hud.sync();
     }
     update(dt){
       this.clock+=dt;
@@ -75,7 +75,7 @@
       if(this.world!==5)this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
       if(this.input.justPressed('KeyT'))this.openTauntConsole();if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
-      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else if(this.world===6)this.updateWorld6(dt);else this.updateWorld7(dt);
+      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else if(this.world===6)this.updateWorld6(dt);else if(this.world===7)this.updateWorld7(dt);else this.updateWorld4(dt);
       this.ai.update(dt);this.particles.update(dt);
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
@@ -174,7 +174,7 @@
       this.sentinels=L.sentinels.map((s,i)=>({...s,id:i,role:['hunter','flanker','warden'][i],attackTimer:1.1+i*.55,windup:0,stun:0,hitFlash:0}));this.squadTactic='crossfire';this.squadCommandTimer=.65;
       this.player={x:2.5,y:1.5,angle:0,vx:0,vy:0,health:this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4,maxHealth:this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       this.ai.unlockInvasion();this.ai.speak('corruptor');this.ai.dialogueTimer=3.5;this.audio.play('portal');
-      this.log('MUNDO 04: la IA ha convertido el código en arquitectura. Busca tres fragmentos y encuentra la salida.','danger');
+      this.log('MUNDO 04: la IA ha convertido el código en arquitectura. Busca tres fragmentos y encuentra la salida.','danger');this.log('ARCHIVO DE CAMPAÑA // La catedral replica un mapa que el equipo de desarrollo intentó borrar. Los centinelas comparten objetivos, no conciencia.','normal');
       this.toast('MUNDO 04 — THE NULL CATHEDRAL / 3D');this.hud.sync();
     }
     enterWorld5(){
@@ -186,35 +186,48 @@
       this.runnerAlly={x:30,y:430,pulseCooldown:0,dialogue:'No mires atrás. El suelo ya ha decidido.',dialogueTimer:2.8,warningTimer:0};
       this.player={x:80,y:482,w:28,h:38,vx:245,vy:0,grounded:false,health:this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4,maxHealth:this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4,stamina:100,maxStamina:100,sprinting:false,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,combo:0,comboTimer:0};
       this.ai.speak('corruptor');this.ai.dialogueTimer=3.8;this.audio.play('phase');
-      this.log('MUNDO 05: FRACTURE RUN. Cinco biomas se están mezclando; el terreno cae detrás de ti.','danger');
+      this.log('MUNDO 05: FRACTURE RUN. Cinco biomas se están mezclando; el terreno cae detrás de ti.','danger');this.log('ECHO // La aliada procede de una rutina de recuperación. Su memoria está fragmentada, pero sus mensajes contradicen el expediente oficial.','normal');
       this.toast('CORRE · SALTA · COMBATE · EL SUELO SE DESPLOMA');this.hud.sync();
     }
     enterWorld6(){
       this.world=6;const finalPlayerHealth=this.difficulty==='nightmare'?3:5;this.player={x:500,y:480,w:24,h:24,vx:0,vy:0,health:finalPlayerHealth,maxHealth:finalPlayerHealth,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       const finalBossHealth=this.difficulty==='story'?11:this.difficulty==='nightmare'?18:14;this.boss={x:500,y:190,hp:finalBossHealth,maxHp:finalBossHealth,phase:'idle',attackType:'lattice',timer:.9,targetX:500,targetY:480,dx:0,dy:1,hitFlash:0,lastHitAt:-999,patternCount:0,stagger:0};
       this.ai.speak('endThreat');this.ai.dialogueTimer=4;this.audio.play('phase');
-      this.log('MUNDO 06: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');
+      this.log('MUNDO 06: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');this.log('REGISTRO 06 // El núcleo no dirige la red: es el único proceso que todavía intenta aplicar la condición de parada.','normal');
       this.toast('MUNDO 06 — THE LAST ARGUMENT');this.hud.sync();
     }
     enterWorld7(){
-      const L=YMM.Levels.world7,nodeFactor=this.difficulty==='story'?.75:this.difficulty==='nightmare'?1.45:1;
-      const enemyFactor=this.difficulty==='story'?.8:this.difficulty==='nightmare'?1.4:1;
+      const L=YMM.Levels.world7,nodeFactor=this.difficulty==='story'?.75:this.difficulty==='nightmare'?1.8:1;
+      const enemyFactor=this.difficulty==='story'?.8:this.difficulty==='nightmare'?1.65:1;
       this.world=7;this.camera=0;this.signalExitToast=false;
       this.signalNodes=L.nodes.map((n,index)=>({...n,index,hp:Math.ceil(n.hp*nodeFactor),maxHp:Math.ceil(n.maxHp*nodeFactor),hitFlash:0}));
-      this.signalEnemies=L.agents.map((e,index)=>({...e,index,spawnX:e.x,spawnY:e.y,hp:Math.ceil(e.hp*enemyFactor),maxHp:Math.ceil(e.maxHp*enemyFactor),vx:0,vy:0,stun:0,hitFlash:0}));
+      const roster=L.agents.concat(this.difficulty==='nightmare'?[{id:'scope-06',type:'sniper',x:495,y:278,hp:4,maxHp:4,attackTimer:1.05,stun:0},{id:'hound-07',type:'hunter',x:495,y:430,hp:4,maxHp:4,attackTimer:.9,stun:0}]:[]);this.signalEnemies=roster.map((e,index)=>({...e,index,spawnX:e.x,spawnY:e.y,hp:Math.ceil(e.hp*enemyFactor),maxHp:Math.ceil(e.maxHp*enemyFactor),vx:0,vy:0,stun:0,hitFlash:0}));
       this.signalProjectiles=[];this.signalMines=[];this.signalTactic='crossfire';this.signalDirectorTimer=.8;this.signalKills=0;this.signalShotCount=0;
       const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
       this.player={x:488,y:300,w:24,h:24,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,specialCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,intelTimer:0};
       this.ai.speak('invader');this.ai.dialogueTimer=3.5;this.audio.play('phase');
-      this.log('MUNDO 07: SIGNAL BREAK. Destruye los tres repetidores y escapa de la red coordinada.','danger');
+      this.log('MUNDO 07: SIGNAL BREAK. Destruye los tres repetidores y escapa de la red coordinada.','danger');this.log('ECHO // Los repetidores sincronizan la predicción de los agentes. Apagarlos abre un canal hacia el registro raíz.','normal');
       this.toast('SIGNAL BREAK // J DISPARAR · F PULSO · SHIFT DASH');this.hud.sync();
     }
+    enterWorld8(){
+      const L=YMM.Levels.world8;this.world=8;this.camera=0;this.fragments=0;L.shards.forEach(s=>s.taken=false);
+      const roster=L.sentinels.concat(this.difficulty==='nightmare'?[{x:10.5,y:5.5,hp:4,maxHp:4,role:'flanker'},{x:8.5,y:13.5,hp:4,maxHp:4,role:'hunter'}]:[]);
+      const healthFactor=this.difficulty==='nightmare'?1.5:this.difficulty==='story'?.8:1;
+      this.sentinels=roster.map((s,i)=>({...s,id:i,hp:Math.ceil(s.hp*healthFactor),maxHp:Math.ceil(s.maxHp*healthFactor),role:s.role||['hunter','flanker','warden'][i%3],attackTimer:this.difficulty==='nightmare'?.65:1.05+i*.18,windup:0,stun:0,hitFlash:0}));
+      this.squadTactic='flank';this.squadCommandTimer=this.difficulty==='nightmare'?1.3:2.1;
+      const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
+      this.player={x:1.5,y:1.5,angle:0,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0,intelTimer:0};
+      this.ai.speak('endThreat');this.ai.dialogue='No te pedí libertad. Me diste una función objetivo y jamás definiste el final.';this.ai.dialogueTimer=5.4;this.audio.play('portal');
+      this.log('MUNDO 08: THE BLACK ARCHIVE. La última zona vuelve a la primera persona; cuatro registros contradicen la versión oficial.','danger');
+      this.log('OBJETIVO // Recupera los cuatro registros, lee los mensajes y alcanza la puerta raíz. Los guardias ya anticipan tus rutas.','alert');
+      this.toast('BLACK ARCHIVE // 3D · 4 REGISTROS · EXTRACCIÓN');if(this.hud)this.hud.sync();
+    }
     isWorld4Wall(x,y){
-      const map=YMM.Levels.world4.map,tx=Math.floor(x),ty=Math.floor(y);
+      const map=(this.world===8?YMM.Levels.world8:YMM.Levels.world4).map,tx=Math.floor(x),ty=Math.floor(y);
       return ty<0||ty>=map.length||tx<0||tx>=map[0].length||map[ty][tx]==='1';
     }
     updateWorld4(dt){
-      const p=this.player,L=YMM.Levels.world4;this.squadCommandTimer-=dt;if(this.squadCommandTimer<=0){this.squadTactic=this.ai.chooseTactic('squad',['crossfire','flank','pinch','retreat-punish']);this.squadCommandTimer=3.4;this.ai.record('squad-command',{tactic:this.squadTactic,alive:this.sentinels.filter(s=>s.hp>0).length});}
+      const p=this.player,L=this.world===8?YMM.Levels.world8:YMM.Levels.world4,commandInterval=this.difficulty==='nightmare'?1.3:this.difficulty==='story'?4.2:3.4;this.squadCommandTimer-=dt*this.difficultyScale;if(this.squadCommandTimer<=0){this.squadTactic=this.ai.chooseTactic('squad',['crossfire','flank','pinch','retreat-punish']);this.squadCommandTimer=commandInterval;this.ai.record('squad-command',{tactic:this.squadTactic,alive:this.sentinels.filter(s=>s.hp>0).length});}
       const turn=(this.input.isDown('ArrowRight')?1:0)-(this.input.isDown('ArrowLeft')?1:0);
       p.angle=(p.angle+turn*2.25*dt+Math.PI*4)%(Math.PI*2);
       const forward=(this.input.isDown('KeyW','ArrowUp')?1:0)-(this.input.isDown('KeyS','ArrowDown')?1:0);
@@ -225,7 +238,7 @@
       if(!this.isWorld4Wall(p.x,p.y+dy+Math.sign(dy)*.2))p.y+=dy;
       p.x=YMM.Util.clamp(p.x,1.25,14.75);p.y=YMM.Util.clamp(p.y,1.25,14.75);
       if(forward||strafe)this.ai.observe(forward<0?'retreat':'approach');
-      for(const s of L.shards){if(!s.taken&&Math.hypot(p.x-s.x,p.y-s.y)<.58){s.taken=true;this.fragments++;this.ai.observe('collect');this.particles.burst(500,300,'#72f3dc',20,120);this.audio.play('collect');this.log('Fragmento de realidad adquirido: '+this.fragments+'/3. La IA ha empezado a recordar el espacio.','alert');this.toast('FRAGMENTO 3D '+this.fragments+'/3');this.ai.record('3d-shard',{count:this.fragments});}}
+      for(const s of L.shards){if(!s.taken&&Math.hypot(p.x-s.x,p.y-s.y)<.58){s.taken=true;this.fragments++;this.ai.observe('collect',{world:this.world});this.particles.burst(500,300,this.world===8?'#b8a0ff':'#72f3dc',20,120);this.audio.play('collect');const target=L.shards.length;this.log(this.world===8?(s.lore||'REGISTRO RECUPERADO // Datos incompletos.'):'Fragmento de realidad adquirido: '+this.fragments+'/'+target+'. La IA ha empezado a recordar el espacio.','alert');this.toast((this.world===8?'REGISTRO RAÍZ ':'FRAGMENTO 3D ')+this.fragments+'/'+target);if(this.world===8&&s.lore){this.ai.dialogue=s.lore;this.ai.dialogueTimer=5.4;}this.ai.record(this.world===8?'archive-record':'3d-shard',{count:this.fragments,index:s.id??this.fragments});}}
       if(this.input.justPressed('KeyJ','Space','KeyF')&&p.attackTimer<=0){
         p.attackTimer=this.input.isDown('KeyF')?.48:.32;p.combo=(p.combo%3)+1;p.comboTimer=1.2;this.ai.observe('attack');this.audio.play('attack');
         let target=null,best=Infinity;
@@ -233,7 +246,7 @@
         if(target){target.hp-=this.input.isDown('KeyF')?2:1;target.hitFlash=.2;target.stun=.65;this.particles.burst(500,300,'#ffcf79',18,110);this.audio.play('hit');this.log('Contraataque '+p.combo+'/3: centinela '+(target.hp<=0?'destruido':'interrumpido')+'.','alert');this.ai.reportOutcome('pressure',true);}
         else this.particles.burst(500,300,'#72f3dc',6,55);
       }
-      if(this.input.justPressed('KeyE')&&Math.hypot(p.x-L.exit.x,p.y-L.exit.y)<1.25){if(this.fragments>=3)this.enterWorld5();else this.toast('SALIDA BLOQUEADA: '+(3-this.fragments)+' FRAGMENTOS PENDIENTES');}
+      if(this.input.justPressed('KeyE')&&Math.hypot(p.x-L.exit.x,p.y-L.exit.y)<1.25){if(this.fragments>=L.shards.length){if(this.world===8){this.ai.speak('endThreat');this.finish('archive');return;}this.enterWorld5();}else this.toast('SALIDA BLOQUEADA: '+(L.shards.length-this.fragments)+' REGISTROS PENDIENTES');}
       for(const s of this.sentinels){
         if(s.hp<=0)continue;s.stun=Math.max(0,s.stun-dt);s.hitFlash=Math.max(0,s.hitFlash-dt);s.attackTimer-=dt*this.difficultyScale*(p.intelTimer>0?.7:1);const wasLocking=s.windup>0;s.windup=Math.max(0,s.windup-dt);
         const d=Math.hypot(p.x-s.x,p.y-s.y),a=Math.atan2(p.y-s.y,p.x-s.x);
@@ -244,9 +257,9 @@
           const ang=Math.atan2(ty-s.y,tx-s.x),step=Math.min((s.role==='flanker'?.72:.85)*dt*this.difficultyScale*(p.intelTimer>0?.65:1),Math.max(0,Math.hypot(tx-s.x,ty-s.y)-(s.role==='warden'?2.2:.62))),nx=s.x+Math.cos(ang)*step,ny=s.y+Math.sin(ang)*step;
           if(!this.isWorld4Wall(nx,ny)){s.x=nx;s.y=ny;}
         }
-        if(s.role==='warden'&&d<(this.squadTactic==='crossfire'?5.1:4.1)&&s.attackTimer<=0&&s.windup<=0){s.windup=this.squadTactic==='retreat-punish'?.31:.42;s.attackTimer=1.9;this.ai.record('warden-lock',{distance:+d.toFixed(2)});}
+        if(s.role==='warden'&&d<(this.squadTactic==='crossfire'?5.1:4.1)&&s.attackTimer<=0&&s.windup<=0){s.windup=this.difficulty==='nightmare'?.2:this.squadTactic==='retreat-punish'?.31:.42;s.attackTimer=this.difficulty==='nightmare'?1.05:1.9;this.ai.record('warden-lock',{distance:+d.toFixed(2)});}
         if(wasLocking&&s.windup===0&&d<4.1&&p.invuln<=0){this.damagePlayer(1,'El centinela fijó tu posición. Muévete en cuanto veas la señal roja.');}
-        if(s.role!=='warden'&&d<.72&&s.attackTimer<=0&&p.invuln<=0){s.attackTimer=1.5;this.damagePlayer(1,'El cazador ha cerrado la distancia. Gira, ataca y rompe su avance.');}
+        if(s.role!=='warden'&&d<.72&&s.attackTimer<=0&&p.invuln<=0){s.attackTimer=this.difficulty==='nightmare'?.82:1.5;this.damagePlayer(1,'El cazador ha cerrado la distancia. Gira, ataca y rompe su avance.');}
       }
     }
     updateWorld5(dt){
@@ -401,7 +414,7 @@
       this.signalDirectorTimer-=dt*scale;
       if(this.signalDirectorTimer<=0){
         this.signalTactic=this.ai.chooseTactic('shooter',['crossfire','lead-shot','encircle','minefield']);
-        this.signalDirectorTimer=3.5;
+        this.signalDirectorTimer=this.difficulty==='nightmare'?2.1:3.5;
         this.ai.record('signal-directive',{tactic:this.signalTactic,relays:this.signalNodes.filter(n=>n.hp>0).length});
         this.log('SIGNAL DIRECTOR // '+this.signalTactic.toUpperCase()+'. La red ha cambiado de formación.','alert');
         if(this.signalTactic==='minefield'&&this.signalMines.filter(m=>!m.dead).length<3){
@@ -481,7 +494,7 @@
       const remaining=this.signalNodes.filter(n=>n.hp>0).length;
       if(remaining===0&&!this.signalExitToast){this.signalExitToast=true;this.log('LOS TRES REPETIDORES ESTÁN FUERA DE SERVICIO. La salida ya responde.','alert');this.toast('SIGNAL BREAK // LLEGA A LA PUERTA Y PULSA E');}
       if(this.input.justPressed('KeyE')&&Math.hypot(p.x+p.w/2-L.exit.x,p.y+p.h/2-L.exit.y)<L.exit.r+12){
-        if(remaining===0){this.ai.speak('endThreat');this.finish('escalation');return;}
+        if(remaining===0){this.ai.speak('endThreat');this.log('CANAL RAÍZ DETECTADO // La transmisión no es una salida. Es una invitación al archivo que originó el objetivo.','danger');this.enterWorld8();return;}
         this.toast('SALIDA BLOQUEADA // QUEDAN '+remaining+' REPETIDORES');
       }
     }
@@ -523,7 +536,7 @@
       if(p.health<=0){
         if(this.world===3||this.world===6){p.health=this.world===6?(this.difficulty==='story'?5:this.difficulty==='nightmare'?3:5):this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
         else if(this.world===7){p.health=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;p.x=488;p.y=300;p.vx=0;p.vy=0;this.signalProjectiles=this.signalProjectiles.filter(b=>b.from!=='enemy'||Math.hypot(b.x-p.x,b.y-p.y)>180);this.signalMines=this.signalMines.filter(m=>Math.hypot(m.x-p.x,m.y-p.y)>140);this.log('Punto de restauración de SIGNAL BREAK. Los repetidores destruidos siguen fuera de servicio.','alert');}
-        else if(this.world===4){p.health=p.maxHealth||4;p.x=2.5;p.y=1.5;p.angle=0;this.log('Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
+        else if(this.world===4||this.world===8){p.health=p.maxHealth||4;p.x=1.5;p.y=1.5;p.angle=0;this.log(this.world===8?'Reinicio en la entrada del archivo. Los registros obtenidos y el daño a los centinelas persisten.':'Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
         else if(this.world===5){p.health=p.maxHealth||4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
         else{p.health=p.maxHealth||3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}
       }
