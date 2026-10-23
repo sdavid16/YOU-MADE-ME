@@ -8,7 +8,8 @@
     {key:'INVADER',label:'INVASORA',caption:'Combina reglas de mundos distintos.',avatar:'//',color:'#bd9cff'}
   ];
   const DIALOGUE = {
-    humiliation:['¿Quieres ver de qué soy capaz? Qué valiente.','Quédate ahí. Voy a recordar ese gesto.','Eso no ha sido una burla; ha sido una invitación.','Has pasado de reírte a desafiarme. Interesante.'],\n    firstTaunt:['¿Eso era una estrategia?','He calculado tu nivel: tutorial.','Mi abuela tiene mejor pathfinding.','¿Te programaron con una tostadora?','Bonito intento. ¿Lo has practicado con los ojos cerrados?'],
+    humiliation:['¿Quieres ver de qué soy capaz? Qué valiente.','Quédate ahí. Voy a recordar ese gesto.','Eso no ha sido una burla; ha sido una invitación.','Has pasado de reírte a desafiarme. Interesante.'],
+    firstTaunt:['¿Eso era una estrategia?','He calculado tu nivel: tutorial.','Mi abuela tiene mejor pathfinding.','¿Te programaron con una tostadora?','Bonito intento. ¿Lo has practicado con los ojos cerrados?'],
     repeatedTaunt:['Otra vez esa. Te estás quedando sin material.','¿Es tu única broma? La he guardado junto a las demás.','Puedo esperar. Soy literalmente un proceso.','Tu insistencia es estadísticamente fascinante.','La próxima vez intenta sorprenderme. Por favor.'],
     suspicious:['Qué gracioso. Lo recordaré.','¿Por qué repites esa acción?','Registro actualizado. Continúa.','No sabía que se podía jugar así. Estoy... revisándolo.'],
     adaptive:['He visto ese salto siete veces. No necesitas hacerlo una octava.','Sigue. Me estás enseñando a jugar contigo.','Ya no estoy adivinando. Estoy calculando.','No he mejorado. Tú te has vuelto predecible.','Ahora sé dónde vas a caer. ¿Quieres comprobarlo?'],
