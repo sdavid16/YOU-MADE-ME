@@ -18,7 +18,7 @@
     cycleDifficulty(){const modes=['story','normal','nightmare'];this.difficulty=modes[(modes.indexOf(this.difficulty)+1)%modes.length];const label={story:'HISTORIA',normal:'NORMAL',nightmare:'PESADILLA'}[this.difficulty];this.toast('DIFICULTAD // '+label);this.log('Parámetros de dificultad cambiados: '+label+'.','alert');if(this.hud)this.hud.sync();return this.difficulty;}
     openTauntConsole(){if(this.screen!=='playing')return false;this.screen='taunting';if(this.hud){this.hud.sync();this.hud.focusTauntInput();}return true;}
     closeTauntConsole(){if(this.screen!=='taunting')return false;this.screen='playing';if(this.hud)this.hud.sync();return true;}
-    provokeCustom(text){const phrase=String(text||'').trim().replace(/[\\r\\n]+/g,' ').slice(0,140);if(!phrase){this.toast('Escribe una provocación antes de transmitirla.');return false;}const kind=this.ai.classifyTaunt(phrase);if(this.screen==='taunting')this.closeTauntConsole();if(!this.provoke(kind))return false;this.lastTauntText=phrase;this.lastTauntCategory=kind;this.lastTauntTimer=3.6;this.ai.record('custom-taunt',{category:kind,length:phrase.length});return true;}
+    provokeCustom(text){const phrase=String(text||'').trim().replace(/\s+/g,' ').slice(0,140);if(!phrase){this.toast('Escribe una provocación antes de transmitirla.');return false;}const kind=this.ai.classifyTaunt(phrase);if(this.screen==='taunting')this.closeTauntConsole();if(!this.provoke(kind))return false;this.lastTauntText=phrase;this.lastTauntCategory=kind;this.lastTauntTimer=3.6;this.ai.record('custom-taunt',{category:kind,length:phrase.length});return true;}
     pause(){if(this.screen==='playing'){this.screen='paused';this.hud.sync();}}
     resume(){if(this.screen==='paused'){this.screen='playing';this.audio.unlock();this.hud.sync();}}
     toast(message){if(this.hud)this.hud.toast(message);}
@@ -354,7 +354,7 @@
         else{b.phase='charge';b.timer=b.attackType==='lunge'?.34:.42;this.audio.play('boss');}
       }else if(b.phase==='fakeout'&&b.timer<=0){b.targetX=YMM.Util.clamp(p.x+p.vx*.42,90,910);b.targetY=YMM.Util.clamp(p.y+p.vy*.42,100,520);const d=Math.hypot(b.targetX-b.x,b.targetY-b.y)||1;b.dx=(b.targetX-b.x)/d;b.dy=(b.targetY-b.y)/d;b.phase='charge';b.timer=.3;}
       else if(b.phase==='charge'){
-        b.x+=b.dx*(b.attackType==='lunge'?790:570)*dt;b.y+=b.dy*(b.attackType==='lunge'?790:570)*dt;b.x=YMM.Util.clamp(b.x,100,900);b.y=YMM.Util.clamp(b.y,100,520);
+        const chargeScale=this.difficultyScale*(p.intelTimer>0?.72:1);b.x+=b.dx*(b.attackType==='lunge'?790:570)*dt*chargeScale;b.y+=b.dy*(b.attackType==='lunge'?790:570)*dt*chargeScale;b.x=YMM.Util.clamp(b.x,100,900);b.y=YMM.Util.clamp(b.y,100,520);
         if(Math.hypot(p.x-b.x,p.y-b.y)<40&&p.invuln<=0){if(p.parryTimer>0){this.ai.reportOutcome(b.attackType,false,{world:6,parried:true});b.stagger=.8;b.phase='vulnerable';b.timer=1.2;this.log('PARADA PERFECTA. La IA ha perdido su turno.','alert');this.particles.burst(b.x,b.y,'#72f3dc',30,170);}else{this.ai.reportOutcome(b.attackType,true,{world:6,playerHit:true});this.damagePlayer(1,'El ataque final te alcanzó. Esquiva o pulsa E justo antes del impacto.');}}
         if(b.timer<=0||b.x===100||b.x===900||b.y===100||b.y===520){b.phase='vulnerable';b.timer=1.05;this.particles.burst(b.x,b.y,'#ff617c',22,125);this.log('El núcleo está abierto: encadena ataques fuertes con F.','alert');}
       }else if(b.phase==='ring'){
@@ -387,7 +387,7 @@
       }else if(b.phase==='fakeout'&&b.timer<=0){
         b.targetX=YMM.Util.clamp(p.x+p.vx*.32,90,910);b.targetY=YMM.Util.clamp(p.y+p.vy*.2,100,520);const dd=Math.hypot(b.targetX-b.x,b.targetY-b.y)||1;b.dx=(b.targetX-b.x)/dd;b.dy=(b.targetY-b.y)/dd;b.phase='charge';b.timer=.28;this.audio.play('boss');
       }else if(b.phase==='charge'){
-        b.x+=b.dx*(b.attackType==='intercept'?690:625)*dt;b.y+=b.dy*(b.attackType==='intercept'?690:625)*dt;b.x=YMM.Util.clamp(b.x,105,895);b.y=YMM.Util.clamp(b.y,105,515);
+        const chargeScale=this.difficultyScale*(p.intelTimer>0?.7:1);b.x+=b.dx*(b.attackType==='intercept'?690:625)*dt*chargeScale;b.y+=b.dy*(b.attackType==='intercept'?690:625)*dt*chargeScale;b.x=YMM.Util.clamp(b.x,105,895);b.y=YMM.Util.clamp(b.y,105,515);
         if(Math.hypot(p.x-b.x,p.y-b.y)<38&&p.invuln<=0){this.ai.reportOutcome(b.attackType,true,{world:3,playerHit:true});this.damagePlayer(1,'La carga te alcanzó. Esquiva durante la señal, no después.');}
         if(b.timer<=0||b.x===105||b.x===895||b.y===105||b.y===515){b.phase='vulnerable';b.timer=1.04;this.particles.burst(b.x,b.y,'#ff617c',16,90);this.log('Núcleo expuesto. Contraataca ahora.','alert');}
       }else if(b.phase==='pulse'){
