@@ -72,7 +72,7 @@ El dossier de campaña se abre con **M** o desde el botón **DOSSIER**. El perfi
 
 El progreso no requiere cuenta ni servidor y permanece en ese navegador. Borrar los datos del sitio elimina el perfil. La detección de bajas usa cambios en los grupos de enemigos y es una métrica aproximada, no un sistema de estadísticas autoritativo.
 
-## Móvil e instalación
+## Misiones secundarias dinámicas\n\nCada mundo genera un objetivo opcional elegido entre supervivencia, movimiento, provocaciones, dash, ataques, recuperación de datos, daño a jefes y eliminación de hostiles. La selección rota entre partidas para reducir repeticiones; la dificultad modifica las metas y las recompensas. El progreso aparece en un panel discreto dentro del escenario. Completar una misión entrega experiencia y créditos al dossier persistente. Las misiones son adicionales: nunca bloquean la salida ni impiden completar la campaña.\n\n## Móvil e instalación
 
 La interfaz incorpora controles táctiles para movimiento, salto/ataque, dash e interacción, visibles en pantallas pequeñas o dispositivos táctiles. Se añadió un manifiesto PWA, icono escalable y service worker para guardar en caché el núcleo del juego. Para instalarlo desde el navegador, publícalo en un origen HTTPS y usa la opción **Instalar aplicación** o **Añadir a pantalla de inicio**, según el navegador.
 
