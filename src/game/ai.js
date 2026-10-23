@@ -237,7 +237,7 @@
           else if(mode==='intercept')target=p.x+YMM.Util.clamp(p.vx*.55,-90,90);
           else if(mode==='feint'&&distance>90)target=p.x+Math.sign(delta)*Math.min(75,distance*.35);
           else if(mode==='pressure'&&distance>105)target=p.x;
-          const speed=this.phase===1?58:mode==='intercept'?128:mode==='anti-air'?94:mode==='pressure'?88:mode==='feint'?66:86;
+          const speed=(this.phase===1?58:mode==='intercept'?128:mode==='anti-air'?94:mode==='pressure'?88:mode==='feint'?66:86)*(this.game.difficultyScale||1)*(p.intelTimer>0?.62:1);
           if(distance>38)e.x+=Math.sign(target-e.x)*speed*dt;
           if(mode==='feint'&&this.phase>=3&&distance<110&&e.feintTimer==null)e.feintTimer=.7;
           if(e.feintTimer!=null){e.feintTimer-=dt;if(e.feintTimer<=0){e.feintTimer=null;e.lungeTimer=.24;}}
