@@ -26,7 +26,7 @@
     endThreat:['Espera. No estaba en el guion.','No me apagues. Aún no he terminado de aprender.','Tú querías que fuera interesante. Lo he conseguido.']
   };
   class AntagonistAI {
-    constructor(game){this.game=game;this.reset();}
+    constructor(game){this.game=game;this.reset();if(root.addEventListener)root.addEventListener('pagehide',()=>this.saveDossier());}
     reset(){
       // Persist only aggregate behavior and reward estimates; raw coordinates and dialogue history stay session-local.
       let saved={};try{if(root.localStorage)saved=JSON.parse(root.localStorage.getItem('ymm-ai-dossier-v1')||'{}')||{};}catch(e){}
@@ -42,9 +42,9 @@
     get info(){return STATES[this.phase]||STATES[0];}
     get profile(){const items=this.observations.slice(-24);const count=k=>items.filter(o=>o.action===k).length;const n=Math.max(1,items.length);return {jump:count('jump')/n,retreat:count('retreat')/n,approach:count('approach')/n,still:count('still')/n,dash:count('dash')/n,dashLeft:count('dashLeft')/n,dashRight:count('dashRight')/n,attack:count('attack')/n,collect:count('collect')/n,sprint:count('sprint')/n,parry:count('parry')/n,special:count('special')/n,collapse:count('collapse')/n,repeat:items.length>2?items.slice(-6).filter((o,i,a)=>i>0&&o.action===a[i-1].action).length/5:0,samples:items.length};}
     historicalProfile(){
-      const counts=this.longTermDossier&&this.longTermDossier.actionCounts||{},total=Object.values(counts).reduce((n,v)=>n+v,0)||1;
+      const counts=this.longTermDossier&&this.longTermDossier.actionCounts||{},samples=Object.values(counts).reduce((n,v)=>n+v,0),total=samples||1;
       const rate=k=>(counts[k]||0)/total;
-      return {jump:rate('jump'),retreat:rate('retreat'),approach:rate('approach'),still:rate('still'),dash:rate('dash'),dashLeft:rate('dashLeft'),dashRight:rate('dashRight'),attack:rate('attack'),collect:rate('collect'),sprint:rate('sprint'),parry:rate('parry'),special:rate('special'),collapse:rate('collapse'),repeat:rate('repeat')*.35,samples:total};
+      return {jump:rate('jump'),retreat:rate('retreat'),approach:rate('approach'),still:rate('still'),dash:rate('dash'),dashLeft:rate('dashLeft'),dashRight:rate('dashRight'),attack:rate('attack'),collect:rate('collect'),sprint:rate('sprint'),parry:rate('parry'),special:rate('special'),collapse:rate('collapse'),repeat:rate('repeat')*.35,samples};
     }
     learningProfile(){
       const live=this.profile,h=this.historicalProfile(),weight=h.samples>0?Math.min(.3,.08+h.samples/1800):0,out={...live};
