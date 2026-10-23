@@ -36,7 +36,14 @@ Las señales visuales son importantes: el jugador debe poder leer la intención,
 ## 4. Diálogo contextual
 Los diálogos dependen de fase, tipo de provocación, repetición de frases, estrategia aprendida y acontecimientos narrativos. Se evita repetir inmediatamente las mismas frases. En las fases iniciales la IA es burlona; tras observar patrones deja de responder como un NPC genérico y empieza a comentar el estilo del jugador.
 
-## 5. Limitaciones deliberadas
+## 5. Mundos y combate añadidos
+
+El cuarto mundo usa una cuadrícula de colisiones, vista en primera persona por raycasting, tres fragmentos coleccionables y centinelas que persiguen al jugador y atacan a corta distancia. El jugador puede girar, desplazarse lateralmente, hacer dash y encadenar ataques ligeros/pesados. El quinto mundo incorpora un jefe con más salud, señales previas y cuatro familias de ataque: patrón directo, embestida, finta y onda de área. El jugador puede esquivar, usar una parada con ventana temporal corta y aprovechar la fase vulnerable para castigar el núcleo.
+
+La política del jefe consulta el perfil de conducta reciente para elegir el patrón. La IA registra aciertos y fallos de las contraestrategias y actualiza sus valores estimados durante la sesión.
+
+## 6. Limitaciones deliberadas
+- El renderizado del mundo 4 es perspectiva por raycasting sobre un mapa 2D, no geometría poligonal 3D ni un motor WebGL.
 - No hay aprendizaje entre sesiones.
 - El agente no entiende lenguaje libre: las provocaciones son acciones de juego conocidas.
 - No hay LLM ni entrenamiento de red neuronal.
