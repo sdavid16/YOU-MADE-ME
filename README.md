@@ -72,7 +72,11 @@ El dossier de campaña se abre con **M** o desde el botón **DOSSIER**. El perfi
 
 El progreso no requiere cuenta ni servidor y permanece en ese navegador. Borrar los datos del sitio elimina el perfil. La detección de bajas usa cambios en los grupos de enemigos y es una métrica aproximada, no un sistema de estadísticas autoritativo.
 
-## Archivo narrativo y accesibilidad\n\nEl archivo narrativo se abre con **ARCHIVO** o la tecla **O**. Incluye registros principales, secretos y epílogos que se desbloquean al avanzar por la campaña o recoger suficientes objetos. El archivo persiste en el navegador. La pantalla de **AJUSTES** (botón o tecla **P**) permite reducir movimiento, activar alto contraste, desactivar partículas y vibración visual, ampliar texto y ajustar el volumen maestro. Las preferencias se guardan localmente.\n\n## Misiones secundarias dinámicas
+## Archivo narrativo y accesibilidad
+
+El archivo narrativo se abre con **ARCHIVO** o la tecla **O**. Incluye registros principales, secretos y epílogos que se desbloquean al avanzar por la campaña o recoger suficientes objetos. El archivo persiste en el navegador. La pantalla de **AJUSTES** (botón o tecla **P**) permite reducir movimiento, activar alto contraste, desactivar partículas y vibración visual, ampliar texto y ajustar el volumen maestro. Las preferencias se guardan localmente.
+
+## Misiones secundarias dinámicas
 
 Cada mundo genera un objetivo opcional elegido entre supervivencia, movimiento, provocaciones, dash, ataques, recuperación de datos, daño a jefes y eliminación de hostiles. La selección rota entre partidas para reducir repeticiones; la dificultad modifica las metas y las recompensas. El progreso aparece en un panel discreto dentro del escenario. Completar una misión entrega experiencia y créditos al dossier persistente. Las misiones son adicionales: nunca bloquean la salida ni impiden completar la campaña.
 
