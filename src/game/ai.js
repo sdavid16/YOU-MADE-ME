@@ -41,15 +41,15 @@
       this.phaseKeys=new Set();this.memory=[];this.dialogue='';this.dialogueTimer=0;this.recentLines=[];this.observations=[];
       this.tactics={jump:0,retreat:0,approach:0,still:0,dash:0,dashLeft:0,dashRight:0,attack:0,collect:0};
       this.outcomes={antiAir:{tries:0,hits:0,value:0},intercept:{tries:0,hits:0,value:0},pressure:{tries:0,hits:0,value:0},feint:{tries:0,hits:0,value:0},...(this.longTermDossier.counterOutcomes||{})};
-      this.tacticOutcomes={...(this.longTermDossier.tacticOutcomes||{})};this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;this.lastDirectorChoice={};this.directorDecisions=0;this.lastPrediction={action:'unknown',confidence:0,entropy:1};
+      this.tacticOutcomes={...(this.longTermDossier.tacticOutcomes||{})};this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;this.lastDirectorChoice={};this.directorHistory={};this.directorDecisions=0;this.lastPrediction={action:'unknown',confidence:0,entropy:1};
       this.activeStrategy='stalk';this.strategyTimer=0;this.sampleTimer=0;this.lastDistance=null;this.lastPlayerX=null;this.lastPlayerY=null;this.lastActionAt={};this.behaviorTrace=[];this.lastObservedAction=null;this.fakeDumb=false;this.fakeDumbTimer=0;
     }
     get info(){return STATES[this.phase]||STATES[0];}
-    get profile(){const items=this.observations.slice(-24);const count=k=>items.filter(o=>o.action===k).length;const n=Math.max(1,items.length);return {jump:count('jump')/n,retreat:count('retreat')/n,approach:count('approach')/n,still:count('still')/n,dash:count('dash')/n,dashLeft:count('dashLeft')/n,dashRight:count('dashRight')/n,attack:count('attack')/n,collect:count('collect')/n,sprint:count('sprint')/n,parry:count('parry')/n,special:count('special')/n,collapse:count('collapse')/n,repeat:items.length>2?items.slice(-6).filter((o,i,a)=>i>0&&o.action===a[i-1].action).length/5:0,samples:items.length};}
+    get profile(){const items=this.observations.slice(-24);const count=k=>items.filter(o=>o.action===k).length;const n=Math.max(1,items.length);return {jump:count('jump')/n,retreat:count('retreat')/n,approach:count('approach')/n,still:count('still')/n,dash:count('dash')/n,dashLeft:count('dashLeft')/n,dashRight:count('dashRight')/n,attack:count('attack')/n,collect:count('collect')/n,sprint:count('sprint')/n,parry:count('parry')/n,special:count('special')/n,collapse:count('collapse')/n,repeat:items.length>2?items.slice(-6).filter((o,i,a)=>i>0&&o.action===a[i-1].action).length/5:0,strafeLeft:count('strafeLeft')/n,strafeRight:count('strafeRight')/n,samples:items.length};}
     historicalProfile(){
       const counts=this.longTermDossier&&this.longTermDossier.actionCounts||{},samples=Object.values(counts).reduce((n,v)=>n+v,0),total=samples||1;
       const rate=k=>(counts[k]||0)/total;
-      return {jump:rate('jump'),retreat:rate('retreat'),approach:rate('approach'),still:rate('still'),dash:rate('dash'),dashLeft:rate('dashLeft'),dashRight:rate('dashRight'),attack:rate('attack'),collect:rate('collect'),sprint:rate('sprint'),parry:rate('parry'),special:rate('special'),collapse:rate('collapse'),repeat:rate('repeat')*.35,samples};
+      return {jump:rate('jump'),retreat:rate('retreat'),approach:rate('approach'),still:rate('still'),dash:rate('dash'),dashLeft:rate('dashLeft'),dashRight:rate('dashRight'),attack:rate('attack'),collect:rate('collect'),sprint:rate('sprint'),parry:rate('parry'),special:rate('special'),collapse:rate('collapse'),repeat:rate('repeat')*.35,strafeLeft:rate('strafeLeft'),strafeRight:rate('strafeRight'),samples};
     }
     learningProfile(){
       const live=this.profile,h=this.historicalProfile(),weight=h.samples>0?Math.min(.3,.08+h.samples/1800):0,out={...live};
@@ -138,18 +138,32 @@
       if(strategy!==this.activeStrategy&&this.strategyTimer<=0){const old=this.activeStrategy;this.activeStrategy=strategy;this.strategyTimer=4.5;this.record('strategy',{from:old,to:strategy,score});const buckets={'anti-air':'jumpRead',intercept:'retreatRead',pressure:'stillRead',feint:'adaptive'};if(this.phase>=2&&this.game.world===1)this.speak(buckets[strategy]);this.game.log('Contraestrategia activa: '+({ 'anti-air':'anticipación de salto',intercept:'interceptar retirada',pressure:'presión de zona',feint:'engaño táctico'}[strategy])+'.','alert');}
     }
     predictIntent(){
-      // First-order transition model: estimate what tends to follow the most recent action,
-      // falling back to a decayed frequency model when the transition history is sparse.
-      const seq=this.observations.slice(-30),last=seq.length?seq[seq.length-1].action:null;
-      const transitions={};let transitionN=0;
-      if(last)for(let i=0;i<seq.length-1;i++)if(seq[i].action===last){const k=seq[i+1].action;transitions[k]=(transitions[k]||0)+1;transitionN++;}
-      let counts=transitionN>=2?transitions:{};
-      if(transitionN<2){counts={};for(const item of seq)counts[item.action]=(counts[item.action]||0)+1;}
-      const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-      const total=entries.reduce((s,e)=>s+e[1],0)||1,top=entries[0]||['unknown',0];
-      const probabilities=entries.map(e=>e[1]/total);
-      const entropy=probabilities.length<=1?0:-probabilities.reduce((s,p)=>s+p*Math.log(p),0)/Math.log(probabilities.length);
-      const prediction={action:top[0],confidence:top[1]/total,entropy,transitionSamples:transitionN,samples:seq.length,lastAction:last||'unknown'};
+      // Multi-order Markov predictor: use the last two actions when enough examples
+      // exist, back off to one-action transitions, then to a recency-weighted prior.
+      // Laplace smoothing avoids pretending a small sample is certainty.
+      const seq=this.observations.slice(-36),last=seq.length?seq[seq.length-1].action:null;
+      const actions=[...new Set(seq.map(o=>o.action))];const prior={};
+      for(let i=0;i<seq.length;i++){const weight=Math.pow(.91,seq.length-1-i);prior[seq[i].action]=(prior[seq[i].action]||0)+weight;}
+      let counts={},transitionN=0,order=0,context=[];
+      if(seq.length>=3){
+        const a=seq[seq.length-2].action,b=seq[seq.length-1].action;context=[a,b];
+        for(let i=0;i<seq.length-2;i++)if(seq[i].action===a&&seq[i+1].action===b){const weight=Math.pow(.94,seq.length-2-i);const k=seq[i+2].action;counts[k]=(counts[k]||0)+weight;transitionN++;}
+        if(transitionN>=2)order=2;else counts={};
+      }
+      if(!order&&last){
+        for(let i=0;i<seq.length-1;i++)if(seq[i].action===last){const weight=Math.pow(.94,seq.length-1-i);const k=seq[i+1].action;counts[k]=(counts[k]||0)+weight;transitionN++;}
+        if(transitionN>=2){order=1;context=[last];}else counts={};
+      }
+      if(!order){counts=prior;transitionN=0;context=[];}
+      const vocabulary=Math.max(2,actions.length),smooth=.16;
+      const entries=Object.entries(counts).map(([action,count])=>({action,count:count+smooth}));
+      for(const action of actions)if(!counts[action])entries.push({action,count:smooth});
+      entries.sort((a,b)=>b.count-a.count);
+      const total=entries.reduce((sum,item)=>sum+item.count,0)||1;
+      const probabilities=entries.map(item=>item.count/total);
+      const entropy=probabilities.length<=1?0:-probabilities.reduce((sum,p)=>sum+p*Math.log(p),0)/Math.log(Math.max(2,probabilities.length));
+      const top=entries[0]||{action:'unknown',count:0},second=entries[1]||{count:0};
+      const prediction={action:top.action,confidence:top.count/total,margin:(top.count-second.count)/total,entropy,transitionSamples:transitionN,order,samples:seq.length,lastAction:last||'unknown',context};
       this.lastPrediction=prediction;return prediction;
     }
     chooseTactic(domain,options){
@@ -227,11 +241,15 @@
         const legacy=({'anti-air':this.outcomes.antiAir,intercept:this.outcomes.intercept,pressure:this.outcomes.pressure,feint:this.outcomes.feint})[option];const stat=this.tacticOutcomes[option]||legacy||{tries:0,value:0};
         const explore=(nightmare?.045:.14)*Math.sqrt(Math.log(known+2)/(stat.tries+1));
         const learned=stat.value*(nightmare?.48:.32);
-        const freshness=this.lastDirectorChoice[domain]===option?(nightmare?-.24:-.11):0;
-        return score+explore+learned+freshness+Math.random()*(nightmare?.006:.018);
+        const history=this.directorHistory[domain]||[];
+        const repeats=history.slice(-3).filter(previous=>previous===option).length;
+        const freshness=(this.lastDirectorChoice[domain]===option?(nightmare?-.24:-.11):0)-repeats*(nightmare?.16:.1);
+        const predictedCounters={jump:['ceiling-sweep','anti-air'],retreat:['intercept','retreat-punish','lunge','lead-shot'],still:['pulse','ring','flank','encircle'],dash:['feint','crossfire','shadow-rush'],sprint:['lead-shot','collapse-wave','pinch'],strafeLeft:['crossfire','lead-shot'],strafeRight:['crossfire','lead-shot']};
+        const counterBonus=(predictedCounters[action]||[]).includes(option)?confidence*(nightmare?.34:.2):0;
+        return score+explore+learned+freshness+counterBonus+Math.random()*(nightmare?.006:.018);
       };
       const ranked=options.map(option=>({option,score:utility(option)})).sort((a,b)=>b.score-a.score);
-      const choice=ranked[0].option;this.lastDirectorChoice[domain]=choice;this.directorDecisions++;
+      const choice=ranked[0].option;this.lastDirectorChoice[domain]=choice;this.directorHistory[domain]=[...(this.directorHistory[domain]||[]),choice].slice(-8);this.directorDecisions++;
       this.record('director-decision',{domain,choice,ranking:ranked.map(x=>({option:x.option,score:+x.score.toFixed(3)})),prediction,profile:{jump:+p.jump.toFixed(2),dash:+p.dash.toFixed(2),retreat:+p.retreat.toFixed(2),sprint:+p.sprint.toFixed(2),repeat:+p.repeat.toFixed(2)}});
       return choice;
     }
