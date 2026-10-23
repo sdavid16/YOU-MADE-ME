@@ -97,7 +97,7 @@
     enterWorld4(){
       this.world=4;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;
       const L=YMM.Levels.world4;L.shards.forEach(s=>s.taken=false);
-      this.sentinels=L.sentinels.map((s,i)=>({...s,id:i,attackTimer:1.1+i*.55,stun:0,hitFlash:0}));
+      this.sentinels=L.sentinels.map((s,i)=>({...s,id:i,role:['hunter','flanker','warden'][i],attackTimer:1.1+i*.55,windup:0,stun:0,hitFlash:0}));
       this.player={x:2.5,y:1.5,angle:0,vx:0,vy:0,health:4,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       this.ai.unlockInvasion();this.ai.speak('corruptor');this.ai.dialogueTimer=3.5;this.audio.play('portal');
       this.log('MUNDO 04: la IA ha convertido el código en arquitectura. Busca tres fragmentos y encuentra la salida.','danger');
@@ -135,9 +135,19 @@
         else this.particles.burst(500,300,'#72f3dc',6,55);
       }
       if(this.input.justPressed('KeyE')&&Math.hypot(p.x-L.exit.x,p.y-L.exit.y)<1.25){if(this.fragments>=3)this.enterWorld5();else this.toast('SALIDA BLOQUEADA: '+(3-this.fragments)+' FRAGMENTOS PENDIENTES');}
-      for(const s of this.sentinels){if(s.hp<=0)continue;s.stun=Math.max(0,s.stun-dt);s.hitFlash=Math.max(0,s.hitFlash-dt);s.attackTimer-=dt;const d=Math.hypot(p.x-s.x,p.y-s.y);
-        if(d<6&&s.stun<=0){const a=Math.atan2(p.y-s.y,p.x-s.x),step=Math.min(.85*dt,Math.max(0,d-.62)),nx=s.x+Math.cos(a)*step,ny=s.y+Math.sin(a)*step;if(!this.isWorld4Wall(nx,ny)){s.x=nx;s.y=ny;}}
-        if(d<.72&&s.attackTimer<=0&&p.invuln<=0){s.attackTimer=1.5;this.damagePlayer(1,'El centinela ha cerrado la distancia. Gira, ataca y rompe su avance.');}
+      for(const s of this.sentinels){
+        if(s.hp<=0)continue;s.stun=Math.max(0,s.stun-dt);s.hitFlash=Math.max(0,s.hitFlash-dt);s.attackTimer-=dt;s.windup=Math.max(0,s.windup-dt);
+        const d=Math.hypot(p.x-s.x,p.y-s.y),a=Math.atan2(p.y-s.y,s.x-p.x);
+        if(d<6&&s.stun<=0){
+          let tx=p.x,ty=p.y;
+          if(s.role==='flanker'){const side=s.id%2?1:-1;tx=p.x+Math.cos(a+Math.PI/2*side)*.9+p.vx*.004;ty=p.y+Math.sin(a+Math.PI/2*side)*.9+p.vy*.004;}
+          if(s.role==='warden'&&d<2.5){tx=s.x;ty=s.y;}
+          const ang=Math.atan2(ty-s.y,tx-s.x),step=Math.min((s.role==='flanker'?.72:.85)*dt,Math.max(0,Math.hypot(tx-s.x,ty-s.y)-(s.role==='warden'?2.2:.62))),nx=s.x+Math.cos(ang)*step,ny=s.y+Math.sin(ang)*step;
+          if(!this.isWorld4Wall(nx,ny)){s.x=nx;s.y=ny;}
+        }
+        if(s.role==='warden'&&d<4.1&&s.attackTimer<=0&&s.windup<=0){s.windup=.42;s.attackTimer=1.9;this.ai.record('warden-lock',{distance:+d.toFixed(2)});}
+        if(s.windup>0&&s.windup<=dt&&d<4.1&&p.invuln<=0){this.damagePlayer(1,'El centinela fijó tu posición. Muévete en cuanto veas la señal roja.');}
+        if(s.role!=='warden'&&d<.72&&s.attackTimer<=0&&p.invuln<=0){s.attackTimer=1.5;this.damagePlayer(1,'El cazador ha cerrado la distancia. Gira, ataca y rompe su avance.');}
       }
     }
     updateWorld5(dt){
