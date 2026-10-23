@@ -148,7 +148,7 @@
       if(seq.length>=3){
         const a=seq[seq.length-2].action,b=seq[seq.length-1].action;context=[a,b];
         for(let i=0;i<seq.length-2;i++)if(seq[i].action===a&&seq[i+1].action===b){const weight=Math.pow(.94,seq.length-2-i);const k=seq[i+2].action;counts[k]=(counts[k]||0)+weight;transitionN++;}
-        if(transitionN>=2)order=2;else counts={};
+        if(transitionN>=2)order=2;else{counts={};transitionN=0;}
       }
       if(!order&&last){
         for(let i=0;i<seq.length-1;i++)if(seq[i].action===last){const weight=Math.pow(.94,seq.length-1-i);const k=seq[i+1].action;counts[k]=(counts[k]||0)+weight;transitionN++;}
