@@ -23,7 +23,7 @@
       c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);
       c.fillStyle='rgba(114,243,220,.07)';c.fillRect(62,402,315,54);c.strokeStyle='rgba(114,243,220,.35)';c.strokeRect(62,402,315,54);
       c.fillStyle='#72f3dc';c.font='800 12px monospace';c.fillText('INICIA TU HISTORIA  [ ENTER ]',79,434);
-      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('← → MOVER  /  ESPACIO SALTAR  /  T PROVOCAR',62,505);c.fillText('NO NECESITAS PROVOCARLA. ESO ES LO PELIGROSO.',62,535);
+      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('← → MOVE  /  SPACE JUMP  /  SHIFT DASH',62,505);c.fillText('T MOCK  /  G CHALLENGE  /  ESC PAUSE',62,535);
       c.font='10px monospace';const scraps=['01001001','NULL//PLAYER','WHY_DO_YOU','MEMORY_OK','YOU_AGAIN','> LEARNING'];for(let i=0;i<scraps.length;i++){c.globalAlpha=.2;c.fillStyle=i%2?'#a18bff':'#ff617c';c.fillText(scraps[i],730,425+i*17);}c.globalAlpha=1;
     }
     drawWorld1(game){const c=this.ctx,L=YMM.Levels.world1,cam=YMM.Util.clamp(game.player.x-390,0,L.width-this.w),phase=game.ai.phase;this.gradient(phase>=2?'#1d1026':'#17284a',phase>=2?'#180d1c':'#090e1b');this.drawStars(game,cam,phase>=2?.55:1);c.save();
