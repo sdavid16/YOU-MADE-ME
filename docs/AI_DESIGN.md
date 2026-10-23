@@ -40,11 +40,16 @@ Los diálogos dependen de fase, tipo de provocación, repetición de frases, est
 
 El cuarto mundo usa una cuadrícula de colisiones, vista en primera persona por raycasting, tres fragmentos coleccionables y centinelas que persiguen al jugador y atacan a corta distancia. El jugador puede girar, desplazarse lateralmente, hacer dash y encadenar ataques ligeros/pesados. El quinto mundo incorpora un jefe con más salud, señales previas y cuatro familias de ataque: patrón directo, embestida, finta y onda de área. El jugador puede esquivar, usar una parada con ventana temporal corta y aprovechar la fase vulnerable para castigar el núcleo.
 
-La política del jefe consulta el perfil de conducta reciente para elegir el patrón. La IA registra aciertos y fallos de las contraestrategias y actualiza sus valores estimados durante la sesión.
+La política del jefe consulta el perfil de conducta reciente y un predictor de transiciones para elegir el patrón. El director añade exploración con valores de recompensa para evitar una respuesta fija; registra aciertos y fallos de cada amenaza y ajusta sus estimaciones.
 
-## 6. Limitaciones deliberadas
-- El renderizado del mundo 4 es perspectiva por raycasting sobre un mapa 2D, no geometría poligonal 3D ni un motor WebGL.
-- No hay aprendizaje entre sesiones.
-- El agente no entiende lenguaje libre: las provocaciones son acciones de juego conocidas.
-- No hay LLM ni entrenamiento de red neuronal.
-- La personalidad se representa mediante estados narrativos y diálogos escritos; la adaptación mecánica es real dentro de las reglas del juego.
+## 6. Director táctico y memoria entre mundos
+
+La directora de Fracture Run utiliza chooseTactic('runner', ...) para elegir entre barrido aéreo, grieta de suelo, salva de drones, sombra perseguidora y colapso en cadena. Cada opción puntúa hábitos recientes y la predicción de la siguiente acción; se añade exploración y una estimación aprendida de recompensas. Al terminar una amenaza se registra si alcanzó al jugador o fue esquivada. En la catedral tridimensional un director de escuadrón elige directivas compartidas —fuego cruzado, flanqueo, pinza o castigo de retirada— mientras cazador, flanqueador y guardián mantienen roles individuales. Los jefes de los mundos 3 y 6 también consultan el director táctico.
+
+El archivo ymm-ai-dossier-v1 de localStorage, cuando está disponible, guarda solo estadísticas agregadas de acciones y recompensas de tácticas: no almacena coordenadas, diálogo ni una transcripción de la partida. Si el navegador bloquea el almacenamiento, el juego sigue funcionando con aprendizaje limitado a la sesión.
+
+## 7. Limitaciones deliberadas
+- El mundo 4 usa raycasting sobre una cuadrícula 2D para simular perspectiva de primera persona; aún no es geometría poligonal 3D ni un motor WebGL.
+- El agente no entiende lenguaje libre: las provocaciones y el diálogo son acciones conocidas y líneas escritas.
+- No hay LLM ni entrenamiento de red neuronal. La complejidad está en la arquitectura de decisiones, los perfiles de conducta, la coordinación por roles y las recompensas online.
+- La personalidad se representa mediante estados narrativos y diálogo contextual; la adaptación mecánica opera dentro de las reglas del juego.
