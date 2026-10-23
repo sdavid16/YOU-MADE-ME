@@ -200,8 +200,8 @@
       const L=YMM.Levels.world7,nodeFactor=this.difficulty==='story'?.75:this.difficulty==='nightmare'?1.45:1;
       const enemyFactor=this.difficulty==='story'?.8:this.difficulty==='nightmare'?1.4:1;
       this.world=7;this.camera=0;this.signalExitToast=false;
-      this.signalNodes=L.nodes.map((n,id)=>({...n,id,hp:Math.ceil(n.hp*nodeFactor),maxHp:Math.ceil(n.maxHp*nodeFactor),hitFlash:0}));
-      this.signalEnemies=L.agents.map((e,id)=>({...e,id,spawnX:e.x,spawnY:e.y,hp:Math.ceil(e.hp*enemyFactor),maxHp:Math.ceil(e.maxHp*enemyFactor),vx:0,vy:0,stun:0,hitFlash:0}));
+      this.signalNodes=L.nodes.map((n,index)=>({...n,index,hp:Math.ceil(n.hp*nodeFactor),maxHp:Math.ceil(n.maxHp*nodeFactor),hitFlash:0}));
+      this.signalEnemies=L.agents.map((e,index)=>({...e,index,spawnX:e.x,spawnY:e.y,hp:Math.ceil(e.hp*enemyFactor),maxHp:Math.ceil(e.maxHp*enemyFactor),vx:0,vy:0,stun:0,hitFlash:0}));
       this.signalProjectiles=[];this.signalMines=[];this.signalTactic='crossfire';this.signalDirectorTimer=.8;this.signalKills=0;this.signalShotCount=0;
       const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
       this.player={x:488,y:300,w:24,h:24,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,specialCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,intelTimer:0};
@@ -438,7 +438,7 @@
         const toX=p.x+p.w/2-e.x,toY=p.y+p.h/2-e.y,dist=Math.hypot(toX,toY)||1;
         if(e.type==='hunter'&&e.stun<=0&&dist<510){
           let tx=p.x+p.w/2,ty=p.y+p.h/2;
-          if(this.signalTactic==='encircle'){const sign=e.id%2?1:-1;tx+=-toY/dist*sign*58;ty+=toX/dist*sign*58;}
+          if(this.signalTactic==='encircle'){const sign=e.index%2?1:-1;tx+=-toY/dist*sign*58;ty+=toX/dist*sign*58;}
           e.vx=(tx-e.x)/dist*91*scale;e.vy=(ty-e.y)/dist*91*scale;
           const ex=YMM.Util.clamp(e.x+e.vx*dt,arena.x+18,arena.x+arena.w-18),ey=YMM.Util.clamp(e.y+e.vy*dt,arena.y+18,arena.y+arena.h-18);
           if(!L.obstacles.some(o=>ex>=o.x&&ex<=o.x+o.w&&ey>=o.y&&ey<=o.y+o.h)){e.x=ex;e.y=ey;}
