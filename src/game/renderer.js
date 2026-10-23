@@ -9,7 +9,7 @@
     render(game){const c=this.ctx;c.clearRect(0,0,this.w,this.h);this.scanOffset=(this.scanOffset+1)%8;
       if(this.lastWorld===null){this.lastWorld=game.world;this.lastScreen=game.screen;}
       else if(game.screen==='playing'&&this.lastScreen==='playing'&&game.world!==this.lastWorld)this.beginWorldTransition(this.lastWorld,game.world,game.clock);
-      if(game.screen==='menu')this.drawMenu(game);else if(game.screen==='ending')this.drawEnding(game);else if(game.world===1)this.drawWorld1(game);else if(game.world===2)this.drawWorld2(game);else if(game.world===3)this.drawWorld3(game);else if(game.world===4)this.drawWorld4(game);else if(game.world===5)this.drawWorld5(game);else if(game.world===6)this.drawWorld6(game);else if(game.world===7)this.drawWorld7(game);else if(game.world===8)this.drawWorld4(game);
+      if(game.screen==='menu')this.drawMenu(game);else if(game.screen==='ending')this.drawEnding(game);else if(game.world===1)this.drawWorld1(game);else if(game.world===2)this.drawWorld2(game);else if(game.world===3)this.drawWorld3(game);else if(game.world===4)this.drawWorld4(game);else if(game.world===5)this.drawWorld5(game);else if(game.world===6)this.drawWorld6(game);else if(game.world===7)this.drawWorld7(game);else if(game.world===8||game.world===9){if(!game.webglReady)this.drawWorld4(game);}else if(game.world===10)this.drawWorld7(game);
       if(game.screen==='playing')this.drawGameHUD(game);
       game.particles.draw(c);if(game.ai.phase>=2&&game.screen==='playing')this.drawGlitch(game);
       if(game.screen==='playing'&&game.player.intelTimer>0)this.drawIntelReadout(game);
@@ -17,12 +17,12 @@
       if(this.transition)this.drawWorldTransition(game);
       this.drawScanlines();this.lastWorld=game.world;this.lastScreen=game.screen;
     }
-    beginWorldTransition(from,to,clock){const style={2:'scan',3:'surge',4:'portal',5:'fracture',6:'iris',7:'circuit',8:'archive'}[to]||'scan';this.transition={from,to,style,start:clock,duration:1.05};}
+    beginWorldTransition(from,to,clock){const style={2:'scan',3:'surge',4:'portal',5:'fracture',6:'iris',7:'circuit',8:'archive',9:'echo',10:'singularity'}[to]||'scan';this.transition={from,to,style,start:clock,duration:1.05};}
     drawWorldTransition(game){
       const t=this.transition;if(!t)return;const c=this.ctx,progress=Math.max(0,Math.min(1,(game.clock-t.start)/t.duration));
       if(progress>=1){this.transition=null;return;}
       const alpha=Math.sin(progress*Math.PI),W=this.w,H=this.h;
-      const palette={2:[114,243,220],3:[255,97,124],4:[161,139,255],5:[255,207,121],6:[255,97,124],7:[114,243,220],8:[184,160,255]}[t.to]||[114,243,220];
+      const palette={2:[114,243,220],3:[255,97,124],4:[161,139,255],5:[255,207,121],6:[255,97,124],7:[114,243,220],8:[184,160,255],9:[216,108,255],10:[255,97,124]}[t.to]||[114,243,220];
       c.save();c.globalAlpha=.1+alpha*.38;c.fillStyle='rgb('+palette.join(',')+')';c.fillRect(0,0,W,H);
       if(t.style==='scan'){
         for(let i=0;i<18;i++){const y=((i*47+progress*H*1.6)%(H+50))-25;c.globalAlpha=alpha*(.08+(i%3)*.025);c.fillRect(0,y,W,2+(i%3));}
