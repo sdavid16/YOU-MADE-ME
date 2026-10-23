@@ -66,6 +66,18 @@ El agente combina un perfil móvil de conducta, un predictor de secuencias de do
 
 No es un LLM ni una red neuronal entrenada. Es una IA de juego local con predicción y aprendizaje online; no genera diálogo abierto ni realiza inferencia con un modelo remoto. La renderización WebGL usa Three.js desde una CDN, pero no transmite datos del jugador.
 
+## Progresión, contratos y mejoras
+
+El dossier de campaña se abre con **M** o desde el botón **DOSSIER**. El perfil local registra experiencia, créditos, mundos visitados, tiempo acumulado, provocaciones, objetos, daños y logros. Los contratos rotan por día y permiten reclamar recompensas una sola vez por contrato. La economía ofrece seis líneas de mejora: integridad, resistencia, dash, análisis táctico, experiencia adicional y blindaje. Los efectos se aplican a las sesiones y los mundos nuevos; el perfil se guarda en el almacenamiento local del navegador.
+
+El progreso no requiere cuenta ni servidor y permanece en ese navegador. Borrar los datos del sitio elimina el perfil. La detección de bajas usa cambios en los grupos de enemigos y es una métrica aproximada, no un sistema de estadísticas autoritativo.
+
+## Móvil e instalación
+
+La interfaz incorpora controles táctiles para movimiento, salto/ataque, dash e interacción, visibles en pantallas pequeñas o dispositivos táctiles. Se añadió un manifiesto PWA, icono escalable y service worker para guardar en caché el núcleo del juego. Para instalarlo desde el navegador, publícalo en un origen HTTPS y usa la opción **Instalar aplicación** o **Añadir a pantalla de inicio**, según el navegador.
+
+**Esto todavía no es un paquete de Google Play.** Para publicar en Play Store hace falta envolver la web con Android (por ejemplo, Capacitor o Trusted Web Activity), configurar el identificador de aplicación, generar y firmar un AAB, probar dispositivos reales y preparar la ficha de tienda. La escena 3D depende de Three.js en una CDN y no estará disponible sin conexión si esa biblioteca no se ha cargado antes.
+
 ## Desarrollo y pruebas
 
 Con Node.js instalado, ejecuta:
