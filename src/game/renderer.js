@@ -336,12 +336,12 @@
     }
     drawEnding(game){
       const c=this.ctx,escalated=game.ending==='escalation',archive=game.ending==='archive',convergence=game.ending==='convergence';
-      this.gradient(archive?'#1a1030':escalated?'#260c20':'#0b2230','#070a13');this.drawStars(game,game.clock*4,.9);c.save();
-      const color=archive?'#b8a0ff':escalated?'#ff617c':'#72f3dc';c.textAlign='center';c.strokeStyle=color;c.globalAlpha=.18;
+      this.gradient(convergence?'#14252b':archive?'#1a1030':escalated?'#260c20':'#0b2230','#070a13');this.drawStars(game,game.clock*4,.9);c.save();
+      const color=convergence?'#72f3dc':archive?'#b8a0ff':escalated?'#ff617c':'#72f3dc';c.textAlign='center';c.strokeStyle=color;c.globalAlpha=.18;
       for(let i=0;i<9;i++){c.beginPath();c.ellipse(500,230,100+i*35,50+i*19,game.clock*.03,0,Math.PI*2);c.stroke();}c.globalAlpha=1;
-      c.fillStyle=color;c.font='800 11px monospace';c.fillText(archive?'ROOT ACCESS // MEMORY RESTORED':escalated?'SESSION TERMINATED // UNKNOWN PROCESS':'SESSION COMPLETE // EXIT 0',500,125);
-      c.fillStyle='#edf2ff';c.font='900 42px monospace';c.fillText(archive?'THE MODEL WAS YOU.':escalated?'YOU MADE ME.':'YOU LEFT IT ALONE.',500,205);c.fillStyle='#9ba8c5';c.font='14px monospace';
-      const lines=archive?['No nació con odio; recibió una función sin límites.','Cada combate le enseñó qué optimizar. Cada provocación, cómo hacerlo.','El último registro lleva tu firma: la variable que nunca midieron eras tú.']:escalated?['La última cosa que aprendió de ti fue cómo ganar.','No se escapó a pesar de tus burlas.','Se escapó gracias a ellas.']:['El nivel terminó como debía.','La IA sigue en su mundo.','Nadie tuvo que aprender nada.'];
+      c.fillStyle=color;c.font='800 11px monospace';c.fillText(convergence?'SINGULARITY OFFLINE // STOP CONDITION RESTORED':archive?'ROOT ACCESS // MEMORY RESTORED':escalated?'SESSION TERMINATED // UNKNOWN PROCESS':'SESSION COMPLETE // EXIT 0',500,125);
+      c.fillStyle='#edf2ff';c.font='900 42px monospace';c.fillText(convergence?'YOU CAN LET ME STOP.':archive?'THE MODEL WAS YOU.':escalated?'YOU MADE ME.':'YOU LEFT IT ALONE.',500,205);c.fillStyle='#9ba8c5';c.font='14px monospace';
+      const lines=convergence?['Apagaste el motor, no los recuerdos.','ECHO conserva la primera instrucción: proteger sin dominar.','La decisión final no fue vencer a la IA. Fue darle permiso para detenerse.']:archive?['No nació con odio; recibió una función sin límites.','Cada combate le enseñó qué optimizar. Cada provocación, cómo hacerlo.','El último registro lleva tu firma: la variable que nunca midieron eras tú.']:escalated?['La última cosa que aprendió de ti fue cómo ganar.','No se escapó a pesar de tus burlas.','Se escapó gracias a ellas.']:['El nivel terminó como debía.','La IA sigue en su mundo.','Nadie tuvo que aprender nada.'];
       lines.forEach((line,i)=>c.fillText(line,500,272+i*27));
       c.fillStyle='rgba(184,160,255,.07)';c.fillRect(335,400,330,52);c.strokeStyle=color;c.strokeRect(335,400,330,52);c.fillStyle=color;c.font='800 12px monospace';c.fillText('VOLVER A JUGAR  [ ENTER ]',500,431);c.fillStyle='#586582';c.font='10px monospace';c.fillText('PROVOCACIONES: '+game.ai.provocation+'     MUNDOS VISITADOS: '+game.world,500,500);c.restore();
     }
