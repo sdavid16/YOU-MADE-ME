@@ -115,10 +115,14 @@ assert(g.boss.phase==='telegraph'&&g.boss.attackType==='ring','final boss select
 g.renderer.render(g);
 g.boss.phase='vulnerable';g.boss.timer=1;g.boss.x=g.player.x+20;g.boss.y=g.player.y;g.player.attackTimer=0;g.input.pressed.add('KeyF');g.input.down.add('KeyF');g.updateWorld6(.016);g.input.pressed.clear();g.input.down.clear();
 assert(g.boss.hp===12,'heavy attack deals two damage during vulnerability');
-/* World seven changes the game genre: top-down shooter, destructible relays, and an adaptive enemy director. */
-g.enterWorld7();
+/* Nightmare raises pressure and deploys a larger force. */
+g.difficulty='nightmare';g.enterWorld7();
+assert(g.difficultyScale===1.62,'Nightmare has a materially higher pressure multiplier');
+assert(g.signalEnemies.length===7,'Nightmare deploys two extra Signal Break agents');
+g.difficulty='normal';g.enterWorld7();
+/* Signal Break unlocks the final first-person archive instead of ending early. */
 g.renderer.render(g);assert(g.renderer.transition&&g.renderer.transition.style==='circuit','world seven uses a distinct circuit transition');
-assert(g.world===7&&g.signalNodes.length===3&&g.signalEnemies.length===5,'Signal Break initializes relays and varied shooter agents');
+assert(g.world===7&&g.signalNodes.length===3&&g.signalEnemies.length===5,'Signal Break initializes relays and varied agents on Normal');
 assert(['crossfire','lead-shot','encircle','minefield'].includes(g.ai.chooseTactic('shooter',['crossfire','lead-shot','encircle','minefield'])),'shooter director selects a valid tactical formation');
 g.player.invuln=10;g.input.pressed.add('KeyJ');g.updateWorld7(.016);g.input.pressed.clear();
 assert(g.signalProjectiles.some(b=>b.from==='player'),'J launches player pulse projectile');
@@ -129,7 +133,16 @@ g.input.pressed.add('KeyE');g.updateWorld7(.016);g.input.pressed.clear();
 assert(g.screen==='playing','Signal Break exit remains locked while relays are active');
 for(const n of g.signalNodes)n.hp=0;
 g.input.pressed.add('KeyE');g.updateWorld7(.016);g.input.pressed.clear();
-assert(g.screen==='ending'&&g.ending==='escalation','destroying all relays opens the Signal Break ending');
+assert(g.world===8&&g.screen==='playing','disabling relays opens the final archive world');
+g.renderer.render(g);assert(g.renderer.transition&&g.renderer.transition.style==='archive','world eight has a distinct archive transition');
+assert(g.fragments===0&&g.sentinels.length===6&&sandbox.YMM.Levels.world8.shards.length===4,'Black Archive initializes a new map, six guards and four story records');
+g.player.x=sandbox.YMM.Levels.world8.exit.x;g.player.y=sandbox.YMM.Levels.world8.exit.y;g.input.pressed.add('KeyE');g.updateWorld4(.016);g.input.pressed.clear();
+assert(g.screen==='playing','Black Archive exit stays locked until all four records');
+for(const shard of sandbox.YMM.Levels.world8.shards){g.player.x=shard.x;g.player.y=shard.y;g.player.invuln=10;g.updateWorld4(.016);}
+assert(g.fragments===4,'all four archive records can be collected');
+assert(g.logHistory.some(item=>String(item.message).includes('REGISTRO 04')),'archive records expose campaign backstory');
+g.player.x=sandbox.YMM.Levels.world8.exit.x;g.player.y=sandbox.YMM.Levels.world8.exit.y;g.input.pressed.add('KeyE');g.updateWorld4(.016);g.input.pressed.clear();
+assert(g.screen==='ending'&&g.ending==='archive','four records unlock the campaign true ending');
 g.renderer.render(g);
 // Aggregate behavior and reward estimates survive a fresh AI run when browser storage is available.
 g.ai.longTermDossier.actionCounts.jump=17;g.ai.tacticOutcomes['drone-salvo']={tries:4,hits:2,value:.5};
