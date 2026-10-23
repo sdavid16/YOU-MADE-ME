@@ -3,8 +3,10 @@
   class Input {
     constructor() {
       this.down = new Set(); this.pressed = new Set(); this.released = new Set();
-      this.codes = new Set(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','Enter','Escape','KeyA','KeyD','KeyW','KeyS','KeyT','KeyG','KeyE','KeyJ','KeyR','KeyF','KeyQ','ControlLeft','ControlRight','ShiftLeft','ShiftRight']);
+      this.codes = new Set(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','Enter','Escape','KeyA','KeyD','KeyW','KeyS','KeyT','KeyG','KeyE','KeyJ','KeyR','KeyF','KeyQ','Digit1','Digit2','Digit3','Digit4','ControlLeft','ControlRight','ShiftLeft','ShiftRight']);
       window.addEventListener('keydown', e => {
+        const target=e.target,tag=target&&target.tagName?String(target.tagName).toUpperCase():'';
+        if(target&&(target.isContentEditable||tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'))return;
         if (this.codes.has(e.code)) e.preventDefault();
         if (!this.down.has(e.code)) this.pressed.add(e.code);
         this.down.add(e.code);

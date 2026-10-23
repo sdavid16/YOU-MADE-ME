@@ -1,50 +1,70 @@
 # YOU MADE ME
 
-Un juego 2D retro de ciencia ficción: empiezas burlándote de un enemigo torpe y le enseñas, sin querer, a jugar contra ti.
+Un juego de ciencia ficción sobre una IA que empieza siendo una broma y termina aprendiendo a jugar contra ti. La campaña combina plataformas, laberinto, combates contra jefes, primera persona y un shooter táctico.
 
 ## Ejecutar
 
-Descarga el ZIP del repositorio y abre `index.html` en un navegador moderno. No necesitas Python, npm, terminal, servidor local ni dependencias externas. El juego usa Canvas, scripts locales clásicos y gráficos dibujados por código; el capítulo de primera persona usa raycasting para la perspectiva.
+Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No necesitas Python, npm, terminal, servidor local ni dependencias externas. Todo se dibuja con Canvas y JavaScript. El mundo 4 simula perspectiva 3D con raycasting; no es un motor WebGL con modelos poligonales.
+
+## Campaña: siete mundos
+
+1. **Greenhill.exe** — plataformas, sprint con resistencia, salto, dash, ataques y plataformas que se resquebrajan.
+2. **Memory Maze** — laberinto, tres fragmentos, terminal y portal.
+3. **No Longer a Joke** — jefe que selecciona cargas, fintas, intercepciones y ondas según tus hábitos.
+4. **The Null Cathedral** — primera persona, minimapa, fragmentos y escuadrón de cazador, flanqueador y guardián.
+5. **Fracture Run** — persecución horizontal por cinco biomas fusionados. El suelo puede colapsar, aparecen grietas y proyectiles, hay puntos de anclaje y la aliada ECHO puede interrumpir hostiles.
+6. **The Last Argument** — jefe final con ataques de área, fintas, embestidas, ventana vulnerable y parada temporizada.
+7. **Signal Break** — shooter táctico cenital. Destruye tres repetidores, sobrevive a escuadrones con diferentes roles y activa la salida.
+
+### Derrumbes sin bloqueo de ruta
+
+Las superficies frágiles muestran advertencias antes de caer. Los restos dejan puentes más estrechos con huecos diseñados para poder saltarse; no desaparece toda la colisión de un lado al otro. Los puntos de anclaje restauran la geometría local al morir. El objetivo es hacer peligrosa la ruta, no convertirla en una ruta imposible.
 
 ## Controles
 
-- **Mundo 1:** ←/→ o A/D para moverte; Espacio/W/↑ para saltar; Ctrl para correr; Shift para esquivar; J ataque ligero; F ataque pesado; T para burlarte; G para desafiar; Esc para pausar.
-- **Mundo 2:** flechas o WASD para moverte, recoge los 3 fragmentos, acércate al terminal y pulsa E, luego llega al portal.
-- **Mundo 3:** flechas o WASD para moverte; Shift para esquivar; J para atacar durante la ventana en que el núcleo queda expuesto.
-- **Mundo 4 (primera persona 3D por raycasting):** W/S avanzar o retroceder; ←/→ girar; A/D desplazamiento lateral; J/Espacio ataque; F golpe fuerte; Shift dash; E activar la salida cuando tengas los 3 fragmentos.
-- **Mundo 5 (Fracture Run):** avanzar automáticamente; Ctrl/D acelera; A/flecha izquierda frena; Espacio salta; Shift dash; J/F ataca; Q activa el pulso táctico de ECHO.
-- **Mundo 6 (arena final):** WASD/flechas moverte; J/Espacio ataque ligero; F ataque pesado; E parada perfecta; Shift dash. Ataca el núcleo solo cuando esté expuesto.
-- **R** reinicia la sesión. Los controles de sonido y pantalla completa están en la esquina superior derecha.
+- **Mundo 1:** ←/→ o A/D moverte; Espacio/W/↑ saltar; Ctrl correr; Shift esquivar; J ataque ligero; F pesado; T abrir la consola de provocación; G desafío de alto riesgo.
+- **Mundo 2:** WASD/flechas moverte; recoge tres fragmentos; E junto al terminal; llega al portal.
+- **Mundo 3:** WASD/flechas moverte; Shift esquivar; J atacar cuando el núcleo está expuesto.
+- **Mundo 4:** W/S avanzar; ←/→ girar; A/D desplazamiento lateral; J/Espacio atacar; F golpe fuerte; Shift dash; E salida tras obtener tres fragmentos.
+- **Mundo 5:** avance automático; Ctrl/D acelerar; A/← frenar; Espacio saltar; Shift dash; J/F atacar; Q pulso de ECHO.
+- **Mundo 6:** WASD/flechas moverte; J/Espacio ataque ligero; F pesado; E parada perfecta; Shift dash.
+- **Mundo 7:** WASD/flechas moverte; J dispara un pulso; F activa un EMP de área con enfriamiento; Shift dash; E activa la salida tras destruir todos los repetidores.
+- **R** reinicia la sesión. Los botones superiores controlan sonido, pantalla completa y reinicio.
 
-## Campaña ampliada
+## Provocación verbal: una mecánica jugable
 
-La campaña contiene seis mundos conectados: plataformas que ahora incluyen superficies colapsables y combate cuerpo a cuerpo; laberinto de memoria; jefe adaptativo; catedral en primera persona renderizada con raycasting, minimapa, centinelas y combate; **Fracture Run**, una persecución que fusiona cinco biomas y mezcla suelo desmoronable, trampas, drones, brutos, rivales, proyectiles y un personaje aliado; y una arena final con ataques de área, fintas, embestidas, ataques ligeros/pesados y parada temporizada.
+Pulsa **T** durante la partida para abrir la consola. Puedes elegir cuatro estrategias verbales o escribir una frase propia de hasta 140 caracteres:
 
-El mundo 4 usa renderizado de perspectiva por raycasting, una técnica clásica de juegos en primera persona; no es un escenario de mallas 3D con WebGL. Todo se dibuja localmente en Canvas y no requiere Python ni servidor.
+- **Inteligencia:** provoca una respuesta contextual de la IA.
+- **Lógica/código:** abre durante unos segundos una ventana de análisis táctico; los movimientos y ataques de la IA se ralentizan.
+- **Amenaza:** opción de riesgo; acelera la próxima respuesta o amenaza según el mundo.
+- **Guerra psicológica:** puede interrumpir brevemente a enemigos cercanos o retrasar el siguiente patrón.
+- **Texto libre:** un clasificador local de palabras clave identifica la intención aproximada y selecciona la respuesta correspondiente.
 
-## La IA del juego
+Las teclas 1–4 activan las estrategias predefinidas con la consola abierta; Escape la cierra. El sistema no comprende cualquier texto como lo haría un modelo de lenguaje: clasifica palabras y expresiones conocidas. La frase solo se muestra brevemente en pantalla y no se guarda en el dossier. Se registran el tipo y la longitud, no una transcripción.
 
-El sistema ahora combina varios niveles de decisión: un perfil conductual móvil, un predictor de transiciones que estima qué acción es probable después de la última, un selector táctico contextual con exploración tipo bandido y una memoria compartida de sucesos para las amenazas del escenario. La directora de Fracture Run selecciona entre barrido aéreo, grieta de suelo, salvas de drones, sombra perseguidora y colapso en cadena según el estilo observado.
+## Dificultad
 
-La política aprende además de los resultados: registra qué contraestrategias consiguieron alcanzar al jugador y actualiza su valor estimado mediante recompensas observadas, explorando ocasionalmente otras opciones. En fases posteriores el jefe cambia sus ataques según esos patrones: carga directa, intercepción predictiva, fintas contra esquivas y pulsos de área contra jugadores que permanecen quietos.
+El botón superior **DIF** alterna entre:
 
-Los enemigos del quinto mundo tienen roles distintos: perseguidor, dron de disparo, bruto de carga, rival que copia tu ritmo y guardián a distancia. ECHO mantiene una posición de apoyo, advierte sobre plataformas inestables y emite un pulso que interrumpe hostiles. Las plataformas y algunos segmentos del suelo pasan de estables a advertencia, caída y desaparición; los puntos de anclaje reconstruyen una sección al morir. El director también actualiza las estimaciones de las amenazas mediante recompensas observadas. Los diálogos dependen de la fase, la conducta y los acontecimientos. Todo funciona localmente y sin conexión. Cuando el navegador permite localStorage, se conserva un dossier de estadísticas agregadas para influir ligeramente en partidas futuras; no se guardan coordenadas ni transcripciones. Si el almacenamiento está bloqueado, el juego sigue funcionando con la memoria de la sesión. **No es un LLM ni una red neuronal entrenada**: es una IA de juego adaptativa basada en predicción de acciones, dirección táctica contextual, coordinación de roles y aprendizaje de recompensas.
+- **Historia:** más salud y mayor margen para responder; avisos más largos.
+- **Normal:** ajuste predeterminado.
+- **Pesadilla:** menos margen de invulnerabilidad, enemigos más resistentes o rápidos y amenazas más frecuentes.
 
-## Estructura
+La dificultad afecta varias mecánicas, no solo una etiqueta de interfaz.
 
-- `src/core/`: utilidades, bus de eventos, entrada y audio.
-- `src/game/`: mundos, IA, partículas, renderizado y lógica.
-- `src/ui/`: interfaz de estado y controles.
-- `assets/css/style.css`: modo de pantalla completa.
-- `tests/smoke.cjs`: prueba de progresión sin dependencias.
-- `index.html`: punto de entrada local.
+## IA táctica
 
-## Validación
+El agente combina un perfil móvil de conducta, predicción de transiciones entre acciones, elección contextual de tácticas y aprendizaje mediante recompensas observadas. Los directores de los mundos 4, 5, 6 y 7 usan distintas políticas, y los personajes tienen roles específicos. El dossier opcional de `localStorage` guarda únicamente estadísticas agregadas entre partidas, nunca coordenadas ni textos de provocación. Si el navegador bloquea el almacenamiento, el juego sigue funcionando.
 
-Con Node.js instalado, ejecuta opcionalmente:
+No es un LLM ni una red neuronal entrenada. Es una arquitectura de IA de juego en JavaScript diseñada para adaptarse sin conexión ni claves de API.
+
+## Desarrollo y pruebas
+
+Con Node.js instalado, ejecuta:
 
 ```bash
 node tests/smoke.cjs
 ```
 
-No necesitas Node.js para jugar. Consulta `QA_REPORT.md` para conocer el alcance de las pruebas.
+GitHub Actions ejecuta verificaciones sintácticas y pruebas de progresión. Consulta [Actions](https://github.com/sdavid16/YOU-MADE-ME/actions). Las pruebas automatizadas no sustituyen un playtest manual de toda la campaña.

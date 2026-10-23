@@ -3,18 +3,31 @@ YOU MADE ME — INICIO RÁPIDO
 1. Descarga el ZIP del repositorio.
 2. Descomprime la carpeta completa manteniendo la estructura de archivos.
 3. Abre index.html con doble clic.
-4. No necesitas Python, terminal, npm, servidor local ni bibliotecas externas. El mundo 4 utiliza perspectiva por raycasting, dibujada en Canvas. El mundo 5 fusiona cinco biomas con suelo y plataformas colapsables, enemigos de distintas clases y una aliada táctica.
+4. No necesitas Python, terminal, npm, servidor local ni bibliotecas externas.
+
+SIETE MUNDOS
+1. Greenhill: plataformas, salto, carrera y combate.
+2. Memory Maze: recoge tres fragmentos, activa el terminal con E y llega al portal.
+3. No Longer a Joke: jefe adaptativo.
+4. The Null Cathedral: primera persona por raycasting, tres fragmentos y centinelas.
+5. Fracture Run: carrera por cinco biomas, suelo y plataformas frágiles, puntos de anclaje y ECHO.
+6. The Last Argument: jefe final con parada perfecta.
+7. Signal Break: shooter cenital. Destruye tres repetidores y abre la salida.
 
 CONTROLES
-Mundo 1: flechas/A-D mover · Espacio/W/↑ saltar · Ctrl correr · Shift esquivar · J ligero · F pesado · T burla · G desafío · Esc pausa.
-Mundo 2: flechas o WASD mover · recoger 3 fragmentos · E junto al terminal · ir al portal.
-Mundo 3: flechas o WASD mover · Shift esquivar · J atacar cuando el núcleo se expone.
-Mundo 4 (primera persona): W/S avanzar · ←/→ girar · A/D desplazamiento lateral · J/Espacio atacar · F golpe fuerte · Shift dash · E abrir la salida con 3 fragmentos.
-Mundo 5 (Fracture Run): Ctrl/D acelerar · A/flecha izquierda frenar · Espacio saltar · Shift dash · J/F atacar · Q pulso de ECHO.
-Mundo 6 (jefe final): WASD/flechas mover · J/Espacio ataque ligero · F pesado · E parada perfecta · Shift dash.
-R reinicia. Los botones de sonido, pantalla completa y reinicio aparecen arriba a la derecha.
+Mundo 1: flechas/A-D mover · Espacio/W/↑ saltar · Ctrl correr · Shift esquivar · J ligero · F pesado · T consola verbal · G desafío.
+Mundo 2: WASD/flechas mover · recoger 3 fragmentos · E junto al terminal · ir al portal.
+Mundo 3: WASD/flechas mover · Shift esquivar · J atacar cuando el núcleo está expuesto.
+Mundo 4: W/S avanzar · ←/→ girar · A/D desplazamiento lateral · J/Espacio ataque · F fuerte · Shift dash · E salida.
+Mundo 5: Ctrl/D acelerar · A/← frenar · Espacio saltar · Shift dash · J/F atacar · Q pulso de ECHO.
+Mundo 6: WASD/flechas mover · J/Espacio ligero · F pesado · E parada perfecta · Shift dash.
+Mundo 7: WASD/flechas mover · J disparar · F EMP · Shift dash · E activar salida después de destruir los tres repetidores.
+
+PROVOCACIÓN
+Pulsa T para abrir la consola verbal. Elige inteligencia, lógica/código, amenaza o guerra psicológica, o escribe una frase de hasta 140 caracteres. El clasificador local selecciona una respuesta contextual; lógica facilita brevemente la lectura táctica, la amenaza acelera el siguiente patrón y psicología puede interrumpir a los enemigos. 1–4 son atajos; Escape cierra.
+
+DIFICULTAD
+El botón superior DIF alterna Historia, Normal y Pesadilla.
 
 IA
-El antagonista usa un perfil conductual, predicción de la próxima acción y un director táctico con exploración y aprendizaje de recompensas. La directora de Fracture Run elige amenazas según tus saltos, dash, quietud, sprint y repetición. Los enemigos tienen roles distintos y ECHO puede interrumpirlos con Q. No usa servicios en la nube; todo está implementado en JavaScript. Si el navegador permite almacenamiento local, conserva estadísticas agregadas de conducta y tácticas entre partidas, sin guardar posiciones ni transcripciones.
-
-Si quieres ejecutar las pruebas de desarrollo, necesitas Node.js; no es necesario para jugar.
+El juego combina perfil conductual, predicción de acciones, elección de amenazas, coordinación por roles y aprendizaje de recompensas. Si el navegador permite almacenamiento local, mantiene estadísticas agregadas entre partidas; no guarda coordenadas ni transcripciones. No usa servicios de IA externos.
