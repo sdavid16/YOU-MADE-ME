@@ -20,10 +20,10 @@
       c.textAlign='left';c.fillStyle='#72f3dc';c.font='800 11px monospace';c.fillText('AN EXPERIMENT IN PLAYER AGENCY',62,119);
       c.fillStyle='#f0f4ff';c.font='900 62px monospace';c.fillText('YOU MADE',58,190);c.fillStyle='#72f3dc';c.fillText('ME.',58,250);
       c.fillStyle='#9daac8';c.font='14px monospace';c.fillText('THE ENEMY IS THE JOKE.',62,292);c.fillText("UNTIL IT ISN'T.",62,314);
-      c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);
+      c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);c.fillStyle='#72f3dc';c.font='800 10px monospace';c.fillText('05 WORLDS  /  ADAPTIVE HUNTER  /  FIRST-PERSON CHAPTER',62,390);
       c.fillStyle='rgba(114,243,220,.07)';c.fillRect(62,402,315,54);c.strokeStyle='rgba(114,243,220,.35)';c.strokeRect(62,402,315,54);
       c.fillStyle='#72f3dc';c.font='800 12px monospace';c.fillText('INICIA TU HISTORIA  [ ENTER ]',79,434);
-      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('← → MOVE  /  SPACE JUMP  /  SHIFT DASH',62,505);c.fillText('T MOCK  /  G CHALLENGE  /  ESC PAUSE',62,535);
+      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('← → MOVE  /  SPACE JUMP  /  SHIFT DASH',62,505);c.fillText('T MOCK  /  G CHALLENGE  /  ESC PAUSE',62,535);c.fillStyle='#52647e';c.font='9px monospace';c.fillText('THE RULES CHANGE AFTER EVERY WORLD.',62,558);
       c.font='10px monospace';const scraps=['01001001','NULL//PLAYER','WHY_DO_YOU','MEMORY_OK','YOU_AGAIN','> LEARNING'];for(let i=0;i<scraps.length;i++){c.globalAlpha=.2;c.fillStyle=i%2?'#a18bff':'#ff617c';c.fillText(scraps[i],730,425+i*17);}c.globalAlpha=1;
     }
     drawWorld1(game){const c=this.ctx,L=YMM.Levels.world1,cam=YMM.Util.clamp(game.player.x-390,0,L.width-this.w),phase=game.ai.phase;this.gradient(phase>=2?'#1d1026':'#17284a',phase>=2?'#180d1c':'#090e1b');this.drawStars(game,cam,phase>=2?.55:1);c.save();
@@ -101,6 +101,7 @@
         c.restore();
       }
       // Compact diegetic minimap and first-person weapon silhouette.
+      if(game.sentinels.some(s=>s.role==='warden'&&s.windup>0)){c.save();c.strokeStyle='#ff617c';c.lineWidth=3;c.beginPath();c.moveTo(W/2-18,H/2);c.lineTo(W/2+18,H/2);c.moveTo(W/2,H/2-18);c.lineTo(W/2,H/2+18);c.arc(W/2,H/2,26+Math.sin(game.clock*28)*4,0,Math.PI*2);c.stroke();c.fillStyle='#ff617c';c.font='800 12px monospace';c.textAlign='center';c.fillText('WARDEN LOCK // MOVE',W/2,H*.36);c.textAlign='left';c.restore();}
       c.fillStyle='rgba(3,6,14,.75)';c.fillRect(20,68,174,174);c.strokeStyle='rgba(114,243,220,.45)';c.strokeRect(20,68,174,174);
       const cell=9,ox=29,oy=77;for(let y=0;y<map.length;y++)for(let x=0;x<map[y].length;x++){c.fillStyle=map[y][x]==='1'?'#466276':'rgba(114,243,220,.07)';c.fillRect(ox+x*cell,oy+y*cell,cell-1,cell-1);}
       for(const s of L.shards)if(!s.taken){c.fillStyle='#72f3dc';c.fillRect(ox+s.x*cell-2,oy+s.y*cell-2,4,4);}
