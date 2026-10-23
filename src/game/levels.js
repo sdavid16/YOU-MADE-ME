@@ -82,4 +82,26 @@
     ]
   };
   YMM.Levels.world6 = {title:'THE LAST ARGUMENT',arena:{x:70,y:75,w:860,h:470}};
+  YMM.Levels.world7 = {
+    title:'SIGNAL BREAK',
+    arena:{x:54,y:76,w:892,h:468},
+    exit:{x:908,y:308,r:30},
+    nodes:[
+      {id:'relay-alpha',x:165,y:150,hp:4,maxHp:4,color:'#72f3dc'},
+      {id:'relay-beta',x:827,y:148,hp:4,maxHp:4,color:'#b8a0ff'},
+      {id:'relay-omega',x:495,y:455,hp:4,maxHp:4,color:'#ffcf79'}
+    ],
+    agents:[
+      {id:'hound-01',type:'hunter',x:112,y:410,hp:3,maxHp:3,attackTimer:1.15,stun:0},
+      {id:'scope-02',type:'sniper',x:850,y:398,hp:3,maxHp:3,attackTimer:1.8,stun:0},
+      {id:'choir-03',type:'splitter',x:505,y:105,hp:4,maxHp:4,attackTimer:2.25,stun:0},
+      {id:'hound-04',type:'hunter',x:865,y:268,hp:2,maxHp:2,attackTimer:1.35,stun:0},
+      {id:'warden-05',type:'warden',x:160,y:300,hp:3,maxHp:3,attackTimer:2.05,stun:0}
+    ],
+    obstacles:[
+      {x:300,y:128,w:155,h:18},{x:560,y:248,w:142,h:18},
+      {x:315,y:370,w:110,h:18},{x:702,y:365,w:24,h:82},
+      {x:476,y:196,w:48,h:48}
+    ]
+  };
 })(globalThis);
