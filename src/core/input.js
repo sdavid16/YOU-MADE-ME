@@ -3,7 +3,7 @@
   class Input {
     constructor() {
       this.down = new Set(); this.pressed = new Set(); this.released = new Set();
-      this.codes = new Set(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','Enter','Escape','KeyA','KeyD','KeyW','KeyS','KeyT','KeyG','KeyE','KeyJ','KeyR','KeyF','KeyQ','KeyE','ShiftLeft','ShiftRight']);
+      this.codes = new Set(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','Enter','Escape','KeyA','KeyD','KeyW','KeyS','KeyT','KeyG','KeyE','KeyJ','KeyR','KeyF','ShiftLeft','ShiftRight']);
       window.addEventListener('keydown', e => {
         if (this.codes.has(e.code)) e.preventDefault();
         if (!this.down.has(e.code)) this.pressed.add(e.code);
