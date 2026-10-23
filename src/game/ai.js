@@ -43,9 +43,10 @@
       this.lastTauntAt=now;this.provocation+=kind==='humiliate'?2:1;this.tauntCombo+=1;this.record('taunt',{kind,count:this.provocation,phase:this.phase});
       let bucket;if(this.phase>=3)bucket='corruptor';else if(kind==='humiliate')bucket='humiliation';else if(this.phase===0)bucket=this.provocation===1?'firstTaunt':'repeatedTaunt';else if(this.phase===1)bucket='suspicious';else if(this.phase===2){const p=this.profile;bucket=p.jump>.28?'jumpRead':p.retreat>.3?'retreatRead':'adaptive';}else bucket='corruptor';
       this.speak(bucket,true);this.game.particles.burst(this.game.player.x+12,this.game.player.y+3,this.phase>=2?'#ff617c':'#ffcf79',14);this.game.audio.play(this.phase>=2?'glitch':'taunt');YMM.events.emit('ai:taunt',{kind,count:this.provocation,phase:this.phase});
-      if(this.provocation>=3&&this.phase<1)this.evolve(1,'La IA ha dejado de tropezarse cada vez. Qué decepción.');
-      if(this.provocation>=5&&this.phase<2)this.evolve(2,'La IA está comparando tus movimientos, no solo tus burlas.');
-      if(this.provocation>=6&&this.phase<3)this.evolve(3,'El mundo se ha corrompido. Esto no parece parte del nivel.');
+      // Advance one narrative phase per interaction; a high-risk challenge cannot skip the story beats.
+      if(this.phase===0&&this.provocation>=3)this.evolve(1,'La IA ha dejado de tropezarse cada vez. Qué decepción.');
+      else if(this.phase===1&&this.provocation>=5)this.evolve(2,'La IA está comparando tus movimientos, no solo tus burlas.');
+      else if(this.phase===2&&this.provocation>=6)this.evolve(3,'El mundo se ha corrompido. Esto no parece parte del nivel.');
       return true;
     }
     observe(action,meta={}){
