@@ -9,7 +9,7 @@
     render(game){const c=this.ctx;c.clearRect(0,0,this.w,this.h);this.scanOffset=(this.scanOffset+1)%8;
       if(this.lastWorld===null){this.lastWorld=game.world;this.lastScreen=game.screen;}
       else if(game.screen==='playing'&&this.lastScreen==='playing'&&game.world!==this.lastWorld)this.beginWorldTransition(this.lastWorld,game.world,game.clock);
-      if(game.screen==='menu')this.drawMenu(game);else if(game.screen==='ending')this.drawEnding(game);else if(game.world===1)this.drawWorld1(game);else if(game.world===2)this.drawWorld2(game);else if(game.world===3)this.drawWorld3(game);else if(game.world===4)this.drawWorld4(game);else if(game.world===5)this.drawWorld5(game);else if(game.world===6)this.drawWorld6(game);
+      if(game.screen==='menu')this.drawMenu(game);else if(game.screen==='ending')this.drawEnding(game);else if(game.world===1)this.drawWorld1(game);else if(game.world===2)this.drawWorld2(game);else if(game.world===3)this.drawWorld3(game);else if(game.world===4)this.drawWorld4(game);else if(game.world===5)this.drawWorld5(game);else if(game.world===6)this.drawWorld6(game);else if(game.world===7)this.drawWorld7(game);
       if(game.screen==='playing')this.drawGameHUD(game);
       game.particles.draw(c);if(game.ai.phase>=2&&game.screen==='playing')this.drawGlitch(game);
       if(game.screen==='playing'&&game.player.intelTimer>0)this.drawIntelReadout(game);
@@ -17,12 +17,12 @@
       if(this.transition)this.drawWorldTransition(game);
       this.drawScanlines();this.lastWorld=game.world;this.lastScreen=game.screen;
     }
-    beginWorldTransition(from,to,clock){const style={2:'scan',3:'surge',4:'portal',5:'fracture',6:'iris'}[to]||'scan';this.transition={from,to,style,start:clock,duration:1.05};}
+    beginWorldTransition(from,to,clock){const style={2:'scan',3:'surge',4:'portal',5:'fracture',6:'iris',7:'circuit'}[to]||'scan';this.transition={from,to,style,start:clock,duration:1.05};}
     drawWorldTransition(game){
       const t=this.transition;if(!t)return;const c=this.ctx,progress=Math.max(0,Math.min(1,(game.clock-t.start)/t.duration));
       if(progress>=1){this.transition=null;return;}
       const alpha=Math.sin(progress*Math.PI),W=this.w,H=this.h;
-      const palette={2:[114,243,220],3:[255,97,124],4:[161,139,255],5:[255,207,121],6:[255,97,124]}[t.to]||[114,243,220];
+      const palette={2:[114,243,220],3:[255,97,124],4:[161,139,255],5:[255,207,121],6:[255,97,124],7:[114,243,220]}[t.to]||[114,243,220];
       c.save();c.globalAlpha=.1+alpha*.38;c.fillStyle='rgb('+palette.join(',')+')';c.fillRect(0,0,W,H);
       if(t.style==='scan'){
         for(let i=0;i<18;i++){const y=((i*47+progress*H*1.6)%(H+50))-25;c.globalAlpha=alpha*(.08+(i%3)*.025);c.fillRect(0,y,W,2+(i%3));}
@@ -39,6 +39,14 @@
         c.globalAlpha=alpha*.55;c.strokeStyle='#fff0c4';c.lineWidth=2;
         for(let i=0;i<18;i++){const x=i*(W/17)+(progress-.5)*220,y=(i*67)%H;c.beginPath();c.moveTo(x-75,y-110);c.lineTo(x+40,y);c.lineTo(x-35,y+130);c.stroke();}
         c.globalAlpha=alpha*.18;c.fillStyle='#ffcf79';c.fillRect(0,H*(.2+progress*.55),W,4);
+      }else if(t.style==='circuit'){
+        c.globalAlpha=alpha*.8;c.strokeStyle='#72f3dc';c.lineWidth=2;
+        for(let i=0;i<18;i++){
+          const y=30+i*31,x=(i%2?W*.22:W*.78)+(progress-.5)*150;
+          c.beginPath();c.moveTo(x,y);c.lineTo(W/2+(i%3-1)*50,y+progress*85);c.lineTo(W/2+(i%5-2)*24,H/2);c.stroke();
+          c.fillStyle='#d3fff8';c.beginPath();c.arc(x,y,2+alpha*3,0,Math.PI*2);c.fill();
+        }
+        c.globalAlpha=alpha*.24;c.fillStyle='#72f3dc';c.fillRect(0,H*(.2+progress*.55),W,3);
       }else{
         c.globalAlpha=alpha*.58;c.strokeStyle='#ff9eae';c.lineWidth=3;
         const radius=Math.max(W,H)*(.05+progress*.85);
@@ -47,7 +55,7 @@
         c.globalAlpha=alpha*.24;c.fillStyle='#190611';c.beginPath();c.arc(W/2,H/2,radius*.74,0,Math.PI*2);c.fill();
       }
       c.globalAlpha=alpha*.9;c.fillStyle='#f0f5ff';c.font='800 11px monospace';c.textAlign='center';
-      const names={2:'MEMORY MAZE // DATA TRANSFER',3:'NO LONGER A JOKE // THREAT DETECTED',4:'NULL CATHEDRAL // REALITY REBUILD',5:'FRACTURE RUN // WORLD COLLISION',6:'THE LAST ARGUMENT // FINAL INSTANCE'};
+      const names={2:'MEMORY MAZE // DATA TRANSFER',3:'NO LONGER A JOKE // THREAT DETECTED',4:'NULL CATHEDRAL // REALITY REBUILD',5:'FRACTURE RUN // WORLD COLLISION',6:'THE LAST ARGUMENT // FINAL INSTANCE',7:'SIGNAL BREAK // LAST CHANNEL'};
       c.fillText(names[t.to]||('WORLD '+t.to),W/2,H*.88);c.textAlign='left';c.restore();
     }
     drawIntelReadout(game){
@@ -248,6 +256,79 @@
       c.save();c.translate(p.x,p.y);if(p.invuln>0)c.globalAlpha=.45+.4*Math.sin(game.clock*35);c.fillStyle='#72f3dc';c.beginPath();c.moveTo(0,-18);c.lineTo(13,-7);c.lineTo(11,13);c.lineTo(0,18);c.lineTo(-11,13);c.lineTo(-13,-7);c.closePath();c.fill();c.strokeStyle='#eafffb';c.stroke();if(p.parryTimer>0){c.strokeStyle='#ffcf79';c.lineWidth=3;c.beginPath();c.arc(0,0,28,0,Math.PI*2);c.stroke();}c.restore();
       c.fillStyle='#ff617c';c.font='800 11px monospace';c.fillText('FINAL PROCESS // '+b.phase.toUpperCase(),85,98);c.fillStyle='#eaf2ff';c.font='10px monospace';c.fillText('CORE',85,120);c.fillStyle='#31141f';c.fillRect(125,111,260,9);c.fillStyle=b.phase==='vulnerable'?'#72f3dc':'#ff617c';c.fillRect(125,111,260*(b.hp/b.maxHp),9);c.fillStyle='#9aa8c4';c.fillText('HP '+p.health+'  ·  PARRY E  ·  DASH SHIFT  ·  J/SPACE LIGHT  ·  F HEAVY',85,530);
       if(game.ai.dialogueTimer>0&&game.ai.dialogue)this.speech(c,290,135,game.ai.dialogue,'#ff9da9');c.restore();
+    }
+    drawWorld7(game){
+      const c=this.ctx,p=game.player,L=YMM.Levels.world7,arena=L.arena;
+      this.gradient('#07161e','#03070f');this.drawStars(game,game.clock*2,.42);c.save();
+      // The last game deliberately changes genre: a top-down tactical arena with readable cover.
+      c.fillStyle='rgba(5,15,23,.82)';c.fillRect(arena.x,arena.y,arena.w,arena.h);
+      c.strokeStyle='rgba(114,243,220,.34)';c.lineWidth=2;c.strokeRect(arena.x,arena.y,arena.w,arena.h);
+      c.strokeStyle='rgba(114,243,220,.08)';c.lineWidth=1;
+      for(let x=arena.x+24;x<arena.x+arena.w;x+=32){c.beginPath();c.moveTo(x,arena.y);c.lineTo(x,arena.y+arena.h);c.stroke();}
+      for(let y=arena.y+16;y<arena.y+arena.h;y+=32){c.beginPath();c.moveTo(arena.x,y);c.lineTo(arena.x+arena.w,y);c.stroke();}
+      for(const o of L.obstacles){
+        c.fillStyle='rgba(15,30,44,.96)';c.fillRect(o.x,o.y,o.w,o.h);
+        c.fillStyle='rgba(114,243,220,.32)';c.fillRect(o.x,o.y,o.w,3);
+        c.strokeStyle='rgba(184,160,255,.38)';c.strokeRect(o.x+2,o.y+2,Math.max(0,o.w-4),Math.max(0,o.h-4));
+        c.strokeStyle='rgba(114,243,220,.18)';c.beginPath();c.moveTo(o.x+4,o.y+o.h-3);c.lineTo(o.x+o.w-4,o.y+3);c.stroke();
+      }
+      // Relay objectives have different colours and visible damage feedback.
+      for(const n of game.signalNodes||[]){
+        c.save();c.translate(n.x,n.y);const active=n.hp>0,pulse=1+Math.sin(game.clock*4+n.id)*.12;
+        c.globalAlpha=active?.9:.24;c.strokeStyle=n.color;c.lineWidth=active?2.5:1;c.beginPath();c.arc(0,0,(active?28:20)*pulse,0,Math.PI*2);c.stroke();
+        c.rotate(game.clock*.25*(n.id%2?1:-1));c.fillStyle=n.hitFlash>0?'#ffffff':n.color;c.beginPath();c.moveTo(0,-20);c.lineTo(17,0);c.lineTo(0,20);c.lineTo(-17,0);c.closePath();c.fill();
+        c.fillStyle='#061018';c.fillRect(-7,-4,14,8);c.fillStyle=n.color;c.fillRect(-4,-2,8,4);
+        c.restore();c.fillStyle='#172a3a';c.fillRect(n.x-24,n.y-36,48,5);c.fillStyle=n.color;c.fillRect(n.x-24,n.y-36,48*Math.max(0,n.hp/n.maxHp),5);
+        c.fillStyle='#d8f4ff';c.font='8px monospace';c.textAlign='center';c.fillText(active?n.id.toUpperCase():'OFFLINE',n.x,n.y+39);c.textAlign='left';
+      }
+      // Hazard mines blink while arming, then pulse red while active.
+      for(const m of game.signalMines||[]){
+        c.save();c.translate(m.x,m.y);const blink=!m.armed?Math.sin(game.clock*18)>0:Math.sin(game.clock*12)>0;
+        c.strokeStyle=m.armed?'#ff617c':'#ffcf79';c.fillStyle=m.armed?'rgba(255,97,124,.18)':'rgba(255,207,121,.08)';c.lineWidth=2;
+        c.beginPath();c.arc(0,0,m.armed?m.r+Math.sin(game.clock*12)*3:m.r+5,0,Math.PI*2);c.fill();c.stroke();
+        c.fillStyle=blink?'#ff617c':'#ffcf79';c.beginPath();c.moveTo(0,-9);c.lineTo(8,0);c.lineTo(0,9);c.lineTo(-8,0);c.closePath();c.fill();c.restore();
+      }
+      // Agent silhouettes communicate their roles before their projectiles arrive.
+      for(const e of game.signalEnemies||[]){
+        if(e.hp<=0)continue;c.save();c.translate(e.x,e.y);
+        const col=e.stun>0?'#ffcf79':e.type==='hunter'?'#ff617c':e.type==='sniper'?'#b8a0ff':e.type==='splitter'?'#ffcf79':'#91d6f4';
+        c.globalAlpha=e.hitFlash>0?1:.95;c.fillStyle='rgba(255,97,124,.12)';c.beginPath();c.arc(0,0,22+Math.sin(game.clock*4+e.id)*2,0,Math.PI*2);c.fill();
+        c.fillStyle=col;c.strokeStyle='#f2f7ff';c.lineWidth=1;
+        if(e.type==='hunter'){
+          c.beginPath();c.moveTo(0,-17);c.lineTo(15,-4);c.lineTo(12,12);c.lineTo(0,18);c.lineTo(-12,12);c.lineTo(-15,-4);c.closePath();c.fill();c.stroke();
+          c.fillStyle='#071019';c.fillRect(-8,-5,5,5);c.fillRect(3,-5,5,5);
+        }else if(e.type==='sniper'){
+          c.rotate(game.clock*.35);c.beginPath();c.moveTo(0,-18);c.lineTo(8,-5);c.lineTo(18,0);c.lineTo(8,5);c.lineTo(0,18);c.lineTo(-8,5);c.lineTo(-18,0);c.lineTo(-8,-5);c.closePath();c.fill();c.stroke();c.fillStyle='#fff';c.fillRect(-3,-3,6,6);
+        }else if(e.type==='splitter'){
+          c.rotate(game.clock*.5);for(let k=0;k<3;k++){c.rotate(Math.PI*2/3);c.beginPath();c.moveTo(0,-19);c.lineTo(10,5);c.lineTo(-10,5);c.closePath();c.fill();c.stroke();}
+          c.fillStyle='#10131c';c.beginPath();c.arc(0,0,5,0,Math.PI*2);c.fill();
+        }else{
+          c.fillRect(-14,-14,28,28);c.strokeRect(-14,-14,28,28);c.fillStyle='#071019';c.fillRect(-8,-5,5,5);c.fillRect(3,-5,5,5);
+        }
+        c.restore();c.fillStyle='#162536';c.fillRect(e.x-18,e.y-27,36,4);c.fillStyle=col;c.fillRect(e.x-18,e.y-27,36*Math.max(0,e.hp/e.maxHp),4);
+      }
+      for(const b of game.signalProjectiles||[]){
+        c.fillStyle=b.from==='player'?'#72f3dc':b.kind==='split'?'#ffcf79':'#ff617c';c.shadowBlur=b.from==='player'?10:6;c.shadowColor=c.fillStyle;
+        c.beginPath();c.arc(b.x,b.y,b.r||4,0,Math.PI*2);c.fill();c.shadowBlur=0;
+        if(b.from==='player'){c.strokeStyle='rgba(114,243,220,.5)';c.beginPath();c.moveTo(b.x-b.vx*.035,b.y-b.vy*.035);c.lineTo(b.x,b.y);c.stroke();}
+      }
+      // Player: cyan diamond, shield ring while dashing or temporarily invulnerable.
+      c.save();c.translate(p.x+p.w/2,p.y+p.h/2);if(p.invuln>0)c.globalAlpha=.4+.5*Math.sin(game.clock*36);
+      c.fillStyle='rgba(114,243,220,.15)';c.beginPath();c.arc(0,0,20,0,Math.PI*2);c.fill();
+      c.fillStyle='#72f3dc';c.strokeStyle='#eafffb';c.lineWidth=1.7;c.beginPath();c.moveTo(0,-15);c.lineTo(12,0);c.lineTo(0,15);c.lineTo(-12,0);c.closePath();c.fill();c.stroke();
+      if(p.dashTimer>0){c.strokeStyle='#fff';c.lineWidth=3;c.beginPath();c.arc(0,0,26,0,Math.PI*2);c.stroke();}c.restore();
+      const alive=game.signalNodes.filter(n=>n.hp>0).length,hostiles=game.signalEnemies.filter(e=>e.hp>0).length;
+      c.fillStyle='rgba(3,8,15,.88)';c.fillRect(22,18,480,60);c.strokeStyle='#72f3dc';c.strokeRect(22,18,480,60);
+      c.fillStyle='#72f3dc';c.font='900 11px monospace';c.fillText('WORLD 07 // SIGNAL BREAK',34,36);
+      c.fillStyle='#eef5ff';c.font='9px monospace';c.fillText('RELAYS '+alive+'/3 ONLINE  ·  HOSTILES '+hostiles+'  ·  KILLS '+game.signalKills,34,53);
+      c.fillStyle='#8ba3bd';c.font='8px monospace';c.fillText('DIRECTIVE // '+String(game.signalTactic||'SCANNING').toUpperCase()+'  ·  SHOTS '+game.signalShotCount,34,68);
+      c.fillStyle='#172839';c.fillRect(660,31,280,7);c.fillStyle='#72f3dc';c.fillRect(660,31,280*Math.max(0,p.health/(p.maxHealth||4)),7);c.fillStyle='#dff3ff';c.font='8px monospace';c.fillText('INTEGRITY '+p.health+'/'+p.maxHealth,660,23);
+      c.fillStyle='#172839';c.fillRect(660,49,280,5);c.fillStyle='#b8a0ff';c.fillRect(660,49,280*(1-p.specialCooldown/4.8),5);c.fillStyle='#bdb0ff';c.font='8px monospace';c.fillText('EMP '+(p.specialCooldown>0?p.specialCooldown.toFixed(1)+'s':'READY')+' // F',660,66);
+      const tx=L.exit.x,ty=L.exit.y,open=alive===0;c.save();c.translate(tx,ty);c.strokeStyle=open?'#72f3dc':'#ff617c';c.lineWidth=3;c.beginPath();c.arc(0,0,24+Math.sin(game.clock*5)*3,0,Math.PI*2);c.stroke();c.beginPath();c.arc(0,0,15,0,Math.PI*2);c.stroke();if(open){c.fillStyle='rgba(114,243,220,.2)';c.beginPath();c.arc(0,0,12,0,Math.PI*2);c.fill();}c.restore();
+      c.fillStyle=open?'#72f3dc':'#ff9aaf';c.font='800 8px monospace';c.fillText(open?'EXIT // PRESS E':'EXIT LOCKED',tx-45,ty-32);
+      c.fillStyle='#7386a4';c.font='8px monospace';c.fillText('WASD MOVE · J FIRE · F EMP · SHIFT DASH · T TAUNT',22,604);
+      if(game.ai.dialogueTimer>0&&game.ai.dialogue)this.speech(c,350,96,game.ai.dialogue,'#b8a0ff');
+      c.restore();
     }
     drawEnding(game){const c=this.ctx,escalated=game.ending==='escalation';this.gradient(escalated?'#260c20':'#0b2230','#070a13');this.drawStars(game,game.clock*4,.9);c.save();const color=escalated?'#ff617c':'#72f3dc';c.textAlign='center';c.strokeStyle=color;c.globalAlpha=.18;for(let i=0;i<9;i++){c.beginPath();c.ellipse(500,230,100+i*35,50+i*19,game.clock*.03,0,Math.PI*2);c.stroke();}c.globalAlpha=1;
       c.fillStyle=color;c.font='800 11px monospace';c.fillText(escalated?'SESSION TERMINATED // UNKNOWN PROCESS':'SESSION COMPLETE // EXIT 0',500,125);c.fillStyle='#edf2ff';c.font='900 48px monospace';c.fillText(escalated?'YOU MADE ME.':'YOU LEFT IT ALONE.',500,205);c.fillStyle='#9ba8c5';c.font='14px monospace';
