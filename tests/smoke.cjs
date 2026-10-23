@@ -24,7 +24,7 @@ const document={readyState:'complete',getElementById(id){if(!elements.has(id))el
 const sandbox={console,document,window:null,globalThis:null,requestAnimationFrame(fn){sandbox.nextFrame=fn;return 1;},performance:{now(){return 0}},setTimeout,clearTimeout,Math,Date,Set,Map,Array,Object,String,Number,JSON,Infinity};
 sandbox.window=sandbox;sandbox.globalThis=sandbox;sandbox.addEventListener=(n,fn)=>{(listeners['window:'+n] ||= []).push(fn)};const storage=new Map();sandbox.localStorage={getItem(k){return storage.has(k)?storage.get(k):null;},setItem(k,v){storage.set(k,String(v));}};
 vm.createContext(sandbox);
-const files=['src/core/util.js','src/core/events.js','src/core/input.js','src/core/audio.js','src/game/levels.js','src/game/ai.js','src/game/particles.js','src/game/renderer.js','src/ui/hud.js','src/game/meta-progression.js','src/game/mission-director.js','src/ui/touch-controls.js','src/game/game.js','src/main.js'];
+const files=['src/core/util.js','src/core/events.js','src/core/input.js','src/core/audio.js','src/game/levels.js','src/game/ai.js','src/game/particles.js','src/game/renderer.js','src/ui/hud.js','src/game/meta-progression.js','src/game/mission-director.js','src/game/codex.js','src/ui/accessibility-settings.js','src/ui/touch-controls.js','src/game/game.js','src/main.js'];
 for(const f of files)vm.runInContext(fs.readFileSync(path.join(base,f),'utf8'),sandbox,{filename:f});
 const g=sandbox.youMadeMe;
 function assert(v,msg){if(!v)throw new Error('ASSERTION FAILED: '+msg);}
@@ -197,4 +197,13 @@ assert(g.missionDirector.mission&&g.missionDirector.mission.world===1,'a run sta
 g.missionDirector.metrics[g.missionDirector.mission.metric]=g.missionDirector.mission.goal;g.missionDirector.update(g,0.01);
 assert(g.missionDirector.mission.completed,'side objective completion is detected');
 assert(g.missionDirector.completeCount>=1,'completed side objective is recorded in mission history');
-console.log('PASS: twelve-world campaign, adaptive AI, campaign progression, upgrade economy, touch-control compatibility, achievements, contracts, PWA shell and persistent dossiers.');
+assert(g.codex instanceof sandbox.YMM.Codex,'narrative codex initializes');
+g.codex.update(g);
+assert(g.codex.unlocked.has('prologue'),'world progression unlocks the opening narrative record');
+g.ending='convergence';g.screen='ending';g.codex.update(g);
+assert(g.codex.unlocked.has('epilogue-convergence'),'the selected ending unlocks its matching codex entry');
+assert(g.accessibility instanceof sandbox.YMM.AccessibilitySettings,'accessibility settings initialize');
+g.accessibility.settings.reducedMotion=true;g.accessibility.apply();
+assert(g.renderer.accessibility.reducedMotion===true,'reduced-motion preference is propagated to rendering');
+g.screen='playing';
+console.log('PASS: twelve-world campaign, adaptive AI, campaign progression, missions, narrative codex, accessibility preferences, upgrade economy, touch-control compatibility, achievements, contracts and PWA shell.');
