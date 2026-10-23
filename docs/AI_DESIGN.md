@@ -14,13 +14,15 @@ Los directores puntúan opciones contextualmente, añaden exploración y utiliza
 
 **Fracture Run** selecciona entre barrido aéreo, grieta de suelo, salvas de drones, sombra perseguidora y colapso en cadena. Registra si el jugador fue alcanzado o esquivó la amenaza.
 
-**Signal Break** es un shooter cenital con cazadores, francotiradores, guardianes y agentes que disparan salvas múltiples. El director elige entre:
+**Signal Break** es un shooter cenital con cazadores, francotiradores, guardianes y agentes que disparan salvas múltiples. En Pesadilla recibe dos agentes adicionales y cambia de táctica con mayor frecuencia.
+
+**The Black Archive** reutiliza el raycaster de primera persona del mundo 4 con un mapa diferente y seis centinelas coordinados (ocho en Pesadilla). Cuatro registros desvelan la cadena de decisiones que dejó a la IA sin condición de parada y desbloquean el final narrativo. El renderer sigue siendo Canvas + raycasting, no geometría WebGL. El director elige entre:
 - **Crossfire:** incrementa la cadencia de fuego.
 - **Lead shot:** anticipa la trayectoria y dispara hacia la posición probable del jugador.
 - **Encircle:** los cazadores intentan rodear al jugador.
 - **Minefield:** coloca minas con una señal previa antes de armarlas.
 
-Los jefes de los mundos 3 y 6 también cambian los patrones según el perfil. La dificultad aumenta presión, velocidad o resistencia; no consiste únicamente en subir la vida.
+Los jefes de los mundos 3 y 6 también cambian los patrones según el perfil. Pesadilla aumenta el multiplicador de presión a 1,62, recorta las ventanas de aviso, acelera la cadencia del director y refuerza las unidades de los mundos 7 y 8. Correr o retirarse favorece los disparos predictivos/intercepción, repetir dash favorece fintas o fuego cruzado, permanecer quieto invita al cerco y perseguir coleccionables invita a sembrar minas. El director reduce el ruido exploratorio y penaliza repetir su propia táctica, sin eliminar por completo la variación.
 
 ## Provocación verbal como mecánica
 
