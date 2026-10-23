@@ -1,0 +1,14 @@
+YOU MADE ME — para empezar
+
+1. Descarga el repositorio completo o usa Code > Download ZIP.
+2. Descomprime los archivos.
+3. Abre index.html con doble clic.
+4. No necesitas ejecutar Python, una terminal, npm ni instalar bibliotecas.
+
+Controles:
+Mundo 1: flechas o A/D para moverte, Espacio/W/↑ para saltar, T para provocar, Esc para pausar.
+Mundo 2: flechas o WASD, E en el terminal después de reunir los tres fragmentos.
+Mundo 3: flechas o WASD, J para atacar cuando el núcleo esté expuesto, Shift para esquivar.
+R reinicia la partida.
+
+Consulta README.md para la arquitectura y los detalles del juego.
