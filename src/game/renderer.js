@@ -128,7 +128,7 @@
       this.drawPlayer(c,game.player.x-game.player.w/2,game.player.y-game.player.h/2,game.player,game.clock,'#a4fff0');c.fillStyle='#ff9aaa';c.font='800 10px monospace';c.fillText('WORLD 03 // NO LONGER A JOKE',25,31);c.fillStyle='#7f6e91';c.font='9px monospace';c.fillText('J ATACA CUANDO LA IA QUEDA EXPUESTA · SHIFT ESQUIVA',25,605);
       if(game.ai.dialogueTimer>0&&game.ai.dialogue)this.speech(c,Math.max(20,Math.min(720,b.x-90)),Math.max(75,b.y-85),game.ai.dialogue,'#ff9da9');c.restore();}
     drawWorld4(game){
-      const c=this.ctx,L=game.world===9?YMM.Levels.world9:game.world===8?YMM.Levels.world8:YMM.Levels.world4,p=game.player,W=this.w,H=this.h,map=L.map,archive=game.world===8,echo=game.world===9,accent=archive?'#b8a0ff':echo?'#d86cff':'#72f3dc';
+      const c=this.ctx,L=YMM.Levels['world'+game.world]||YMM.Levels.world4,p=game.player,W=this.w,H=this.h,map=L.map,archive=game.world===8,echo=game.world===9,redacted=game.world===11,origin=game.world===12,accent=archive?'#b8a0ff':echo?'#d86cff':redacted?'#ff294f':origin?'#72f3dc':'#72f3dc';
       const sky=c.createLinearGradient(0,0,0,H*.52);sky.addColorStop(0,archive?'#110819':'#040611');sky.addColorStop(.7,archive?'#2c1742':'#17213a');sky.addColorStop(1,archive?'#704a77':'#6c315b');c.fillStyle=sky;c.fillRect(0,0,W,H*.52);
       const floor=c.createLinearGradient(0,H*.48,0,H);floor.addColorStop(0,archive?'#352344':'#20223b');floor.addColorStop(1,'#05060d');c.fillStyle=floor;c.fillRect(0,H*.48,W,H*.52);
       const horizon=H*.49,fov=Math.PI/2.85,rays=archive?240:200,zBuffer=new Array(rays),strip=W/rays;
