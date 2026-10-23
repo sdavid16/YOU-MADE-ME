@@ -177,6 +177,7 @@
       c.fillStyle='#29314b';c.fillRect(34,58,240,6);c.fillStyle=pal[3];c.fillRect(34,58,240*Math.min(1,p.x/L.width),6);
       c.fillStyle='#9aa9c5';c.font='8px monospace';c.fillText('CELLS '+game.runnerCellCount+'/'+game.runnerCells.length+' · ECHO Q '+(ally.pulseCooldown>0?ally.pulseCooldown.toFixed(1)+'s':'READY')+' · ANCHOR '+Math.round(game.lastRunnerCheckpoint/L.width*100)+'%',286,64);
       const progress=YMM.Util.clamp((p.x-game.lastRunnerCheckpoint)/(L.goal.x-game.lastRunnerCheckpoint),0,1);c.fillStyle='#35405a';c.fillRect(650,48,300,4);c.fillStyle='#ff617c';c.fillRect(650,48,300*progress,4);
+      const forecast=game.ai.lastPrediction||{},chosen=game.ai.lastDirectorChoice&&game.ai.lastDirectorChoice.runner||'SCANNING';c.fillStyle='rgba(3,6,14,.78)';c.fillRect(22,82,620,22);c.strokeStyle='rgba(114,243,220,.22)';c.strokeRect(22,82,620,22);c.fillStyle='#72f3dc';c.font='8px monospace';c.fillText('TACTICAL DIRECTOR // NEXT: '+String(forecast.action||'SCANNING').toUpperCase()+' '+Math.round((forecast.confidence||0)*100)+'% // THREAT: '+String(chosen).toUpperCase(),34,96);
       c.fillStyle='#7384a5';c.font='8px monospace';c.fillText('CTRL SPRINT · SPACE JUMP · SHIFT DASH · J/F ATTACK · Q ECHO PULSE',22,605);
       c.restore();
     }
