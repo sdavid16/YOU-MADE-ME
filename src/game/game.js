@@ -146,8 +146,8 @@
       this.world=6;this.player={x:500,y:480,w:24,h:24,vx:0,vy:0,health:5,maxHealth:5,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       this.boss={x:500,y:190,hp:14,maxHp:14,phase:'idle',attackType:'lattice',timer:.9,targetX:500,targetY:480,dx:0,dy:1,hitFlash:0,lastHitAt:-999,patternCount:0,stagger:0};
       this.ai.speak('endThreat');this.ai.dialogueTimer=4;this.audio.play('phase');
-      this.log('MUNDO 05: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');
-      this.toast('MUNDO 05 — THE LAST ARGUMENT');this.hud.sync();
+      this.log('MUNDO 06: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');
+      this.toast('MUNDO 06 — THE LAST ARGUMENT');this.hud.sync();
     }
     isWorld4Wall(x,y){
       const map=YMM.Levels.world4.map,tx=Math.floor(x),ty=Math.floor(y);
@@ -351,11 +351,14 @@
       }else if(b.phase==='vulnerable'&&b.timer<=0){b.phase='idle';b.timer=.62;}
     }
     damagePlayer(amount,message){
-      const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=1.15;this.audio.play('hit');this.particles.burst(p.x,p.y,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
-      
-      if(p.health<=0){if(this.world===3||this.world===6){p.health=this.world===6?5:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
+      const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=1.15;this.audio.play('hit');
+      const px=this.world===5? p.x-this.runnerCamera():p.x,py=p.y;this.particles.burst(px,py,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
+      if(p.health<=0){
+        if(this.world===3||this.world===6){p.health=this.world===6?5:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
         else if(this.world===4){p.health=4;p.x=2.5;p.y=1.5;p.angle=0;this.log('Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
-        else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}}
+        else if(this.world===5){p.health=4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
+        else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}
+      }
     }
     frame(dt){this.update(Math.min(.033,Math.max(.001,dt)));this.renderer.render(this);}
   }
