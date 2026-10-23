@@ -115,9 +115,24 @@ assert(g.boss.phase==='telegraph'&&g.boss.attackType==='ring','final boss select
 g.renderer.render(g);
 g.boss.phase='vulnerable';g.boss.timer=1;g.boss.x=g.player.x+20;g.boss.y=g.player.y;g.player.attackTimer=0;g.input.pressed.add('KeyF');g.input.down.add('KeyF');g.updateWorld6(.016);g.input.pressed.clear();g.input.down.clear();
 assert(g.boss.hp===12,'heavy attack deals two damage during vulnerability');
+/* World seven changes the game genre: top-down shooter, destructible relays, and an adaptive enemy director. */
+g.enterWorld7();
+assert(g.world===7&&g.signalNodes.length===3&&g.signalEnemies.length===5,'Signal Break initializes relays and varied shooter agents');
+assert(['crossfire','lead-shot','encircle','minefield'].includes(g.ai.chooseTactic('shooter',['crossfire','lead-shot','encircle','minefield'])),'shooter director selects a valid tactical formation');
+g.player.invuln=10;g.input.pressed.add('KeyJ');g.updateWorld7(.016);g.input.pressed.clear();
+assert(g.signalProjectiles.some(b=>b.from==='player'),'J launches player pulse projectile');
+const relay=g.signalNodes.find(n=>n.id==='relay-omega');g.player.x=483;g.player.y=432;g.player.specialCooldown=0;g.input.pressed.add('KeyF');g.updateWorld7(.016);g.input.pressed.clear();
+assert(relay.hp===3,'F EMP pulse damages a relay in its radius');
+g.player.x=sandbox.YMM.Levels.world7.exit.x-g.player.w/2;g.player.y=sandbox.YMM.Levels.world7.exit.y-g.player.h/2;
+g.input.pressed.add('KeyE');g.updateWorld7(.016);g.input.pressed.clear();
+assert(g.screen==='playing','Signal Break exit remains locked while relays are active');
+for(const n of g.signalNodes)n.hp=0;
+g.input.pressed.add('KeyE');g.updateWorld7(.016);g.input.pressed.clear();
+assert(g.screen==='ending'&&g.ending==='escalation','destroying all relays opens the Signal Break ending');
+g.renderer.render(g);
 // Aggregate behavior and reward estimates survive a fresh AI run when browser storage is available.
 g.ai.longTermDossier.actionCounts.jump=17;g.ai.tacticOutcomes['drone-salvo']={tries:4,hits:2,value:.5};
 assert(g.ai.saveDossier(),'local behavior dossier can be saved');g.ai.reset();
 assert(g.ai.longTermDossier.actionCounts.jump===17,'historical behavior survives AI reset');
 assert(g.ai.tacticOutcomes['drone-salvo'].value===.5,'historical tactic reward survives AI reset');
-console.log('PASS: six worlds, raycasting, collapsing biomes, respawn anchors, sequence prediction, reward-trained director, squad tactics, Echo pulse, persistent behavior dossier, final boss and legacy routes.');
+console.log('PASS: seven worlds, safe collapse debris, insult classifier/console/effects, difficulty modes, per-world transitions, 3D squad tactics, Signal Break shooter, relays, EMP, adaptive formations and persistent AI dossier.');
