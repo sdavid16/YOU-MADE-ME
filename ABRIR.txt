@@ -15,6 +15,6 @@ Mundo 6 (jefe final): WASD/flechas mover · J/Espacio ataque ligero · F pesado 
 R reinicia. Los botones de sonido, pantalla completa y reinicio aparecen arriba a la derecha.
 
 IA
-El antagonista usa un perfil conductual, predicción de la próxima acción y un director táctico con exploración y aprendizaje de recompensas. La directora de Fracture Run elige amenazas según tus saltos, dash, quietud, sprint y repetición. Los enemigos tienen roles distintos y ECHO puede interrumpirlos con Q. No usa servicios en la nube; todo está implementado en JavaScript.
+El antagonista usa un perfil conductual, predicción de la próxima acción y un director táctico con exploración y aprendizaje de recompensas. La directora de Fracture Run elige amenazas según tus saltos, dash, quietud, sprint y repetición. Los enemigos tienen roles distintos y ECHO puede interrumpirlos con Q. No usa servicios en la nube; todo está implementado en JavaScript. Si el navegador permite almacenamiento local, conserva estadísticas agregadas de conducta y tácticas entre partidas, sin guardar posiciones ni transcripciones.
 
 Si quieres ejecutar las pruebas de desarrollo, necesitas Node.js; no es necesario para jugar.
