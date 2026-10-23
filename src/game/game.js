@@ -45,7 +45,7 @@
       if(this.input.justPressed('Escape')){this.pause();this.input.endFrame();return;}
       this.elapsed+=dt;this.player.invuln=Math.max(0,this.player.invuln-dt);this.player.tauntLock=Math.max(0,(this.player.tauntLock||0)-dt);this.player.attackTimer=Math.max(0,this.player.attackTimer-dt);this.player.dashTimer=Math.max(0,this.player.dashTimer-dt);this.player.dashCooldown=Math.max(0,this.player.dashCooldown-dt);this.player.stompFlash=Math.max(0,this.player.stompFlash-dt);
       if(this.ai.dialogueTimer>0)this.ai.dialogueTimer=Math.max(0,this.ai.dialogueTimer-dt);
-      this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
+      if(this.world!==5)this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
       if(this.input.justPressed('KeyT'))this.provoke('mock');if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
       if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else this.updateWorld6(dt);
@@ -72,18 +72,27 @@
       ];
     }
     updateWorld1(dt){
+      this.advanceCollapses(this.world1Platforms,dt);
       const p=this.player,L=YMM.Levels.world1,left=this.input.isDown('ArrowLeft','KeyA'),right=this.input.isDown('ArrowRight','KeyD'),dir=p.tauntLock>0?0:(right?1:0)-(left?1:0);
+      const sprintHeld=this.input.isDown('ControlLeft','ControlRight');p.sprinting=sprintHeld&&p.stamina>0;p.stamina=YMM.Util.clamp(p.stamina+(p.sprinting?-34:21)*dt,0,p.maxStamina);if(p.sprinting)this.ai.observe('sprint');
       if(dir)p.lastDir=dir;
       if(this.input.justPressed('ShiftLeft','ShiftRight')&&p.dashCooldown<=0){p.dashTimer=.17;p.dashCooldown=1.05;this.ai.observe('dash');this.ai.observe(p.lastDir<0?'dashLeft':'dashRight');this.audio.play('attack');this.particles.burst(p.x+p.w/2,p.y+p.h/2,'#72f3dc',12,90);}
-      p.vx=dir*(p.dashTimer>0?590:265);
+      p.vx=dir*(p.dashTimer>0?590:p.sprinting?365:265);
       if(p.dashTimer>0&&dir===0)p.vx=p.lastDir*590;
       if(this.input.justPressed('Space','ArrowUp','KeyW')&&p.grounded){p.vy=-445;p.grounded=false;this.ai.observe('jump');this.audio.play('attack');this.particles.burst(p.x+p.w/2,p.y+p.h,'#72f3dc',7,60);}
+      if(this.input.justPressed('KeyJ','KeyF')&&p.attackTimer<=0){
+        const heavy=this.input.justPressed('KeyF');p.attackTimer=heavy?.56:.29;p.attackKind=heavy?'heavy':'light';p.stamina=YMM.Util.clamp(p.stamina-(heavy?18:5),0,p.maxStamina);this.ai.observe('attack',{kind:p.attackKind});
+        const e0=this.enemy,reach=heavy?116:82,hit=Math.abs((p.x+p.w/2)-(e0.x+e0.w/2))<reach&&Math.abs((p.y+p.h/2)-(e0.y+e0.h/2))<58&&e0.stunned<=0;
+        this.ai.reportOutcome('pressure',hit,{world:1,kind:p.attackKind});
+        if(hit){e0.stunned=heavy?1.05:.58;e0.windup=0;e0.counterWindup=0;e0.x=YMM.Util.clamp(e0.x+p.lastDir*(heavy?92:48),70,L.width-90);this.ai.observe('countered');this.particles.burst(e0.x+15,e0.y,heavy?'#ffcf79':'#72f3dc',heavy?22:12,heavy?125:80);this.audio.play('hit');this.log(heavy?'GOLPE PESADO: contraataque interrumpido.':'Impacto: la IA ha perdido su ataque actual.','alert');}
+        else{this.audio.play('attack');this.toast(heavy?'El golpe pesado ha fallado.':'Fuera de alcance. Acércate antes de atacar.');}
+      }
       p.vy=Math.min(760,p.vy+1180*dt);
       const solids=this.solidsWorld1();p.x+=p.vx*dt;
       for(const s of solids){if(!s.oneWay&&YMM.Util.overlap(p,s)){if(p.vx>0)p.x=s.x-p.w;else if(p.vx<0)p.x=s.x+s.w;p.vx=0;}}
       p.x=YMM.Util.clamp(p.x,0,L.width-p.w);
       const previousY=p.y;p.y+=p.vy*dt;p.grounded=false;
-      for(const s of solids){if(s.oneWay){if(p.vy>=0&&previousY+p.h<=s.y+5&&YMM.Util.overlap(p,s)){p.y=s.y-p.h;p.grounded=true;p.vy=0;}}else if(YMM.Util.overlap(p,s)){if(p.vy>0){p.y=s.y-p.h;p.grounded=true;}else if(p.vy<0)p.y=s.y+s.h;p.vy=0;}}
+      for(const s of solids){if(s.oneWay){if(p.vy>=0&&previousY+p.h<=s.y+5&&YMM.Util.overlap(p,s)){p.y=s.y-p.h;p.grounded=true;p.vy=0;if(s.collapse)this.triggerCollapse(s);}}else if(YMM.Util.overlap(p,s)){if(p.vy>0){p.y=s.y-p.h;p.grounded=true;}else if(p.vy<0)p.y=s.y+s.h;p.vy=0;}}
       const e=this.enemy;
       // A well-timed landing on the little antagonist is a valid alternative to simply avoiding it.
       if(p.vy>=0&&previousY+p.h<=e.y+9&&p.y+p.h>=e.y&&p.x+p.w>e.x+4&&p.x<e.x+e.w-4&&e.stunned<=0){
