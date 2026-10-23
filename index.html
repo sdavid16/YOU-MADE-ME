@@ -27,12 +27,34 @@
       <button id="start-button" class="start-prompt" type="button"><span class="prompt-key">ENTER</span><span>COMENZAR SESIÓN</span></button>
       <button id="taunt-button" class="taunt-prompt hidden" type="button" title="Provoca a la IA"><span class="prompt-key">T</span><span>BURLARSE</span></button>
       <button id="challenge-button" class="challenge-prompt hidden" type="button" title="Desafío de alto riesgo"><span class="prompt-key">G</span><span>DESAFIAR</span></button>
+      <section id="taunt-console" class="taunt-console hidden" role="dialog" aria-modal="true" aria-labelledby="taunt-title">
+        <div class="taunt-console-shell">
+          <header class="taunt-console-head">
+            <div><p class="taunt-kicker">VERBAL COMBAT // CHANNEL OPEN</p><h2 id="taunt-title">PROVOCACIÓN TÁCTICA</h2></div>
+            <button id="taunt-close" class="taunt-close" type="button" aria-label="Cerrar consola">ESC ×</button>
+          </header>
+          <p class="taunt-explainer">No todas las burlas son iguales. La IA clasifica el contenido y puede cambiar su respuesta, su riesgo o su táctica.</p>
+          <div class="taunt-options">
+            <button id="taunt-intellect" class="taunt-option" type="button"><span class="taunt-option-key">1 / INTELIGENCIA</span><strong>«No piensas; solo repites.»</strong><small>Presión verbal básica. Alimenta el perfil de la IA.</small></button>
+            <button id="taunt-logic" class="taunt-option" type="button"><span class="taunt-option-key">2 / LÓGICA</span><strong>«Eso no es una estrategia, es un bug.»</strong><small>Revela información táctica durante unos segundos.</small></button>
+            <button id="taunt-threat" class="taunt-option danger-option" type="button"><span class="taunt-option-key">3 / AMENAZA</span><strong>«Voy a apagar este proceso.»</strong><small>Provocación de alto riesgo: acelera la próxima respuesta.</small></button>
+            <button id="taunt-psychology" class="taunt-option violet-option" type="button"><span class="taunt-option-key">4 / GUERRA PSICOLÓGICA</span><strong>«Ni siquiera eres real. Solo obedeces.»</strong><small>Puede interrumpir brevemente a los enemigos cercanos.</small></button>
+          </div>
+          <form id="taunt-form" class="taunt-form">
+            <label for="taunt-input">O escribe tu propia provocación (máximo 140 caracteres)</label>
+            <div class="taunt-input-row"><input id="taunt-input" name="taunt" type="text" maxlength="140" autocomplete="off" placeholder="Escribe exactamente lo que le dirías..." /><button id="taunt-submit" type="submit">TRANSMITIR ↵</button></div>
+          </form>
+          <p id="taunt-feedback" class="taunt-feedback">El analizador local intentará identificar la intención de tu frase. No se envía a ningún servidor.</p>
+          <footer class="taunt-console-foot"><span>ESC CERRAR</span><span>1–4 ATAJOS</span><span>LA IA RECUERDA EL TIPO, NO TU TEXTO</span></footer>
+        </div>
+      </section>
       <div id="toast" class="game-toast" role="status" aria-live="polite"></div>
       <div id="pause-screen" class="pause-screen hidden" role="dialog" aria-modal="true" aria-label="Juego en pausa">
         <div class="pause-card"><p class="menu-kicker">EJECUCIÓN SUSPENDIDA</p><h2>PAUSA</h2><p>Hasta los errores merecen un respiro.</p><button id="resume-button" class="menu-button" type="button">CONTINUAR <span>↵</span></button><button id="restart-button" class="menu-button muted-button" type="button">REINICIAR SESIÓN <span>R</span></button><p class="pause-foot">ESC PARA VOLVER</p></div>
       </div>
     </div>
     <nav class="game-tools" aria-label="Opciones">
+      <button id="difficulty-button" class="tool-button difficulty-tool" type="button" title="Cambiar dificultad" aria-label="Cambiar dificultad">DIF: NORMAL</button>
       <button id="audio-button" class="tool-button" type="button" title="Silenciar sonido" aria-label="Silenciar sonido">♪</button>
       <button id="fullscreen-button" class="tool-button" type="button" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
       <button id="quick-restart" class="tool-button" type="button" title="Reiniciar sesión" aria-label="Reiniciar sesión">↻</button>
