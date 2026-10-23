@@ -11,11 +11,11 @@
       else if(game.screen==='playing'&&this.lastScreen==='playing'&&game.world!==this.lastWorld)this.beginWorldTransition(this.lastWorld,game.world,game.clock);
       if(game.screen==='menu')this.drawMenu(game);else if(game.screen==='ending')this.drawEnding(game);else if(game.world===1)this.drawWorld1(game);else if(game.world===2)this.drawWorld2(game);else if(game.world===3)this.drawWorld3(game);else if(game.world===4)this.drawWorld4(game);else if(game.world===5)this.drawWorld5(game);else if(game.world===6)this.drawWorld6(game);else if(game.world===7)this.drawWorld7(game);else if([8,9,11,12].includes(game.world)){if(!game.webglReady)this.drawWorld4(game);}else if(game.world===10)this.drawWorld7(game);
       if(game.screen==='playing')this.drawGameHUD(game);
-      game.particles.draw(c);if(game.ai.phase>=2&&game.screen==='playing')this.drawGlitch(game);
+      if(!this.accessibility||this.accessibility.particles!==false)game.particles.draw(c);if((!this.accessibility||!this.accessibility.reducedMotion)&&game.ai.phase>=2&&game.screen==='playing')this.drawGlitch(game);
       if(game.screen==='playing'&&game.player.intelTimer>0)this.drawIntelReadout(game);
       if(game.lastTauntTimer>0&&game.lastTauntText)this.drawPlayerTaunt(game);
       if(this.transition)this.drawWorldTransition(game);
-      this.drawScanlines();this.lastWorld=game.world;this.lastScreen=game.screen;
+      if(!this.accessibility||!this.accessibility.reducedMotion)this.drawScanlines();this.lastWorld=game.world;this.lastScreen=game.screen;
     }
     beginWorldTransition(from,to,clock){const style={2:'scan',3:'surge',4:'portal',5:'fracture',6:'iris',7:'circuit',8:'archive',9:'echo',10:'singularity',11:'redacted',12:'origin'}[to]||'scan';this.transition={from,to,style,start:clock,duration:1.05};}
     drawWorldTransition(game){
@@ -182,7 +182,7 @@
       };
       const pal=palettes[biome.key]||palettes.convergence;
       this.gradient(pal[0],pal[1]);this.drawStars(game,cam*.23,.72);c.save();
-      if(game.runnerShake>0)c.translate((Math.random()-.5)*game.runnerShake*15,(Math.random()-.5)*game.runnerShake*13);
+      if(game.runnerShake>0&&(!this.accessibility||this.accessibility.screenShake!==false))c.translate((Math.random()-.5)*game.runnerShake*15,(Math.random()-.5)*game.runnerShake*13);
       // Five visual biomes stitched into one continuous, auto-scrolling route.
       for(let i=0;i<26;i++){
         const wx=Math.floor(cam/160)*160+i*160,x=wx-cam*.48,variant=Math.floor(wx/1200)%5,h=70+((Math.floor(wx/43)*29)%135);
