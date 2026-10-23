@@ -7,7 +7,8 @@
     }
     newGame(keepMenu=false){
       this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.logHistory=[];this.particles.items=[];this.ai.reset();
-      this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:3,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,tauntLock:0,lastDir:1,stompFlash:0};
+      this.world1Platforms=YMM.Levels.world1.platforms.map((p,id)=>({...p,id,collapse:[1,4,7,9].includes(id),state:'stable',timer:0,fallY:0}));
+      this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:3,maxHealth:3,stamina:100,maxStamina:100,sprinting:false,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,tauntLock:0,lastDir:1,stompFlash:0};
       this.enemy={x:280,y:486,w:30,h:34,tumble:0,stumbleTimer:1.2,windup:0,attackCooldown:2,counterWindup:0,counterCooldown:0,feintTimer:null,lungeTimer:0,stunned:0,strategy:'stalk'};
       YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.lastCheckpoint=75;this.screen=keepMenu?'menu':'playing';
       if(this.hud){this.hud.clearLog();this.hud.sync(true);}
@@ -22,17 +23,19 @@
       if(this.world===1){if(kind==='humiliate'){this.player.tauntLock=.28;const close=Math.abs((this.player.x+this.player.w/2)-(this.enemy.x+15))<170;if(this.ai.phase>=1&&close){this.enemy.windup=Math.max(this.enemy.windup,.35);this.log('Desafío aceptado. La IA castiga la provocación a corta distancia.','danger');}else this.log('Desafío lanzado. Más progreso, menos margen de error.','alert');}this.ai.taunt(kind);this.hud.sync();return;}
       this.ai.record('taunt-after-invasion',{world:this.world});
       if(this.world===2)this.ai.speak(this.fragments>=2?'corruptor':'world2Fragment',true);
+      else if(this.world===4)this.ai.speak('corruptor',true);
+      else if(this.world===5)this.ai.speak('invader',true);
       else this.ai.speak(this.boss&&this.boss.hp<=3?'lowHealth':'world3Start',true);
       this.audio.play('glitch');this.log('La IA ya no necesita que la provoques para recordarte.','danger');this.hud.sync();
     }
     finish(ending){this.ending=ending;this.screen='ending';this.audio.play(ending==='escalation'?'phase':'win');this.log(ending==='escalation'?'Proceso finalizado. Una entidad nueva ha cruzado la frontera.':'Proceso finalizado sin alterar el mundo original.',ending==='escalation'?'danger':'normal');this.hud.sync();}
     enterWorld2(){
       this.world=2;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.5;
-      YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.player={x:90,y:550,w:24,h:24,vx:0,vy:0,health:3,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
+      YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.player={x:90,y:550,w:24,h:24,vx:0,vy:0,health:3,maxHealth:3,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
       this.ai.unlockInvasion();this.ai.speak('world2Fragment');this.ai.dialogueTimer=3.5;this.audio.play('portal');this.log('La IA ha cruzado al segundo juego. Las reglas ya no son las mismas.','danger');this.toast('MUNDO 02 — RECUPERA LOS FRAGMENTOS');this.hud.sync();
     }
     enterWorld3(){
-      this.world=3;this.player={x:500,y:485,w:24,h:24,vx:0,vy:0,health:3,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
+      this.world=3;this.player={x:500,y:485,w:24,h:24,vx:0,vy:0,health:3,maxHealth:3,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
       this.boss={x:500,y:210,hp:8,maxHp:8,phase:'idle',attackType:'charge',timer:1.25,targetX:500,targetY:485,dx:0,dy:1,hitFlash:0,lastHitAt:-999,patternCount:0};
       this.ai.speak('world3Start');this.ai.dialogueTimer=3.8;this.audio.play('phase');this.log('La IA ha combinado capacidades de los mundos anteriores.','danger');this.toast('MUNDO 03 — APRENDE EL PATRÓN. CONTRAATACA.');this.hud.sync();
     }
@@ -44,28 +47,54 @@
       if(this.input.justPressed('Escape')){this.pause();this.input.endFrame();return;}
       this.elapsed+=dt;this.player.invuln=Math.max(0,this.player.invuln-dt);this.player.tauntLock=Math.max(0,(this.player.tauntLock||0)-dt);this.player.attackTimer=Math.max(0,this.player.attackTimer-dt);this.player.dashTimer=Math.max(0,this.player.dashTimer-dt);this.player.dashCooldown=Math.max(0,this.player.dashCooldown-dt);this.player.stompFlash=Math.max(0,this.player.stompFlash-dt);
       if(this.ai.dialogueTimer>0)this.ai.dialogueTimer=Math.max(0,this.ai.dialogueTimer-dt);
-      this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
+      if(this.world!==5)this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
       if(this.input.justPressed('KeyT'))this.provoke('mock');if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
-      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else this.updateWorld5(dt);
+      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else this.updateWorld6(dt);
       this.ai.update(dt);this.particles.update(dt);
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
     }
-    solidsWorld1(){const L=YMM.Levels.world1;return [...L.floors.map(f=>({x:f.x,y:L.groundY,w:f.w,h:180,oneWay:false})),...L.platforms.map(p=>({...p,h:p.h,oneWay:true}))];}
+    solidsWorld1(){const L=YMM.Levels.world1;return [...L.floors.map(f=>({x:f.x,y:L.groundY,w:f.w,h:180,oneWay:false})),...this.world1Platforms.filter(p=>p.state!=='gone'&&p.state!=='falling').map(p=>({...p,h:p.h,oneWay:true,_source:p}))];}
+    advanceCollapses(items,dt){
+      for(const item of items||[]){
+        if(item.state==='warning'){item.timer-=dt;if(item.timer<=0){item.state='falling';item.timer=.52;this.ai.observe('collapse');this.ai.record('terrain-collapse',{id:item.id,x:item.x});this.log('COLAPSO: una sección del escenario acaba de perder sus anclajes.','danger');}}
+        else if(item.state==='falling'){item.timer-=dt;item.fallY=(item.fallY||0)+260*dt;if(item.timer<=0)item.state='gone';}
+      }
+    }
+    triggerCollapse(item){
+      const source=item&&item._source||item;if(!source||!source.collapse||source.state!=='stable')return;
+      source.state='warning';source.timer=.7;this.audio.tone(125,.09,'sawtooth',.05,55);this.ai.observe('collapse');this.ai.record('collapse-warning',{id:source.id,x:source.x,world:this.world});
+    }
+    runnerSolids(){
+      const L=YMM.Levels.world5;
+      return [
+        ...this.runnerFloors.filter(f=>f.state==='stable'||f.state==='warning').map(f=>({...f,y:L.groundY+(f.fallY||0),h:180,oneWay:false,_source:f})),
+        ...this.runnerPlatforms.filter(p=>p.state==='stable'||p.state==='warning').map(p=>({...p,y:p.y+(p.fallY||0),h:p.h,oneWay:true,_source:p}))
+      ];
+    }
     updateWorld1(dt){
+      this.advanceCollapses(this.world1Platforms,dt);
       const p=this.player,L=YMM.Levels.world1,left=this.input.isDown('ArrowLeft','KeyA'),right=this.input.isDown('ArrowRight','KeyD'),dir=p.tauntLock>0?0:(right?1:0)-(left?1:0);
+      const sprintHeld=this.input.isDown('ControlLeft','ControlRight');p.sprinting=sprintHeld&&p.stamina>0;p.stamina=YMM.Util.clamp(p.stamina+(p.sprinting?-34:21)*dt,0,p.maxStamina);if(p.sprinting)this.ai.observe('sprint');
       if(dir)p.lastDir=dir;
       if(this.input.justPressed('ShiftLeft','ShiftRight')&&p.dashCooldown<=0){p.dashTimer=.17;p.dashCooldown=1.05;this.ai.observe('dash');this.ai.observe(p.lastDir<0?'dashLeft':'dashRight');this.audio.play('attack');this.particles.burst(p.x+p.w/2,p.y+p.h/2,'#72f3dc',12,90);}
-      p.vx=dir*(p.dashTimer>0?590:265);
+      p.vx=dir*(p.dashTimer>0?590:p.sprinting?365:265);
       if(p.dashTimer>0&&dir===0)p.vx=p.lastDir*590;
       if(this.input.justPressed('Space','ArrowUp','KeyW')&&p.grounded){p.vy=-445;p.grounded=false;this.ai.observe('jump');this.audio.play('attack');this.particles.burst(p.x+p.w/2,p.y+p.h,'#72f3dc',7,60);}
+      if(this.input.justPressed('KeyJ','KeyF')&&p.attackTimer<=0){
+        const heavy=this.input.justPressed('KeyF');p.attackTimer=heavy?.56:.29;p.attackKind=heavy?'heavy':'light';p.stamina=YMM.Util.clamp(p.stamina-(heavy?18:5),0,p.maxStamina);this.ai.observe('attack',{kind:p.attackKind});
+        const e0=this.enemy,reach=heavy?116:82,hit=Math.abs((p.x+p.w/2)-(e0.x+e0.w/2))<reach&&Math.abs((p.y+p.h/2)-(e0.y+e0.h/2))<58&&e0.stunned<=0;
+        this.ai.reportOutcome('pressure',hit,{world:1,kind:p.attackKind});
+        if(hit){e0.stunned=heavy?1.05:.58;e0.windup=0;e0.counterWindup=0;e0.x=YMM.Util.clamp(e0.x+p.lastDir*(heavy?92:48),70,L.width-90);this.ai.observe('countered');this.particles.burst(e0.x+15,e0.y,heavy?'#ffcf79':'#72f3dc',heavy?22:12,heavy?125:80);this.audio.play('hit');this.log(heavy?'GOLPE PESADO: contraataque interrumpido.':'Impacto: la IA ha perdido su ataque actual.','alert');}
+        else{this.audio.play('attack');this.toast(heavy?'El golpe pesado ha fallado.':'Fuera de alcance. Acércate antes de atacar.');}
+      }
       p.vy=Math.min(760,p.vy+1180*dt);
       const solids=this.solidsWorld1();p.x+=p.vx*dt;
       for(const s of solids){if(!s.oneWay&&YMM.Util.overlap(p,s)){if(p.vx>0)p.x=s.x-p.w;else if(p.vx<0)p.x=s.x+s.w;p.vx=0;}}
       p.x=YMM.Util.clamp(p.x,0,L.width-p.w);
       const previousY=p.y;p.y+=p.vy*dt;p.grounded=false;
-      for(const s of solids){if(s.oneWay){if(p.vy>=0&&previousY+p.h<=s.y+5&&YMM.Util.overlap(p,s)){p.y=s.y-p.h;p.grounded=true;p.vy=0;}}else if(YMM.Util.overlap(p,s)){if(p.vy>0){p.y=s.y-p.h;p.grounded=true;}else if(p.vy<0)p.y=s.y+s.h;p.vy=0;}}
+      for(const s of solids){if(s.oneWay){if(p.vy>=0&&previousY+p.h<=s.y+5&&YMM.Util.overlap(p,s)){p.y=s.y-p.h;p.grounded=true;p.vy=0;if(s.collapse)this.triggerCollapse(s);}}else if(YMM.Util.overlap(p,s)){if(p.vy>0){p.y=s.y-p.h;p.grounded=true;}else if(p.vy<0)p.y=s.y+s.h;p.vy=0;}}
       const e=this.enemy;
       // A well-timed landing on the little antagonist is a valid alternative to simply avoiding it.
       if(p.vy>=0&&previousY+p.h<=e.y+9&&p.y+p.h>=e.y&&p.x+p.w>e.x+4&&p.x<e.x+e.w-4&&e.stunned<=0){
@@ -97,25 +126,37 @@
     enterWorld4(){
       this.world=4;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;
       const L=YMM.Levels.world4;L.shards.forEach(s=>s.taken=false);
-      this.sentinels=L.sentinels.map((s,i)=>({...s,id:i,role:['hunter','flanker','warden'][i],attackTimer:1.1+i*.55,windup:0,stun:0,hitFlash:0}));
-      this.player={x:2.5,y:1.5,angle:0,vx:0,vy:0,health:4,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
+      this.sentinels=L.sentinels.map((s,i)=>({...s,id:i,role:['hunter','flanker','warden'][i],attackTimer:1.1+i*.55,windup:0,stun:0,hitFlash:0}));this.squadTactic='crossfire';this.squadCommandTimer=.65;
+      this.player={x:2.5,y:1.5,angle:0,vx:0,vy:0,health:4,maxHealth:4,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       this.ai.unlockInvasion();this.ai.speak('corruptor');this.ai.dialogueTimer=3.5;this.audio.play('portal');
       this.log('MUNDO 04: la IA ha convertido el código en arquitectura. Busca tres fragmentos y encuentra la salida.','danger');
       this.toast('MUNDO 04 — THE NULL CATHEDRAL / 3D');this.hud.sync();
     }
     enterWorld5(){
-      this.world=5;this.player={x:500,y:480,w:24,h:24,vx:0,vy:0,health:5,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
+      const L=YMM.Levels.world5;this.world=5;this.camera=0;this.runnerCells=L.cells.map((v,id)=>({...v,id}));
+      this.runnerCellCount=0;this.runnerFloors=L.floors.map((v,id)=>({...v,id,state:'stable',timer:0,fallY:0}));
+      this.runnerPlatforms=L.platforms.map((v,id)=>({...v,id,state:'stable',timer:0,fallY:0}));
+      this.runnerEnemies=L.enemies.map((v,id)=>({...v,spawnX:v.x,stun:0,windup:v.windup||0,chargeTimer:0,hitFlash:0,phase:'patrol'}));
+      this.runnerProjectiles=[];this.runnerEvent=null;this.runnerDirectorTimer=3.4;this.runnerScenarioIndex=-1;this.runnerShake=0;this.lastRunnerCheckpoint=80;
+      this.runnerAlly={x:30,y:430,pulseCooldown:0,dialogue:'No mires atrás. El suelo ya ha decidido.',dialogueTimer:2.8,warningTimer:0};
+      this.player={x:80,y:482,w:28,h:38,vx:245,vy:0,grounded:false,health:4,maxHealth:4,stamina:100,maxStamina:100,sprinting:false,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,combo:0,comboTimer:0};
+      this.ai.speak('corruptor');this.ai.dialogueTimer=3.8;this.audio.play('phase');
+      this.log('MUNDO 05: FRACTURE RUN. Cinco biomas se están mezclando; el terreno cae detrás de ti.','danger');
+      this.toast('CORRE · SALTA · COMBATE · EL SUELO SE DESPLOMA');this.hud.sync();
+    }
+    enterWorld6(){
+      this.world=6;this.player={x:500,y:480,w:24,h:24,vx:0,vy:0,health:5,maxHealth:5,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       this.boss={x:500,y:190,hp:14,maxHp:14,phase:'idle',attackType:'lattice',timer:.9,targetX:500,targetY:480,dx:0,dy:1,hitFlash:0,lastHitAt:-999,patternCount:0,stagger:0};
       this.ai.speak('endThreat');this.ai.dialogueTimer=4;this.audio.play('phase');
-      this.log('MUNDO 05: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');
-      this.toast('MUNDO 05 — THE LAST ARGUMENT');this.hud.sync();
+      this.log('MUNDO 06: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');
+      this.toast('MUNDO 06 — THE LAST ARGUMENT');this.hud.sync();
     }
     isWorld4Wall(x,y){
       const map=YMM.Levels.world4.map,tx=Math.floor(x),ty=Math.floor(y);
       return ty<0||ty>=map.length||tx<0||tx>=map[0].length||map[ty][tx]==='1';
     }
     updateWorld4(dt){
-      const p=this.player,L=YMM.Levels.world4;
+      const p=this.player,L=YMM.Levels.world4;this.squadCommandTimer-=dt;if(this.squadCommandTimer<=0){this.squadTactic=this.ai.chooseTactic('squad',['crossfire','flank','pinch','retreat-punish']);this.squadCommandTimer=3.4;this.ai.record('squad-command',{tactic:this.squadTactic,alive:this.sentinels.filter(s=>s.hp>0).length});}
       const turn=(this.input.isDown('ArrowRight')?1:0)-(this.input.isDown('ArrowLeft')?1:0);
       p.angle=(p.angle+turn*2.25*dt+Math.PI*4)%(Math.PI*2);
       const forward=(this.input.isDown('KeyW','ArrowUp')?1:0)-(this.input.isDown('KeyS','ArrowDown')?1:0);
@@ -140,17 +181,112 @@
         const d=Math.hypot(p.x-s.x,p.y-s.y),a=Math.atan2(p.y-s.y,p.x-s.x);
         if(d<6&&s.stun<=0){
           let tx=p.x,ty=p.y;
-          if(s.role==='flanker'){const side=s.id%2?1:-1;tx=p.x+Math.cos(a+Math.PI/2*side)*.9+p.vx*.004;ty=p.y+Math.sin(a+Math.PI/2*side)*.9+p.vy*.004;}
+          if(s.role==='flanker'){const side=s.id%2?1:-1,offset=this.squadTactic==='flank'?1.35:this.squadTactic==='pinch'?.52:.92;tx=p.x+Math.cos(a+Math.PI/2*side)*offset+p.vx*.004;ty=p.y+Math.sin(a+Math.PI/2*side)*offset+p.vy*.004;}
           if(s.role==='warden'&&d<2.5){tx=s.x;ty=s.y;}
           const ang=Math.atan2(ty-s.y,tx-s.x),step=Math.min((s.role==='flanker'?.72:.85)*dt,Math.max(0,Math.hypot(tx-s.x,ty-s.y)-(s.role==='warden'?2.2:.62))),nx=s.x+Math.cos(ang)*step,ny=s.y+Math.sin(ang)*step;
           if(!this.isWorld4Wall(nx,ny)){s.x=nx;s.y=ny;}
         }
-        if(s.role==='warden'&&d<4.1&&s.attackTimer<=0&&s.windup<=0){s.windup=.42;s.attackTimer=1.9;this.ai.record('warden-lock',{distance:+d.toFixed(2)});}
+        if(s.role==='warden'&&d<(this.squadTactic==='crossfire'?5.1:4.1)&&s.attackTimer<=0&&s.windup<=0){s.windup=this.squadTactic==='retreat-punish'?.31:.42;s.attackTimer=1.9;this.ai.record('warden-lock',{distance:+d.toFixed(2)});}
         if(wasLocking&&s.windup===0&&d<4.1&&p.invuln<=0){this.damagePlayer(1,'El centinela fijó tu posición. Muévete en cuanto veas la señal roja.');}
         if(s.role!=='warden'&&d<.72&&s.attackTimer<=0&&p.invuln<=0){s.attackTimer=1.5;this.damagePlayer(1,'El cazador ha cerrado la distancia. Gira, ataca y rompe su avance.');}
       }
     }
     updateWorld5(dt){
+      const p=this.player,L=YMM.Levels.world5;
+      this.advanceCollapses(this.runnerFloors,dt);this.advanceCollapses(this.runnerPlatforms,dt);
+      this.runnerShake=Math.max(0,this.runnerShake-dt);
+      const brake=this.input.isDown('ArrowLeft','KeyA'),sprintHeld=this.input.isDown('ControlLeft','ControlRight','ArrowRight','KeyD');
+      p.sprinting=sprintHeld&&p.stamina>1;p.stamina=YMM.Util.clamp(p.stamina+(p.sprinting?-30:17)*dt,0,p.maxStamina);
+      let speed=p.dashTimer>0?590:p.sprinting?385:brake?145:245;
+      p.vx=speed;p.x=YMM.Util.clamp(p.x+speed*dt,0,L.width-p.w);
+      if(p.sprinting)this.ai.observe('sprint',{world:5,speed});if(brake)this.ai.observe('retreat',{world:5,braking:true});else if(!p.sprinting)this.ai.observe('approach',{world:5,forward:true});
+      if(this.input.justPressed('Space','ArrowUp','KeyW')&&p.grounded){p.vy=-455;p.grounded=false;this.ai.observe('jump',{world:5});this.audio.play('attack');this.particles.burst(270,p.y+p.h,'#72f3dc',8,70);}
+      if(this.input.justPressed('ShiftLeft','ShiftRight')&&p.dashCooldown<=0){p.dashTimer=.22;p.dashCooldown=.9;p.invuln=Math.max(p.invuln,.22);p.stamina=YMM.Util.clamp(p.stamina-12,0,p.maxStamina);this.ai.observe('dash',{world:5});this.audio.play('attack');this.particles.burst(270,p.y+p.h/2,'#72f3dc',14,110);}
+      if(this.input.justPressed('KeyQ')&&this.runnerAlly.pulseCooldown<=0){
+        this.runnerAlly.pulseCooldown=8;this.ai.observe('special',{world:5,character:'ECHO'});let interrupted=0;
+        for(const e of this.runnerEnemies)if(e.hp>0&&Math.abs(e.x-p.x)<245){e.stun=1.35;e.windup=0;e.chargeTimer=0;interrupted++;}
+        this.runnerProjectiles=this.runnerProjectiles.filter(b=>Math.abs(b.x-p.x)>270);
+        p.invuln=Math.max(p.invuln,.24);this.runnerAlly.dialogue='Pulso liberado. Muévete antes de que vuelva a calcularte.';this.runnerAlly.dialogueTimer=2.1;
+        this.ai.reportOutcome('echo-pulse',interrupted>0,{interrupted});this.particles.burst(270,p.y+p.h/2,'#a18bff',32,170);this.audio.play('phase');this.toast('ECHO PULSE // '+interrupted+' HOSTILES INTERRUMPIDOS');
+      }
+      p.vy=Math.min(780,p.vy+1250*dt);const previousY=p.y;p.y+=p.vy*dt;p.grounded=false;
+      const solids=this.runnerSolids();
+      for(const s of solids){
+        if(s.oneWay){if(p.vy>=0&&previousY+p.h<=s.y+8&&p.x+p.w>s.x&&p.x<s.x+s.w){p.y=s.y-p.h;p.grounded=true;p.vy=0;if(s.collapse)this.triggerCollapse(s);}}
+        else if(p.x<s.x+s.w&&p.x+p.w>s.x&&previousY+p.h<=s.y+12&&p.vy>=0&&p.y+p.h>=s.y){p.y=s.y-p.h;p.grounded=true;p.vy=0;if(s.collapse)this.triggerCollapse(s);}
+      }
+      if(p.y>690){this.damagePlayer(1,'Te has quedado atrás: el vacío se ha tragado el camino.');p.x=Math.max(45,this.lastRunnerCheckpoint-35);p.y=400;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.4;}
+      for(const s of L.spikes){if(p.invuln<=0&&YMM.Util.overlap(p,{x:s.x,y:s.y+2,w:s.w,h:s.h-2})){this.damagePlayer(1,'Picos de convergencia. Salta antes del borde.');p.x=Math.max(this.lastRunnerCheckpoint,p.x-85);p.y=Math.min(p.y,430);p.vy=-190;this.runnerShake=.2;break;}}
+      for(const cell of this.runnerCells){if(!cell.taken&&Math.hypot(p.x-cell.x,p.y+p.h/2-cell.y)<43){cell.taken=true;this.runnerCellCount++;p.stamina=YMM.Util.clamp(p.stamina+30,0,p.maxStamina);this.ai.observe('collect',{world:5,cell:cell.id});this.particles.burst(cell.x-this.runnerCamera(),cell.y,'#72f3dc',20,120);this.audio.play('collect');this.log('Fragmento de memoria '+this.runnerCellCount+'/'+this.runnerCells.length+'. ECHO ha recuperado energía.','alert');}}
+      for(const cp of L.checkpoints){if(p.x>=cp&&this.lastRunnerCheckpoint<cp){this.lastRunnerCheckpoint=cp;this.log('PUNTO DE ANCLAJE '+Math.round(cp/L.width*100)+'% — la ruta se reconstruye aquí.','alert');this.toast('CHECKPOINT // '+Math.round(cp/L.width*100)+'%');}}
+      const cam=this.runnerCamera();
+      for(const e of this.runnerEnemies){
+        if(e.hp<=0)continue;e.stun=Math.max(0,e.stun-dt);e.hitFlash=Math.max(0,e.hitFlash-dt);e.attackTimer-=dt;
+        const delta=p.x-e.x,dist=Math.abs(delta);
+        if(e.type==='drone'){e.y=355+Math.sin(this.clock*2.4+e.spawnX*.01)*34;if(dist<470&&dist>70&&e.attackTimer<=0){e.attackTimer=1.45+Math.random()*.45;this.runnerProjectiles.push({x:e.x-15,y:e.y+13,vx:-350,vy:YMM.Util.clamp((p.y+15-e.y)*.16,-58,58),ttl:2.5,type:'drone',r:8});this.ai.record('agent-action',{id:e.id,type:'drone-salvo',distance:Math.round(dist)});}}
+        else if(e.type==='stalker'&&dist<390&&e.stun<=0){e.x+=Math.sign(delta)*Math.min(125,Math.abs(delta)*.7)*dt;e.phase='pursuit';}
+        else if(e.type==='rival'&&dist<410&&e.stun<=0){const target=p.x+(p.sprinting?110:175);e.x+=(target-e.x)*Math.min(1,dt*2.3);e.phase='mimic';if(e.attackTimer<=0){e.attackTimer=2.1;e.windup=.45;this.ai.record('agent-action',{id:e.id,type:'mimic-feint'});}}
+        else if((e.type==='brute'||e.type==='warden')&&dist<360&&e.stun<=0){
+          if(e.type==='brute'&&e.windup<=0&&e.chargeTimer<=0&&dist<230&&e.attackTimer<=0){e.windup=.62;e.attackTimer=2.6;e.phase='telegraph';this.ai.record('agent-action',{id:e.id,type:'brute-charge'});}
+          if(e.type==='warden'&&dist<400&&e.attackTimer<=0){e.attackTimer=2.15;this.runnerProjectiles.push({x:e.x-14,y:e.y+17,vx:-390,vy:YMM.Util.clamp((p.y+15-e.y)*.22,-72,72),ttl:2.6,type:'warden',r:9});e.phase='aim';this.ai.record('agent-action',{id:e.id,type:'aimed-shot'});}
+          if(e.windup>0){e.windup-=dt;if(e.windup<=0){e.chargeTimer=.48;e.phase='charge';}}
+          if(e.chargeTimer>0){e.chargeTimer-=dt;e.x+=Math.sign(delta)*545*dt;}
+        }
+        if(e.type==='rival'&&e.windup>0)e.windup=Math.max(0,e.windup-dt);
+        if(e.type==='stalker'&&p.x-e.x>130)e.x=Math.min(p.x-85,e.x+245*dt);
+        if(e.type==='brute'||e.type==='rival'||e.type==='stalker')e.y=L.groundY-(e.type==='rival'&&Math.abs(delta)<120?35:34);
+        if(dist<30&&Math.abs((p.y+p.h/2)-(e.y+18))<37&&p.invuln<=0){
+          if(p.dashTimer>0){e.hp-=1;e.stun=.5;p.invuln=.25;this.particles.burst(e.x-cam,e.y,'#72f3dc',12,95);}
+          else{this.damagePlayer(1,e.type.toUpperCase()+' te ha interceptado. Alterna salto, dash y ataques.');p.x=Math.max(this.lastRunnerCheckpoint,p.x-65);p.vy=-185;p.grounded=false;this.runnerShake=.18;}
+        }
+      }
+      for(const bolt of this.runnerProjectiles){bolt.x+=bolt.vx*dt;bolt.y+=bolt.vy*dt;bolt.ttl-=dt;if(bolt.ttl>0&&Math.abs(bolt.x-p.x)<22&&Math.abs(bolt.y-(p.y+p.h/2))<24&&p.invuln<=0){this.damagePlayer(1,'Proyectil predictivo. ECHO puede interrumpir las salvas con Q.');if(bolt.eventKind&&this.runnerEvent&&this.runnerEvent.kind===bolt.eventKind){this.ai.reportOutcome(bolt.eventKind,true,{projectileHit:true});this.runnerEvent.outcomeRecorded=true;}bolt.ttl=0;p.vy=-140;}}
+      this.runnerProjectiles=this.runnerProjectiles.filter(b=>b.ttl>0&&b.x>this.lastRunnerCheckpoint-180&&b.x<p.x+1000);
+      if(this.input.justPressed('KeyJ','KeyF')&&p.attackTimer<=0){
+        const heavy=this.input.justPressed('KeyF'),reach=heavy?132:88;p.attackTimer=heavy?.55:.28;p.attackKind=heavy?'heavy':'light';p.stamina=YMM.Util.clamp(p.stamina-(heavy?19:6),0,p.maxStamina);this.ai.observe('attack',{world:5,kind:p.attackKind});
+        const target=this.runnerEnemies.filter(e=>e.hp>0&&e.x>=p.x-48&&e.x<=p.x+reach&&Math.abs(e.y+17-(p.y+p.h/2))<72).sort((a,b)=>a.x-b.x)[0];
+        if(target){target.hp-=heavy?2:1;target.stun=heavy?.92:.46;target.hitFlash=.2;target.phase='stagger';if(target.hp<=0)this.ai.record('agent-defeated',{id:target.id,type:target.type});this.ai.reportOutcome('runner-attack',true,{id:target.id,type:target.type,kind:p.attackKind});this.particles.burst(target.x-cam,target.y,'#ffcf79',heavy?20:12,heavy?130:86);this.audio.play('hit');this.log((heavy?'GOLPE PESADO':'COMBO LIGERO')+' contra '+target.type.toUpperCase()+'. Integridad enemiga '+Math.max(0,target.hp)+'/'+target.maxHp+'.','alert');}
+        else{this.ai.reportOutcome('runner-attack',false,{kind:p.attackKind});this.audio.play('attack');this.toast('ATAQUE AL AIRE. Ajusta la distancia.');}
+      }
+      this.runnerAlly.pulseCooldown=Math.max(0,this.runnerAlly.pulseCooldown-dt);this.runnerAlly.x=p.x-55;this.runnerAlly.y=p.y-43+Math.sin(this.clock*3)*7;
+      const collapsingAhead=[...this.runnerFloors,...this.runnerPlatforms].find(s=>s.state==='warning'&&s.x>p.x-15&&s.x<p.x+300);
+      if(collapsingAhead&&this.runnerAlly.warningTimer<=0){this.runnerAlly.dialogue='¡El suelo se abre delante! Usa sprint o salta.';this.runnerAlly.dialogueTimer=2.2;this.runnerAlly.warningTimer=3.2;}
+      this.runnerAlly.warningTimer=Math.max(0,this.runnerAlly.warningTimer-dt);this.runnerAlly.dialogueTimer=Math.max(0,this.runnerAlly.dialogueTimer-dt);
+      this.updateRunnerDirector(dt);
+      const biome=L.biomes.findIndex(b=>p.x>=b.from&&p.x<b.to);
+      if(biome!==this.runnerScenarioIndex&&biome>=0){this.runnerScenarioIndex=biome;this.log('BIOMA '+(biome+1)+'/5 — '+L.biomes[biome].label+'. La arquitectura está dejando de obedecer.','danger');this.ai.record('biome-transition',{biome:L.biomes[biome].key,x:Math.round(p.x)});this.toast(L.biomes[biome].label);this.audio.play('glitch');}
+      if(p.x+p.w>=L.goal.x){this.log('Cruce de realidades completado. El núcleo original te está esperando.','danger');this.enterWorld6();return;}
+      this.camera=cam;
+    }
+    runnerCamera(){return YMM.Util.clamp(this.player.x-270,0,YMM.Levels.world5.width-this.canvas.width);}
+    repairRunnerCheckpoint(){
+      const x=this.lastRunnerCheckpoint||80;
+      for(const s of [...this.runnerFloors,...this.runnerPlatforms])if(Math.abs((s.x+s.w/2)-x)<360){s.state='stable';s.timer=0;s.fallY=0;}
+      for(const e of this.runnerEnemies)if(Math.abs(e.spawnX-x)<310&&e.hp<=0){e.hp=e.maxHp;e.stun=0;}
+      this.player.stamina=this.player.maxStamina;
+    }
+    updateRunnerDirector(dt){
+      this.runnerDirectorTimer-=dt;const p=this.player;
+      if(!this.runnerEvent&&this.runnerDirectorTimer<=0&&p.x<YMM.Levels.world5.goal.x-300){
+        const kinds=['ceiling-sweep','ground-rift','drone-salvo','shadow-rush','collapse-wave'],kind=this.ai.chooseTactic('runner',kinds);
+        this.runnerEvent={kind,x:p.x+560,state:'warning',timer:1.3,triggered:false,spawned:false};this.runnerDirectorTimer=4.5+Math.random()*2.2;
+        this.ai.record('runner-threat',{kind,x:Math.round(this.runnerEvent.x),prediction:this.ai.predictIntent()});this.ai.speak('adaptive');this.ai.dialogueTimer=2;
+        this.log('DIRECTOR DE ESCENARIO: amenaza seleccionada según tu patrón ('+kind+').','danger');
+      }
+      const e=this.runnerEvent;if(!e)return;e.timer-=dt;
+      if(e.state==='warning'&&e.timer<=0){e.state='active';e.timer=1.45;this.runnerShake=.16;this.ai.record('runner-threat-armed',{kind:e.kind});}
+      if(e.state==='active'&&!e.triggered){
+        const d=Math.abs(p.x-e.x);
+        if(e.kind==='drone-salvo'&&!e.spawned){e.spawned=true;for(let n=0;n<3;n++)this.runnerProjectiles.push({x:e.x+90+n*22,y:420+n*28,vx:-385,vy:(p.y+15-(420+n*28))*.12,ttl:2.5,type:'director-drone',eventKind:e.kind,r:8});}
+        if(e.kind==='shadow-rush'&&!e.spawned){e.spawned=true;this.runnerEnemies.push({id:'director-shadow-'+Math.round(this.elapsed),type:'shadow',x:e.x+80,y:YMM.Levels.world5.groundY-34,hp:2,maxHp:2,attackTimer:0,stun:0,windup:0,chargeTimer:0,hitFlash:0,spawnX:e.x+80,phase:'ambush'});}
+        if(e.kind==='collapse-wave'&&!e.spawned){e.spawned=true;const candidates=this.runnerFloors.filter(s=>s.collapse&&s.state==='stable'&&s.x>p.x+20&&s.x<p.x+700).slice(0,2);for(const s of candidates)this.triggerCollapse(s);this.runnerShake=.55;this.particles.burst(270,510,'#ff617c',32,180);this.ai.reportOutcome(e.kind,candidates.length>0,{sections:candidates.length});e.outcomeRecorded=true;}
+        if(d<72&&e.kind==='ground-rift'&&p.grounded&&p.invuln<=0){e.triggered=true;this.damagePlayer(1,'La grieta ha leído que permaneces en el suelo. Salta durante la señal.');p.vy=-160;p.grounded=false;this.runnerShake=.3;this.ai.reportOutcome(e.kind,true,{playerHit:true});e.outcomeRecorded=true;}
+        else if(d<92&&e.kind==='ceiling-sweep'&&p.y<435&&p.invuln<=0){e.triggered=true;this.damagePlayer(1,'El barrido aéreo ha leído tus saltos. Cambia de altura o usa ECHO.');p.vy=80;this.runnerShake=.3;this.ai.reportOutcome(e.kind,true,{playerHit:true});e.outcomeRecorded=true;}
+        if(p.x>e.x+130)e.triggered=true;
+      }
+      if(e.timer<=0||p.x>e.x+230){if(!e.outcomeRecorded)this.ai.reportOutcome(e.kind,false,{playerEvaded:true,triggered:e.triggered});this.ai.record('runner-threat-ended',{kind:e.kind,triggered:e.triggered,outcomeLearned:!!e.outcomeRecorded});this.runnerEvent=null;}
+    }
+    updateWorld6(dt){
       const p=this.player,b=this.boss;let dx=(this.input.isDown('ArrowRight','KeyD')?1:0)-(this.input.isDown('ArrowLeft','KeyA')?1:0),dy=(this.input.isDown('ArrowDown','KeyS')?1:0)-(this.input.isDown('ArrowUp','KeyW')?1:0);
       if(dx&&dy){dx*=.7071;dy*=.7071;}
       if(this.input.justPressed('ShiftLeft','ShiftRight')&&p.dashCooldown<=0){p.dashTimer=.22;p.dashCooldown=.78;this.ai.observe('dash');this.audio.play('attack');this.particles.burst(p.x,p.y,'#72f3dc',15,105);}
@@ -166,7 +302,7 @@
       b.hitFlash=Math.max(0,b.hitFlash-dt);b.stagger=Math.max(0,(b.stagger||0)-dt);b.timer-=dt;
       if(b.stagger>0)return;
       if(b.phase==='idle'&&b.timer<=0){
-        const profile=this.ai.profile;b.attackType=profile.still>.34?'ring':profile.dash>.24?'feint':profile.retreat>.27?'lunge':'lattice';
+        const profile=this.ai.profile;b.attackType=this.ai.chooseTactic('final-boss',['ring','feint','lunge','lattice']);
         b.patternCount++;b.targetX=YMM.Util.clamp(p.x+p.vx*.32,90,910);b.targetY=YMM.Util.clamp(p.y+p.vy*.32,100,520);
         const dd=Math.hypot(b.targetX-b.x,b.targetY-b.y)||1;b.dx=(b.targetX-b.x)/dd;b.dy=(b.targetY-b.y)/dd;b.phase='telegraph';b.timer=b.attackType==='ring'?.9:.7;
         this.ai.record('final-boss-policy',{attack:b.attackType,profile});this.audio.tone(145,.15,'sawtooth',.08,55);
@@ -177,10 +313,10 @@
       }else if(b.phase==='fakeout'&&b.timer<=0){b.targetX=YMM.Util.clamp(p.x+p.vx*.42,90,910);b.targetY=YMM.Util.clamp(p.y+p.vy*.42,100,520);const d=Math.hypot(b.targetX-b.x,b.targetY-b.y)||1;b.dx=(b.targetX-b.x)/d;b.dy=(b.targetY-b.y)/d;b.phase='charge';b.timer=.3;}
       else if(b.phase==='charge'){
         b.x+=b.dx*(b.attackType==='lunge'?790:570)*dt;b.y+=b.dy*(b.attackType==='lunge'?790:570)*dt;b.x=YMM.Util.clamp(b.x,100,900);b.y=YMM.Util.clamp(b.y,100,520);
-        if(Math.hypot(p.x-b.x,p.y-b.y)<40&&p.invuln<=0){if(p.parryTimer>0){b.stagger=.8;b.phase='vulnerable';b.timer=1.2;this.log('PARADA PERFECTA. La IA ha perdido su turno.','alert');this.particles.burst(b.x,b.y,'#72f3dc',30,170);}else this.damagePlayer(1,'El ataque final te alcanzó. Esquiva o pulsa E justo antes del impacto.');}
+        if(Math.hypot(p.x-b.x,p.y-b.y)<40&&p.invuln<=0){if(p.parryTimer>0){this.ai.reportOutcome(b.attackType,false,{world:6,parried:true});b.stagger=.8;b.phase='vulnerable';b.timer=1.2;this.log('PARADA PERFECTA. La IA ha perdido su turno.','alert');this.particles.burst(b.x,b.y,'#72f3dc',30,170);}else{this.ai.reportOutcome(b.attackType,true,{world:6,playerHit:true});this.damagePlayer(1,'El ataque final te alcanzó. Esquiva o pulsa E justo antes del impacto.');}}
         if(b.timer<=0||b.x===100||b.x===900||b.y===100||b.y===520){b.phase='vulnerable';b.timer=1.05;this.particles.burst(b.x,b.y,'#ff617c',22,125);this.log('El núcleo está abierto: encadena ataques fuertes con F.','alert');}
       }else if(b.phase==='ring'){
-        const d=Math.hypot(p.x-b.x,p.y-b.y);if(d<170&&p.invuln<=0){if(p.parryTimer>0){b.stagger=.7;b.phase='vulnerable';b.timer=1;this.log('La onda ha sido repelida. Contraataca.','alert');}else this.damagePlayer(1,'Onda de choque: abandona el radio o usa el dash.');}
+        const d=Math.hypot(p.x-b.x,p.y-b.y);if(d<170&&p.invuln<=0){if(p.parryTimer>0){this.ai.reportOutcome(b.attackType,false,{world:6,parried:true});b.stagger=.7;b.phase='vulnerable';b.timer=1;this.log('La onda ha sido repelida. Contraataca.','alert');}else{this.ai.reportOutcome(b.attackType,true,{world:6,playerHit:true});this.damagePlayer(1,'Onda de choque: abandona el radio o usa el dash.');}}
         if(b.timer<=0){b.phase='vulnerable';b.timer=.78;}
       }else if(b.phase==='vulnerable'&&b.timer<=0){b.phase='idle';b.timer=.48;}
     }
@@ -198,7 +334,7 @@
       b.hitFlash=Math.max(0,b.hitFlash-dt);b.timer-=dt;
       if(b.phase==='idle'&&b.timer<=0){
         const profile=this.ai.profile;
-        b.attackType=profile.still>.37?'pulse':profile.dash>.22&&(profile.dashLeft+profile.dashRight)>.2?'feint':profile.retreat>.29?'intercept':'charge';
+        b.attackType=this.ai.chooseTactic('boss3',['pulse','feint','intercept','charge']);
         b.patternCount++;b.targetX=YMM.Util.clamp(p.x+p.vx*(b.attackType==='intercept'?.48:.28),90,910);b.targetY=YMM.Util.clamp(p.y+p.vy*.25,100,520);
         const dd=Math.hypot(b.targetX-b.x,b.targetY-b.y)||1;b.dx=(b.targetX-b.x)/dd;b.dy=(b.targetY-b.y)/dd;b.phase='telegraph';b.timer=b.attackType==='pulse'?.82:.68;this.ai.record('bossPolicy',{attack:b.attackType,profile});this.audio.tone(180,.13,'sawtooth',.06,75);
         if(b.patternCount===2&&this.ai.phase>=4)this.ai.speak('lowHealth');
@@ -210,18 +346,21 @@
         b.targetX=YMM.Util.clamp(p.x+p.vx*.32,90,910);b.targetY=YMM.Util.clamp(p.y+p.vy*.2,100,520);const dd=Math.hypot(b.targetX-b.x,b.targetY-b.y)||1;b.dx=(b.targetX-b.x)/dd;b.dy=(b.targetY-b.y)/dd;b.phase='charge';b.timer=.28;this.audio.play('boss');
       }else if(b.phase==='charge'){
         b.x+=b.dx*(b.attackType==='intercept'?690:625)*dt;b.y+=b.dy*(b.attackType==='intercept'?690:625)*dt;b.x=YMM.Util.clamp(b.x,105,895);b.y=YMM.Util.clamp(b.y,105,515);
-        if(Math.hypot(p.x-b.x,p.y-b.y)<38&&p.invuln<=0)this.damagePlayer(1,'La carga te alcanzó. Esquiva durante la señal, no después.');
+        if(Math.hypot(p.x-b.x,p.y-b.y)<38&&p.invuln<=0){this.ai.reportOutcome(b.attackType,true,{world:3,playerHit:true});this.damagePlayer(1,'La carga te alcanzó. Esquiva durante la señal, no después.');}
         if(b.timer<=0||b.x===105||b.x===895||b.y===105||b.y===515){b.phase='vulnerable';b.timer=1.04;this.particles.burst(b.x,b.y,'#ff617c',16,90);this.log('Núcleo expuesto. Contraataca ahora.','alert');}
       }else if(b.phase==='pulse'){
-        if(Math.hypot(p.x-b.x,p.y-b.y)<152&&p.invuln<=0)this.damagePlayer(1,'La onda te alcanzó. La próxima vez sal de su radio.');if(b.timer<=0){b.phase='vulnerable';b.timer=.86;this.particles.burst(b.x,b.y,'#ff617c',16,90);this.log('La IA ha agotado su pulso. Núcleo expuesto.','alert');}
+        if(Math.hypot(p.x-b.x,p.y-b.y)<152&&p.invuln<=0){this.ai.reportOutcome(b.attackType,true,{world:3,playerHit:true});this.damagePlayer(1,'La onda te alcanzó. La próxima vez sal de su radio.');}if(b.timer<=0){b.phase='vulnerable';b.timer=.86;this.particles.burst(b.x,b.y,'#ff617c',16,90);this.log('La IA ha agotado su pulso. Núcleo expuesto.','alert');}
       }else if(b.phase==='vulnerable'&&b.timer<=0){b.phase='idle';b.timer=.62;}
     }
     damagePlayer(amount,message){
-      const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=1.15;this.audio.play('hit');this.particles.burst(p.x,p.y,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
-      
-      if(p.health<=0){if(this.world===3||this.world===5){p.health=this.world===5?5:3;p.x=500;p.y=this.world===5?480:485;this.boss.x=500;this.boss.y=this.world===5?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
+      const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=1.15;this.audio.play('hit');
+      const px=this.world===5? p.x-this.runnerCamera():p.x,py=p.y;this.particles.burst(px,py,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
+      if(p.health<=0){
+        if(this.world===3||this.world===6){p.health=this.world===6?5:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
         else if(this.world===4){p.health=4;p.x=2.5;p.y=1.5;p.angle=0;this.log('Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
-        else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}}
+        else if(this.world===5){p.health=4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
+        else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}
+      }
     }
     frame(dt){this.update(Math.min(.033,Math.max(.001,dt)));this.renderer.render(this);}
   }

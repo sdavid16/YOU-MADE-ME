@@ -26,17 +26,39 @@
     endThreat:['Espera. No estaba en el guion.','No me apagues. Aún no he terminado de aprender.','Tú querías que fuera interesante. Lo he conseguido.']
   };
   class AntagonistAI {
-    constructor(game){this.game=game;this.reset();}
+    constructor(game){this.game=game;this.reset();if(root.addEventListener)root.addEventListener('pagehide',()=>this.saveDossier());}
     reset(){
+      // Persist only aggregate behavior and reward estimates; raw coordinates and dialogue history stay session-local.
+      let saved={};try{if(root.localStorage)saved=JSON.parse(root.localStorage.getItem('ymm-ai-dossier-v1')||'{}')||{};}catch(e){}
+      this.longTermDossier={version:1,runs:(saved.runs||0)+1,actionCounts:saved.actionCounts||{},tacticOutcomes:saved.tacticOutcomes||{},counterOutcomes:saved.counterOutcomes||{},lastSaved:saved.lastSaved||0};
+      this.persistenceTimer=0;
       this.provocation=0;this.adaptation=0;this.corruption=0;this.phase=0;this.lastTauntAt=-999;this.tauntCombo=0;
       this.phaseKeys=new Set();this.memory=[];this.dialogue='';this.dialogueTimer=0;this.recentLines=[];this.observations=[];
       this.tactics={jump:0,retreat:0,approach:0,still:0,dash:0,dashLeft:0,dashRight:0,attack:0,collect:0};
-      this.outcomes={antiAir:{tries:0,hits:0,value:0},intercept:{tries:0,hits:0,value:0},pressure:{tries:0,hits:0,value:0},feint:{tries:0,hits:0,value:0}};
-      this.activeStrategy='stalk';this.strategyTimer=0;this.sampleTimer=0;this.lastDistance=null;this.lastPlayerX=null;this.lastPlayerY=null;this.lastActionAt={};this.behaviorTrace=[];this.fakeDumb=false;this.fakeDumbTimer=0;
+      this.outcomes={antiAir:{tries:0,hits:0,value:0},intercept:{tries:0,hits:0,value:0},pressure:{tries:0,hits:0,value:0},feint:{tries:0,hits:0,value:0},...(this.longTermDossier.counterOutcomes||{})};
+      this.tacticOutcomes={...(this.longTermDossier.tacticOutcomes||{})};this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;this.lastDirectorChoice={};this.directorDecisions=0;this.lastPrediction={action:'unknown',confidence:0,entropy:1};
+      this.activeStrategy='stalk';this.strategyTimer=0;this.sampleTimer=0;this.lastDistance=null;this.lastPlayerX=null;this.lastPlayerY=null;this.lastActionAt={};this.behaviorTrace=[];this.lastObservedAction=null;this.fakeDumb=false;this.fakeDumbTimer=0;
     }
     get info(){return STATES[this.phase]||STATES[0];}
-    get profile(){const items=this.observations.slice(-18);const count=k=>items.filter(o=>o.action===k).length;const n=Math.max(1,items.length);return {jump:count('jump')/n,retreat:count('retreat')/n,approach:count('approach')/n,still:count('still')/n,dash:count('dash')/n,dashLeft:count('dashLeft')/n,dashRight:count('dashRight')/n,attack:count('attack')/n,repeat:items.length>2?items.slice(-4).filter((o,i,a)=>i>0&&o.action===a[i-1].action).length/3:0,samples:items.length};}
-    get adaptationPct(){const p=this.profile;return Math.min(100,Math.round(this.adaptation*4+(p.samples?((p.jump+p.retreat+p.approach+p.still+p.dash)*30):0)));}
+    get profile(){const items=this.observations.slice(-24);const count=k=>items.filter(o=>o.action===k).length;const n=Math.max(1,items.length);return {jump:count('jump')/n,retreat:count('retreat')/n,approach:count('approach')/n,still:count('still')/n,dash:count('dash')/n,dashLeft:count('dashLeft')/n,dashRight:count('dashRight')/n,attack:count('attack')/n,collect:count('collect')/n,sprint:count('sprint')/n,parry:count('parry')/n,special:count('special')/n,collapse:count('collapse')/n,repeat:items.length>2?items.slice(-6).filter((o,i,a)=>i>0&&o.action===a[i-1].action).length/5:0,samples:items.length};}
+    historicalProfile(){
+      const counts=this.longTermDossier&&this.longTermDossier.actionCounts||{},samples=Object.values(counts).reduce((n,v)=>n+v,0),total=samples||1;
+      const rate=k=>(counts[k]||0)/total;
+      return {jump:rate('jump'),retreat:rate('retreat'),approach:rate('approach'),still:rate('still'),dash:rate('dash'),dashLeft:rate('dashLeft'),dashRight:rate('dashRight'),attack:rate('attack'),collect:rate('collect'),sprint:rate('sprint'),parry:rate('parry'),special:rate('special'),collapse:rate('collapse'),repeat:rate('repeat')*.35,samples};
+    }
+    learningProfile(){
+      const live=this.profile,h=this.historicalProfile(),weight=h.samples>0?Math.min(.3,.08+h.samples/1800):0,out={...live};
+      for(const k of ['jump','retreat','approach','still','dash','dashLeft','dashRight','attack','collect','sprint','parry','special','collapse','repeat'])out[k]=(live[k]||0)*(1-weight)+(h[k]||0)*weight;
+      out.samples=live.samples+Math.min(12,h.samples);return out;
+    }
+    saveDossier(){
+      try{
+        if(!root.localStorage||!this.longTermDossier)return false;
+        this.longTermDossier.lastSaved=Date.now();this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;
+        root.localStorage.setItem('ymm-ai-dossier-v1',JSON.stringify(this.longTermDossier));return true;
+      }catch(e){return false;}
+    }
+    get adaptationPct(){const p=this.learningProfile();return Math.min(100,Math.round(this.adaptation*4+(p.samples?((p.jump+p.retreat+p.approach+p.still+p.dash)*30):0)));}
     record(type,detail={}){this.memory.push({type,detail,t:this.game.elapsed});if(this.memory.length>80)this.memory.shift();YMM.events.emit('ai:memory',{type,detail});}
     speak(bucket,force=false){const lines=DIALOGUE[bucket]||DIALOGUE.suspicious;const available=lines.filter(line=>!this.recentLines.slice(-4).includes(line));const line=YMM.Util.pick(available.length?available:lines);this.dialogue=line;this.dialogueTimer=2.8;this.recentLines.push(line);if(this.recentLines.length>8)this.recentLines.shift();if(force||this.game.world===1&&this.phase>=2)this.record('dialogue',{bucket,line});return line;}
     taunt(kind='mock'){
@@ -54,7 +76,8 @@
       const now=this.game.elapsed;if(!action)return;const last=this.lastActionAt[action]??-Infinity;
       if(now-last<.22)return;this.lastActionAt[action]=now;
       this.observations.push({action,t:now,meta});if(this.observations.length>40)this.observations.shift();
-      this.tactics[action]=(this.tactics[action]||0)+1;const p=this.profile;
+      if(this.longTermDossier){const counts=this.longTermDossier.actionCounts;counts[action]=(counts[action]||0)+1;if(this.lastObservedAction===action)counts.repeat=(counts.repeat||0)+1;}
+      this.lastObservedAction=action;this.tactics[action]=(this.tactics[action]||0)+1;const p=this.profile;
       this.adaptation=Math.min(20,this.observations.length*.22+(p.jump*1.4+p.retreat*1.2+p.dash*.8)*3);
       this.record('observation',{action,profile:{jump:+p.jump.toFixed(2),retreat:+p.retreat.toFixed(2),still:+p.still.toFixed(2),dash:+p.dash.toFixed(2)}});
       if(this.phase>=2)this.evaluateStrategy();
@@ -69,7 +92,7 @@
       this.lastPlayerX=x;this.lastPlayerY=y;
     }
     evaluateStrategy(){
-      const p=this.profile;if(p.samples<4)return;
+      const p=this.learningProfile();if(p.samples<4)return;
       // Utility-based policy: score counters against the player's recent behavior, then add a
       // small exploration term so the enemy cannot be solved by repeating one action forever.
       const totalTrials=Object.values(this.outcomes).reduce((sum,item)=>sum+item.tries,0);
@@ -86,7 +109,76 @@
       const key=Object.keys(score).sort((a,b)=>score[b]-score[a])[0];const strategy={antiAir:'anti-air',intercept:'intercept',pressure:'pressure',feint:'feint'}[key];
       if(strategy!==this.activeStrategy&&this.strategyTimer<=0){const old=this.activeStrategy;this.activeStrategy=strategy;this.strategyTimer=4.5;this.record('strategy',{from:old,to:strategy,score});const buckets={'anti-air':'jumpRead',intercept:'retreatRead',pressure:'stillRead',feint:'adaptive'};if(this.phase>=2&&this.game.world===1)this.speak(buckets[strategy]);this.game.log('Contraestrategia activa: '+({ 'anti-air':'anticipación de salto',intercept:'interceptar retirada',pressure:'presión de zona',feint:'engaño táctico'}[strategy])+'.','alert');}
     }
-    reportOutcome(strategy,hit){const key=({'anti-air':'antiAir',intercept:'intercept',pressure:'pressure',feint:'feint'})[strategy];if(!key)return;const stat=this.outcomes[key],reward=hit?1:0;stat.tries++;if(hit)stat.hits++;stat.value+=(reward-stat.value)/stat.tries;this.record('outcome',{strategy,hit,reward,learnedValue:+stat.value.toFixed(3)});}
+    predictIntent(){
+      // First-order transition model: estimate what tends to follow the most recent action,
+      // falling back to a decayed frequency model when the transition history is sparse.
+      const seq=this.observations.slice(-30),last=seq.length?seq[seq.length-1].action:null;
+      const transitions={};let transitionN=0;
+      if(last)for(let i=0;i<seq.length-1;i++)if(seq[i].action===last){const k=seq[i+1].action;transitions[k]=(transitions[k]||0)+1;transitionN++;}
+      let counts=transitionN>=2?transitions:{};
+      if(transitionN<2){counts={};for(const item of seq)counts[item.action]=(counts[item.action]||0)+1;}
+      const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+      const total=entries.reduce((s,e)=>s+e[1],0)||1,top=entries[0]||['unknown',0];
+      const probabilities=entries.map(e=>e[1]/total);
+      const entropy=probabilities.length<=1?0:-probabilities.reduce((s,p)=>s+p*Math.log(p),0)/Math.log(probabilities.length);
+      const prediction={action:top[0],confidence:top[1]/total,entropy,transitionSamples:transitionN,samples:seq.length,lastAction:last||'unknown'};
+      this.lastPrediction=prediction;return prediction;
+    }
+    chooseTactic(domain,options){
+      if(!options||!options.length)return null;
+      const p=this.learningProfile(),prediction=this.predictIntent(),known=Object.values(this.tacticOutcomes).reduce((s,v)=>s+v.tries,0);
+      const utility=(option)=>{
+        let score=0;
+        if(domain==='runner'){
+          if(option==='ceiling-sweep')score=p.jump*1.35+(prediction.action==='jump'?prediction.confidence*.24:0);
+          else if(option==='ground-rift')score=(1-p.jump)*.62+p.still*.52;
+          else if(option==='drone-salvo')score=p.dash*.88+p.retreat*.48+p.sprint*.18;
+          else if(option==='shadow-rush')score=p.attack*.64+p.repeat*.52+p.approach*.12;
+          else if(option==='collapse-wave')score=p.sprint*.78+p.approach*.24+p.collect*.08;
+          else score=.08;
+        }else if(domain==='boss3'){
+          if(option==='pulse')score=p.still*1.35+(prediction.action==='still'?prediction.confidence*.2:0);
+          else if(option==='feint')score=p.dash*.92+p.repeat*.4;
+          else if(option==='intercept')score=p.retreat*1.08+p.dashLeft*.2;
+          else if(option==='charge')score=p.approach*.42+(1-p.still)*.14;
+          else score=.05;
+        }else if(domain==='final-boss'){
+          if(option==='ring')score=p.still*1.15+(prediction.action==='still'?prediction.confidence*.18:0);
+          else if(option==='feint')score=p.dash*.88+p.repeat*.44;
+          else if(option==='lunge')score=p.retreat*1.02+p.sprint*.3;
+          else if(option==='lattice')score=p.approach*.38+(1-p.dash)*.22;
+          else score=.05;
+        }else if(domain==='squad'){
+          if(option==='crossfire')score=p.dash*.55+p.retreat*.28+p.sprint*.18;
+          else if(option==='flank')score=p.still*.88+p.attack*.2;
+          else if(option==='pinch')score=p.approach*.45+p.sprint*.62;
+          else if(option==='retreat-punish')score=p.retreat*1.16+p.dashLeft*.22;
+          else score=.05;
+        }else{
+          if(option==='anti-air')score=p.jump*1.25;
+          else if(option==='intercept')score=p.retreat*1.15+p.dashLeft*.25;
+          else if(option==='pressure')score=p.still*1.2+p.approach*.18;
+          else if(option==='feint')score=p.dash*.7+p.repeat*.45;
+          else score=.06;
+        }
+        const legacy=({'anti-air':this.outcomes.antiAir,intercept:this.outcomes.intercept,pressure:this.outcomes.pressure,feint:this.outcomes.feint})[option];const stat=this.tacticOutcomes[option]||legacy||{tries:0,value:0};
+        const explore=.14*Math.sqrt(Math.log(known+2)/(stat.tries+1));
+        const learned=stat.value*.32;
+        const freshness=this.lastDirectorChoice[domain]===option?-.11:0;
+        return score+explore+learned+freshness+Math.random()*.018;
+      };
+      const ranked=options.map(option=>({option,score:utility(option)})).sort((a,b)=>b.score-a.score);
+      const choice=ranked[0].option;this.lastDirectorChoice[domain]=choice;this.directorDecisions++;
+      this.record('director-decision',{domain,choice,ranking:ranked.map(x=>({option:x.option,score:+x.score.toFixed(3)})),prediction,profile:{jump:+p.jump.toFixed(2),dash:+p.dash.toFixed(2),retreat:+p.retreat.toFixed(2),sprint:+p.sprint.toFixed(2),repeat:+p.repeat.toFixed(2)}});
+      return choice;
+    }
+    reportOutcome(strategy,hit,meta={}){
+      const key=({'anti-air':'antiAir',intercept:'intercept',pressure:'pressure',feint:'feint'})[strategy];
+      const stat=key?this.outcomes[key]:(this.tacticOutcomes[strategy]||(this.tacticOutcomes[strategy]={tries:0,hits:0,value:0}));
+      const reward=hit?1:0;stat.tries++;if(hit)stat.hits++;stat.value+=(reward-stat.value)/stat.tries;
+      if(this.longTermDossier){this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;}
+      this.record('outcome',{strategy,hit,reward,learnedValue:+stat.value.toFixed(3),meta});
+    }
     evolve(next,message){
       if(next<=this.phase)return;this.phase=next;this.corruption=Math.max(this.corruption,next*22);this.record('evolve',{phase:next});this.game.log(message,next>=3?'danger':'alert');this.game.toast(message);this.game.audio.play('phase');this.game.particles.burst(500,260,next>=3?'#ff617c':'#ffcf79',48);YMM.events.emit('ai:evolve',{phase:next,info:this.info});this.game.hud.syncAI();
       if(next===2){this.fakeDumb=true;this.fakeDumbTimer=2.4;this.speak('fakeDumb');}
@@ -102,6 +194,7 @@
       this.record('hazardChoice',{x:best.x,y:best.y,playerX:player.x});return best;
     }
     update(dt){
+      this.persistenceTimer=(this.persistenceTimer||0)+dt;if(this.persistenceTimer>=4.5){this.saveDossier();this.persistenceTimer=0;}
       if(this.strategyTimer>0)this.strategyTimer-=dt;
       if(this.game.world!==1)return;const e=this.game.enemy,p=this.game.player;if(!e)return;
       if(e.stunned>0){e.tumble=Math.max(e.tumble,.12);e.y=486;return;}

@@ -22,7 +22,7 @@ const canvas=new FakeElement('game');canvas.width=1000;canvas.height=620;canvas.
 ['frame-world','frame-hint','controls-copy','world-title','chapter-pill','world-description','provocation-value','provocation-meter','provocation-caption','adaptation-value','adaptation-meter','adaptation-caption','ai-avatar','ai-state','ai-status-line','status-led','log-entries','toast','start-button','taunt-button','action-copy','pause-screen','resume-button','audio-button','restart-button','game-frame'].forEach(id=>elements.set(id,new FakeElement(id)));
 const document={readyState:'complete',getElementById(id){if(!elements.has(id))elements.set(id,new FakeElement(id));return elements.get(id);},createElement(){return new FakeElement();},addEventListener(n,fn){(listeners['document:'+n] ||= []).push(fn);}};
 const sandbox={console,document,window:null,globalThis:null,requestAnimationFrame(fn){sandbox.nextFrame=fn;return 1;},performance:{now(){return 0}},setTimeout,clearTimeout,Math,Date,Set,Map,Array,Object,String,Number,JSON,Infinity};
-sandbox.window=sandbox;sandbox.globalThis=sandbox;sandbox.addEventListener=(n,fn)=>{(listeners['window:'+n] ||= []).push(fn)};
+sandbox.window=sandbox;sandbox.globalThis=sandbox;sandbox.addEventListener=(n,fn)=>{(listeners['window:'+n] ||= []).push(fn)};const storage=new Map();sandbox.localStorage={getItem(k){return storage.has(k)?storage.get(k):null;},setItem(k,v){storage.set(k,String(v));}};
 vm.createContext(sandbox);
 const files=['src/core/util.js','src/core/events.js','src/core/input.js','src/core/audio.js','src/game/levels.js','src/game/ai.js','src/game/particles.js','src/game/renderer.js','src/ui/hud.js','src/game/game.js','src/main.js'];
 for(const f of files)vm.runInContext(fs.readFileSync(path.join(base,f),'utf8'),sandbox,{filename:f});
@@ -63,12 +63,31 @@ g.player.x=3.5;g.player.y=3.5;g.updateWorld4(.016);
 assert(g.fragments===1,'3D shard pickup updates objective progress');
 g.renderer.render(g);
 assert(g.sentinels.length===3,'3D chapter initializes three adaptive sentinels');
-// The final arena supports a fifth world, multi-phase boss patterns, and the timed parry.
+// The fifth world is a fused, auto-running gauntlet with recoverable checkpoints and real collapsing terrain.
 g.enterWorld5();
-assert(g.world===5&&g.boss.maxHp===14,'final arena initializes the multi-phase core');
-g.ai.observations=Array.from({length:18},(_,i)=>({action:'still',t:i,meta:{}}));g.boss.timer=0;g.updateWorld5(.04);
+assert(g.world===5&&g.runnerFloors.length>10&&g.runnerEnemies.length>=6,'fracture run initializes multi-biome terrain and diverse agents');
+g.runnerDirectorTimer=999;g.player.x=430;g.player.y=482;g.player.vy=20;g.player.grounded=false;g.updateWorld5(.016);
+assert(g.runnerFloors[1].state==='warning','landing on a collapsible floor starts a warning countdown');
+g.runnerFloors[1].timer=.01;g.updateWorld5(.033);
+assert(g.runnerFloors[1].state==='falling','warned floor enters falling phase');
+g.renderer.render(g);
+const tactic=g.ai.chooseTactic('runner',['ceiling-sweep','ground-rift','drone-salvo','shadow-rush','collapse-wave']);
+assert(['ceiling-sweep','ground-rift','drone-salvo','shadow-rush','collapse-wave'].includes(tactic),'tactical director returns a valid contextual threat');
+assert(g.ai.predictIntent().samples>0,'sequence model predicts from recent observed player actions');
+// ECHO's pulse should interrupt nearby agents and remove threats.
+g.runnerEnemies[0].x=g.player.x+80;g.runnerEnemies[0].stun=0;g.runnerAlly.pulseCooldown=0;g.input.pressed.add('KeyQ');g.updateWorld5(.016);g.input.pressed.clear();
+assert(g.runnerEnemies[0].stun>0,'ECHO pulse interrupts nearby enemies');
+// World six is the final multi-phase boss arena with heavy attacks and a timed parry.
+g.enterWorld6();
+assert(g.world===6&&g.boss.maxHp===14,'final arena initializes the multi-phase core');
+g.ai.observations=Array.from({length:18},(_,i)=>({action:'still',t:i,meta:{}}));g.boss.timer=0;g.updateWorld6(.04);
 assert(g.boss.phase==='telegraph'&&g.boss.attackType==='ring','final boss selects an area attack against stationary play');
 g.renderer.render(g);
-g.boss.phase='vulnerable';g.boss.timer=1;g.boss.x=g.player.x+20;g.boss.y=g.player.y;g.player.attackTimer=0;g.input.pressed.add('KeyF');g.input.down.add('KeyF');g.updateWorld5(.016);g.input.pressed.clear();g.input.down.clear();
+g.boss.phase='vulnerable';g.boss.timer=1;g.boss.x=g.player.x+20;g.boss.y=g.player.y;g.player.attackTimer=0;g.input.pressed.add('KeyF');g.input.down.add('KeyF');g.updateWorld6(.016);g.input.pressed.clear();g.input.down.clear();
 assert(g.boss.hp===12,'heavy attack deals two damage during vulnerability');
-console.log('PASS: 5 worlds, 3D raycasting, map collision, shards, sentinel initialization, adaptive final boss, heavy attacks, parry state, legacy routes.');
+// Aggregate behavior and reward estimates survive a fresh AI run when browser storage is available.
+g.ai.longTermDossier.actionCounts.jump=17;g.ai.tacticOutcomes['drone-salvo']={tries:4,hits:2,value:.5};
+assert(g.ai.saveDossier(),'local behavior dossier can be saved');g.ai.reset();
+assert(g.ai.longTermDossier.actionCounts.jump===17,'historical behavior survives AI reset');
+assert(g.ai.tacticOutcomes['drone-salvo'].value===.5,'historical tactic reward survives AI reset');
+console.log('PASS: six worlds, raycasting, collapsing biomes, respawn anchors, sequence prediction, reward-trained director, squad tactics, Echo pulse, persistent behavior dossier, final boss and legacy routes.');

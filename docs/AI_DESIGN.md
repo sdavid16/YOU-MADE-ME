@@ -36,15 +36,29 @@ Las señales visuales son importantes: el jugador debe poder leer la intención,
 ## 4. Diálogo contextual
 Los diálogos dependen de fase, tipo de provocación, repetición de frases, estrategia aprendida y acontecimientos narrativos. Se evita repetir inmediatamente las mismas frases. En las fases iniciales la IA es burlona; tras observar patrones deja de responder como un NPC genérico y empieza a comentar el estilo del jugador.
 
-## 5. Mundos y combate añadidos
+## 5. Escenarios, personajes y progresión
 
-El cuarto mundo usa una cuadrícula de colisiones, vista en primera persona por raycasting, tres fragmentos coleccionables y centinelas que persiguen al jugador y atacan a corta distancia. El jugador puede girar, desplazarse lateralmente, hacer dash y encadenar ataques ligeros/pesados. El quinto mundo incorpora un jefe con más salud, señales previas y cuatro familias de ataque: patrón directo, embestida, finta y onda de área. El jugador puede esquivar, usar una parada con ventana temporal corta y aprovechar la fase vulnerable para castigar el núcleo.
+La campaña está formada por seis mundos con reglas distintas:
 
-La política del jefe consulta el perfil de conducta reciente para elegir el patrón. La IA registra aciertos y fallos de las contraestrategias y actualiza sus valores estimados durante la sesión.
+1. **Greenhill:** plataformas, provocaciones, salto, sprint, dash y ataques ligeros/pesados. Varias plataformas pasan por estados estable, advertencia, caída y desaparición.
+2. **Memory Maze:** laberinto, fragmentos, terminal y amenazas espaciales.
+3. **No Longer a Joke:** primer jefe que reacciona a hábitos de quietud, dash, retirada y aproximación.
+4. **The Null Cathedral:** vista en primera persona por raycasting, colisiones en cuadrícula, tres fragmentos y tres centinelas con roles de cazador, flanqueador y guardián. Un director compartido asigna fuego cruzado, flanqueo, pinza o castigo de retirada.
+5. **Fracture Run:** persecución horizontal de seis kilómetros de juego que fusiona cinco biomas en una ruta continua. Incluye plataformas/suelo colapsables, grietas, drones, sombras, proyectiles, checkpoints, células de memoria y la aliada ECHO, cuyo pulso Q interrumpe enemigos cercanos.
+6. **The Last Argument:** jefe final con ataques de área, fintas, embestidas y carga, más una ventana vulnerable para contraatacar y una parada temporizada.
 
-## 6. Limitaciones deliberadas
-- El renderizado del mundo 4 es perspectiva por raycasting sobre un mapa 2D, no geometría poligonal 3D ni un motor WebGL.
-- No hay aprendizaje entre sesiones.
-- El agente no entiende lenguaje libre: las provocaciones son acciones de juego conocidas.
-- No hay LLM ni entrenamiento de red neuronal.
-- La personalidad se representa mediante estados narrativos y diálogos escritos; la adaptación mecánica es real dentro de las reglas del juego.
+El mundo 5 contiene varios roles conductuales: stalker (perseguidor), drone (salvas predictivas), brute (ataque cargado), rival (imita el ritmo del jugador), warden (disparo a distancia) y sombras de emboscada. El suelo proporciona señales visuales antes de desmoronarse. ECHO avisa del colapso que viene y puede comprar tiempo, pero su pulso tiene enfriamiento.
+
+El renderizado del mundo 4 usa raycasting de una cuadrícula 2D para simular perspectiva en primera persona. Es 3D perceptual, no un modelo de geometría poligonal ni un motor WebGL.
+
+## 6. Director táctico y memoria entre mundos
+
+La directora de Fracture Run utiliza chooseTactic('runner', ...) para elegir entre barrido aéreo, grieta de suelo, salva de drones, sombra perseguidora y colapso en cadena. Cada opción puntúa hábitos recientes y la predicción de la siguiente acción; se añade exploración y una estimación aprendida de recompensas. Al terminar una amenaza se registra si alcanzó al jugador o fue esquivada. En la catedral tridimensional un director de escuadrón elige directivas compartidas —fuego cruzado, flanqueo, pinza o castigo de retirada— mientras cazador, flanqueador y guardián mantienen roles individuales. Los jefes de los mundos 3 y 6 también consultan el director táctico.
+
+El archivo ymm-ai-dossier-v1 de localStorage, cuando está disponible, guarda solo estadísticas agregadas de acciones y recompensas de tácticas: no almacena coordenadas, diálogo ni una transcripción de la partida. Si el navegador bloquea el almacenamiento, el juego sigue funcionando con aprendizaje limitado a la sesión.
+
+## 7. Limitaciones deliberadas
+- El mundo 4 usa raycasting sobre una cuadrícula 2D para simular perspectiva de primera persona; aún no es geometría poligonal 3D ni un motor WebGL.
+- El agente no entiende lenguaje libre: las provocaciones y el diálogo son acciones conocidas y líneas escritas.
+- No hay LLM ni entrenamiento de red neuronal. La complejidad está en la arquitectura de decisiones, los perfiles de conducta, la coordinación por roles y las recompensas online.
+- La personalidad se representa mediante estados narrativos y diálogo contextual; la adaptación mecánica opera dentro de las reglas del juego.
