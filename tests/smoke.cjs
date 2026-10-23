@@ -24,7 +24,7 @@ const document={readyState:'complete',getElementById(id){if(!elements.has(id))el
 const sandbox={console,document,window:null,globalThis:null,requestAnimationFrame(fn){sandbox.nextFrame=fn;return 1;},performance:{now(){return 0}},setTimeout,clearTimeout,Math,Date,Set,Map,Array,Object,String,Number,JSON,Infinity};
 sandbox.window=sandbox;sandbox.globalThis=sandbox;sandbox.addEventListener=(n,fn)=>{(listeners['window:'+n] ||= []).push(fn)};const storage=new Map();sandbox.localStorage={getItem(k){return storage.has(k)?storage.get(k):null;},setItem(k,v){storage.set(k,String(v));}};
 vm.createContext(sandbox);
-const files=['src/core/util.js','src/core/events.js','src/core/input.js','src/core/audio.js','src/game/levels.js','src/game/ai.js','src/game/particles.js','src/game/renderer.js','src/ui/hud.js','src/game/meta-progression.js','src/ui/touch-controls.js','src/game/game.js','src/main.js'];
+const files=['src/core/util.js','src/core/events.js','src/core/input.js','src/core/audio.js','src/game/levels.js','src/game/ai.js','src/game/particles.js','src/game/renderer.js','src/ui/hud.js','src/game/meta-progression.js','src/game/mission-director.js','src/ui/touch-controls.js','src/game/game.js','src/main.js'];
 for(const f of files)vm.runInContext(fs.readFileSync(path.join(base,f),'utf8'),sandbox,{filename:f});
 const g=sandbox.youMadeMe;
 function assert(v,msg){if(!v)throw new Error('ASSERTION FAILED: '+msg);}
@@ -191,5 +191,5 @@ assert(g.meta.profile.upgrades.vitality===1&&g.meta.modifiers.health===1,'health
 g.meta.applyPlayerModifiers(g.player);
 assert(g.player.maxHealth===baseHealth+1,'health upgrade increases maximum health on a fresh player object');
 assert(g.meta.profile.contracts.items.length===3,'daily contract rotation creates three objectives');
-assert(g.meta.profile.stats.worldVisits&&typeof g.meta.profile.stats.worldVisits==='object','campaign profile stores world visit records');
+assert(g.meta.profile.stats.worldVisits&&typeof g.meta.profile.stats.worldVisits==='object','campaign profile stores world visit records');\nassert(g.missionDirector instanceof sandbox.YMM.MissionDirector,'per-world mission director initializes');\nassert(g.missionDirector.mission&&g.missionDirector.mission.world===1,'a run starts with an optional side objective');\ng.missionDirector.metrics.alive=g.missionDirector.mission.goal;g.missionDirector.update(g,0.01);\nassert(g.missionDirector.mission.completed,'side objective completion is detected');\nassert(g.missionDirector.completeCount>=1,'completed side objective is recorded in mission history');
 console.log('PASS: twelve-world campaign, adaptive AI, campaign progression, upgrade economy, touch-control compatibility, achievements, contracts, PWA shell and persistent dossiers.');
