@@ -40,4 +40,19 @@ g.player.x=sandbox.YMM.Levels.world2.terminal.x+24;g.player.y=sandbox.YMM.Levels
 g.player.x=sandbox.YMM.Levels.world2.portal.x;g.player.y=sandbox.YMM.Levels.world2.portal.y;g.updateWorld2(.01);assert(g.world===3&&g.boss.hp===8,'portal reaches world 3 boss setup');g.renderer.render(g);
 g.boss.phase='vulnerable';g.boss.hp=1;g.boss.x=g.player.x;g.boss.y=g.player.y;g.input.pressed.add('KeyJ');g.update(1/60);assert(g.screen==='ending'&&g.ending==='escalation','final ending after boss defeat');g.renderer.render(g);
 g.newGame();g.player.x=sandbox.YMM.Levels.world1.goal.x;g.updateWorld1(1/60);assert(g.screen==='ending'&&g.ending==='standard','quiet route has standard ending');g.renderer.render(g);
-console.log('PASS: boot, start, taunt cooldown, AI evolution, one-way platform, fragments, terminal, portal, boss win, standard ending.');
+// The high-risk challenge adds pressure but may not skip narrative phases.
+g.newGame();
+for(let i=0;i<2;i++){g.ai.lastTauntAt=-999;g.provoke('humiliate');}
+assert(g.ai.provocation===4&&g.ai.phase===1,'high-risk taunts advance only one evolution phase per interaction');
+g.ai.lastTauntAt=-999;g.provoke('humiliate');assert(g.ai.phase===2,'challenge reaches adaptive phase without skipping it');
+g.ai.lastTauntAt=-999;g.provoke('humiliate');assert(g.ai.phase===3,'challenge reaches corruption phase in sequence');
+// Verify player profile can drive the utility policy toward its jump counter.
+g.ai.observations=Array.from({length:12},(_,i)=>({action:'jump',t:i,meta:{}}));g.ai.phase=2;g.ai.strategyTimer=0;g.ai.evaluateStrategy();
+assert(g.ai.activeStrategy==='anti-air','jump-heavy profile selects anti-air policy');
+g.ai.reportOutcome('anti-air',true);assert(g.ai.outcomes.antiAir.value===1,'counter-policy reward is learned from a successful hit');
+// Check that the boss adapts attack selection to recent stillness and dash patterns.
+g.enterWorld3();g.ai.observations=Array.from({length:18},(_,i)=>({action:'still',t:i,meta:{}}));g.boss.timer=0;g.updateWorld3(.04);
+assert(g.boss.attackType==='pulse','stationary profile triggers area pulse');
+g.boss.phase='idle';g.boss.timer=0;g.ai.observations=Array.from({length:18},(_,i)=>({action:i%3===0?'dash':i%2?'dashLeft':'dashRight',t:i,meta:{}}));g.updateWorld3(.04);
+assert(g.boss.attackType==='feint','dash-heavy profile triggers feint');
+console.log('PASS: boot, controls-ready, taunt cooldown, staged evolution, adaptive counter-policy, platform landing, memory shards, terminal, portal, adaptive boss, both endings.');
