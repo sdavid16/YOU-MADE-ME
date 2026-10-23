@@ -3,7 +3,7 @@
   class Game {
     constructor(canvas,hud){
       this.canvas=canvas;this.input=new YMM.Input();this.audio=new YMM.AudioSystem();this.renderer=new YMM.Renderer(canvas);this.particles=new YMM.ParticleSystem();this.hud=hud;
-      this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';
+      this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.difficulty='normal';this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';
     }
     newGame(keepMenu=false){
       this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.logHistory=[];this.particles.items=[];this.ai.reset();
@@ -14,19 +14,40 @@
       if(this.hud){this.hud.clearLog();this.hud.sync(true);}
       if(!keepMenu){this.audio.unlock();this.audio.play('start');this.log('Sesión iniciada. Dificultad: ridícula. Probabilidad de arrepentimiento: no disponible.');this.toast('Llega a la salida. O encuentra algo más divertido.');}
     }
+    get difficultyScale(){return this.difficulty==='story'?.78:this.difficulty==='nightmare'?1.32:1;}
+    cycleDifficulty(){const modes=['story','normal','nightmare'];this.difficulty=modes[(modes.indexOf(this.difficulty)+1)%modes.length];const label={story:'HISTORIA',normal:'NORMAL',nightmare:'PESADILLA'}[this.difficulty];this.toast('DIFICULTAD // '+label);this.log('Parámetros de dificultad cambiados: '+label+'.','alert');if(this.hud)this.hud.sync();return this.difficulty;}
+    openTauntConsole(){if(this.screen!=='playing')return false;this.screen='taunting';if(this.hud){this.hud.sync();this.hud.focusTauntInput();}return true;}
+    closeTauntConsole(){if(this.screen!=='taunting')return false;this.screen='playing';if(this.hud)this.hud.sync();return true;}
+    provokeCustom(text){const phrase=String(text||'').trim().slice(0,140);if(!phrase){this.toast('Escribe una provocación antes de transmitirla.');return false;}const kind=this.ai.classifyTaunt(phrase);if(this.screen==='taunting')this.closeTauntConsole();this.lastTauntText=phrase;this.lastTauntCategory=kind;this.lastTauntTimer=3.6;this.provoke(kind);return true;}
     pause(){if(this.screen==='playing'){this.screen='paused';this.hud.sync();}}
     resume(){if(this.screen==='paused'){this.screen='playing';this.audio.unlock();this.hud.sync();}}
     toast(message){if(this.hud)this.hud.toast(message);}
     log(message,kind='normal'){this.logHistory.unshift({message,kind,t:this.elapsed});if(this.logHistory.length>30)this.logHistory.pop();if(this.hud)this.hud.addLog(message,kind);}
-    provoke(kind){
-      if(this.screen!=='playing')return;
-      if(this.world===1){if(kind==='humiliate'){this.player.tauntLock=.28;const close=Math.abs((this.player.x+this.player.w/2)-(this.enemy.x+15))<170;if(this.ai.phase>=1&&close){this.enemy.windup=Math.max(this.enemy.windup,.35);this.log('Desafío aceptado. La IA castiga la provocación a corta distancia.','danger');}else this.log('Desafío lanzado. Más progreso, menos margen de error.','alert');}this.ai.taunt(kind);this.hud.sync();return;}
-      this.ai.record('taunt-after-invasion',{world:this.world});
-      if(this.world===2)this.ai.speak(this.fragments>=2?'corruptor':'world2Fragment',true);
-      else if(this.world===4)this.ai.speak('corruptor',true);
-      else if(this.world===5)this.ai.speak('invader',true);
-      else this.ai.speak(this.boss&&this.boss.hp<=3?'lowHealth':'world3Start',true);
-      this.audio.play('glitch');this.log('La IA ya no necesita que la provoques para recordarte.','danger');this.hud.sync();
+    provoke(kind='mock'){
+      if(this.screen!=='playing')return false;
+      const accepted=this.ai.taunt(kind);if(!accepted)return false;
+      const p=this.player;
+      if(kind==='logic'){p.intelTimer=4.6;this.ai.record('taunt-intel',{world:this.world,phase:this.ai.phase});this.toast('LECTURA TÁCTICA // patrones revelados durante 4.6 s');}
+      if(kind==='threat'){
+        if(this.world===1&&Math.abs((p.x+p.w/2)-(this.enemy.x+15))<200){this.enemy.windup=Math.max(this.enemy.windup,.28);this.enemy.attackCooldown=Math.min(this.enemy.attackCooldown,.7);this.log('La amenaza ha provocado una respuesta inmediata.','danger');}
+        else if(this.world===5&&this.runnerDirectorTimer!==undefined){this.runnerDirectorTimer=Math.min(this.runnerDirectorTimer,.85);this.log('La IA acepta el desafío: la siguiente amenaza llegará antes.','danger');}
+        else if((this.world===3||this.world===6)&&this.boss){this.boss.timer=Math.min(this.boss.timer,.48);this.log('El jefe ha reducido el intervalo antes del siguiente patrón.','danger');}
+        else if(this.world===4&&this.squadCommandTimer!==undefined){this.squadCommandTimer=Math.min(this.squadCommandTimer,.15);this.log('Los centinelas han recibido una orden nueva.','danger');}
+      }
+      if(kind==='psychology'){
+        if(this.world===1&&this.enemy){this.enemy.stunned=Math.max(this.enemy.stunned,.58);this.enemy.windup=0;this.enemy.counterWindup=0;}
+        if(this.world===4&&this.sentinels){for(const e of this.sentinels){e.stun=Math.max(e.stun,.52);e.windup=0;}this.squadCommandTimer=Math.max(this.squadCommandTimer,.9);}
+        if(this.world===5&&this.runnerEnemies){for(const e of this.runnerEnemies)if(e.hp>0&&Math.abs(e.x-p.x)<205){e.stun=Math.max(e.stun,.52);e.windup=0;e.chargeTimer=0;}this.runnerProjectiles=(this.runnerProjectiles||[]).filter(b=>Math.abs(b.x-p.x)>90);}
+        if((this.world===3||this.world===6)&&this.boss){this.boss.timer+=.42;if(this.boss.phase==='telegraph')this.boss.timer+=.32;}
+        this.ai.strategyTimer=Math.max(this.ai.strategyTimer,1.2);this.ai.record('taunt-psychology',{world:this.world});this.toast('INTERFERENCIA PSICOLÓGICA // ventana de 1.2 s');
+      }
+      if(kind==='humiliate'){
+        if(this.world===1){p.tauntLock=.28;const close=Math.abs((p.x+p.w/2)-(this.enemy.x+15))<170;if(this.ai.phase>=1&&close){this.enemy.windup=Math.max(this.enemy.windup,.35);this.log('Desafío aceptado. La IA castiga la provocación a corta distancia.','danger');}else this.log('Desafío lanzado. Más progreso, menos margen de error.','alert');}
+        else if(this.world===5&&this.runnerAlly){this.runnerDirectorTimer=Math.min(this.runnerDirectorTimer,.55);this.toast('DESAFÍO ACEPTADO // corre');}
+      }
+      if(kind==='intellect')this.ai.record('taunt-intellect',{world:this.world});
+      if(kind==='mock')this.ai.record('taunt-mock',{world:this.world});
+      this.hud.sync();return true;
     }
     finish(ending){this.ending=ending;this.screen='ending';this.audio.play(ending==='escalation'?'phase':'win');this.log(ending==='escalation'?'Proceso finalizado. Una entidad nueva ha cruzado la frontera.':'Proceso finalizado sin alterar el mundo original.',ending==='escalation'?'danger':'normal');this.hud.sync();}
     enterWorld2(){
@@ -42,13 +63,14 @@
     update(dt){
       this.clock+=dt;
       if(this.screen==='menu'){if(this.input.justPressed('Enter','Space')){this.audio.unlock();this.newGame();}this.input.endFrame();return;}
+      if(this.screen==='taunting'){if(this.input.justPressed('Escape'))this.closeTauntConsole();else if(this.input.justPressed('Digit1','Digit2','Digit3','Digit4')){const codes=['Digit1','Digit2','Digit3','Digit4'],kinds=['intellect','logic','threat','psychology'],index=codes.findIndex(k=>this.input.justPressed(k));this.closeTauntConsole();if(index>=0)this.provoke(kinds[index]);}this.input.endFrame();return;}
       if(this.screen==='paused'){if(this.input.justPressed('Escape'))this.resume();this.input.endFrame();return;}
       if(this.screen==='ending'){if(this.input.justPressed('Enter','Space'))this.newGame();this.input.endFrame();return;}
       if(this.input.justPressed('Escape')){this.pause();this.input.endFrame();return;}
       this.elapsed+=dt;this.player.invuln=Math.max(0,this.player.invuln-dt);this.player.tauntLock=Math.max(0,(this.player.tauntLock||0)-dt);this.player.attackTimer=Math.max(0,this.player.attackTimer-dt);this.player.dashTimer=Math.max(0,this.player.dashTimer-dt);this.player.dashCooldown=Math.max(0,this.player.dashCooldown-dt);this.player.stompFlash=Math.max(0,this.player.stompFlash-dt);
-      if(this.ai.dialogueTimer>0)this.ai.dialogueTimer=Math.max(0,this.ai.dialogueTimer-dt);
+      if(this.ai.dialogueTimer>0)this.ai.dialogueTimer=Math.max(0,this.ai.dialogueTimer-dt);if(this.player.intelTimer>0)this.player.intelTimer=Math.max(0,this.player.intelTimer-dt);if(this.lastTauntTimer>0)this.lastTauntTimer=Math.max(0,this.lastTauntTimer-dt);
       if(this.world!==5)this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
-      if(this.input.justPressed('KeyT'))this.provoke('mock');if(this.input.justPressed('KeyG'))this.provoke('humiliate');
+      if(this.input.justPressed('KeyT'))this.openTauntConsole();if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
       if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else this.updateWorld6(dt);
       this.ai.update(dt);this.particles.update(dt);
@@ -353,12 +375,12 @@
       }else if(b.phase==='vulnerable'&&b.timer<=0){b.phase='idle';b.timer=.62;}
     }
     damagePlayer(amount,message){
-      const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=1.15;this.audio.play('hit');
+      const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=this.difficulty==='story'?1.5:this.difficulty==='nightmare'?.88:1.15;this.audio.play('hit');
       const px=this.world===5? p.x-this.runnerCamera():p.x,py=p.y;this.particles.burst(px,py,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
       if(p.health<=0){
         if(this.world===3||this.world===6){p.health=this.world===6?5:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
         else if(this.world===4){p.health=4;p.x=2.5;p.y=1.5;p.angle=0;this.log('Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
-        else if(this.world===5){p.health=4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
+        else if(this.world===5){p.health=this.difficulty==='story'?5:4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
         else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}
       }
     }
