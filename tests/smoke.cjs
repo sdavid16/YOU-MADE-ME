@@ -38,7 +38,7 @@ for(const f of sandbox.YMM.Levels.world2.fragments){g.player.x=f.x;g.player.y=f.
 assert(g.fragments===3,'all three fragments can be collected');
 g.player.x=sandbox.YMM.Levels.world2.terminal.x+24;g.player.y=sandbox.YMM.Levels.world2.terminal.y+24;g.input.pressed.add('KeyE');g.updateWorld2(.01);g.input.pressed.clear();assert(g.uplinkActive,'terminal activates after fragments');
 g.player.x=sandbox.YMM.Levels.world2.portal.x;g.player.y=sandbox.YMM.Levels.world2.portal.y;g.updateWorld2(.01);assert(g.world===3&&g.boss.hp===8,'portal reaches world 3 boss setup');g.renderer.render(g);
-g.boss.phase='vulnerable';g.boss.hp=1;g.boss.x=g.player.x;g.boss.y=g.player.y;g.input.pressed.add('KeyJ');g.update(1/60);assert(g.screen==='ending'&&g.ending==='escalation','final ending after boss defeat');g.renderer.render(g);
+g.boss.phase='vulnerable';g.boss.hp=1;g.boss.x=g.player.x;g.boss.y=g.player.y;g.input.pressed.add('KeyJ');g.update(1/60);assert(g.screen==='playing'&&g.world===4,'world 3 boss unlocks the 3D cathedral');g.renderer.render(g);
 g.newGame();g.player.x=sandbox.YMM.Levels.world1.goal.x;g.updateWorld1(1/60);assert(g.screen==='ending'&&g.ending==='standard','quiet route has standard ending');g.renderer.render(g);
 // The high-risk challenge adds pressure but may not skip narrative phases.
 g.newGame();
