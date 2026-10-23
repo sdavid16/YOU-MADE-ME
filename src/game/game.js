@@ -210,7 +210,7 @@
       this.toast('SIGNAL BREAK // J DISPARAR · F PULSO · SHIFT DASH');this.hud.sync();
     }
     enterWorld8(){
-      const L=YMM.Levels.world8;this.world=8;this.camera=0;this.fragments=0;L.shards.forEach(s=>s.taken=false);
+      const L=YMM.Levels.world8;this.world=8;this.camera=0;this.fragments=0;this.archiveProjectiles=[];L.shards.forEach(s=>s.taken=false);
       const roster=L.sentinels.concat(this.difficulty==='nightmare'?[{x:10.5,y:5.5,hp:4,maxHp:4,role:'flanker'},{x:8.5,y:13.5,hp:4,maxHp:4,role:'hunter'}]:[]);
       const healthFactor=this.difficulty==='nightmare'?1.5:this.difficulty==='story'?.8:1;
       this.sentinels=roster.map((s,i)=>({...s,id:i,hp:Math.ceil(s.hp*healthFactor),maxHp:Math.ceil(s.maxHp*healthFactor),role:s.role||['hunter','flanker','warden'][i%3],attackTimer:this.difficulty==='nightmare'?.65:1.05+i*.18,windup:0,stun:0,hitFlash:0}));
