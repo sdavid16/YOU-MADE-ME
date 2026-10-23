@@ -3,7 +3,7 @@
   class Game {
     constructor(canvas,hud){
       this.canvas=canvas;this.input=new YMM.Input();this.audio=new YMM.AudioSystem();this.renderer=new YMM.Renderer(canvas);this.particles=new YMM.ParticleSystem();this.hud=hud;
-      this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.difficulty='normal';this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';this.meta=YMM.MetaProgression?new YMM.MetaProgression(this):null;this.touchControls=YMM.TouchControls?new YMM.TouchControls(this):null;this.missionDirector=YMM.MissionDirector?new YMM.MissionDirector(this):null;this.codex=YMM.Codex?new YMM.Codex(this):null;this.accessibility=YMM.AccessibilitySettings?new YMM.AccessibilitySettings(this):null;this.runModifiers=YMM.RunModifiers?new YMM.RunModifiers(this):null;this.tutorialDirector=YMM.TutorialDirector?new YMM.TutorialDirector(this):null;
+      this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.difficulty='normal';this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';this.meta=YMM.MetaProgression?new YMM.MetaProgression(this):null;this.touchControls=YMM.TouchControls?new YMM.TouchControls(this):null;this.missionDirector=YMM.MissionDirector?new YMM.MissionDirector(this):null;this.codex=YMM.Codex?new YMM.Codex(this):null;this.accessibility=YMM.AccessibilitySettings?new YMM.AccessibilitySettings(this):null;this.runModifiers=YMM.RunModifiers?new YMM.RunModifiers(this):null;this.tutorialDirector=YMM.TutorialDirector?new YMM.TutorialDirector(this):null;this.scoreSystem=YMM.ScoreSystem?new YMM.ScoreSystem(this):null;
     }
     newGame(keepMenu=false){
       this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.signalNodes=null;this.signalEnemies=null;this.signalProjectiles=null;this.signalMines=null;this.lastTauntText='';this.lastTauntCategory=null;this.lastTauntTimer=0;this.logHistory=[];this.particles.items=[];this.ai.reset();
@@ -12,7 +12,7 @@
       this.enemy={x:280,y:486,w:30,h:34,tumble:0,stumbleTimer:1.2,windup:0,attackCooldown:2,counterWindup:0,counterCooldown:0,feintTimer:null,lungeTimer:0,stunned:0,strategy:'stalk'};
       YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.lastCheckpoint=75;this.screen=keepMenu?'menu':'playing';
       if(this.hud){this.hud.clearLog();this.hud.sync(true);}
-      if(!keepMenu){this.audio.unlock();this.audio.play('start');this.log('Sesión iniciada. Dificultad: ridícula. Probabilidad de arrepentimiento: no disponible.');this.toast('Llega a la salida. O encuentra algo más divertido.');if(this.meta)this.meta.onRunStart();if(this.runModifiers)this.runModifiers.startRun();if(this.missionDirector)this.missionDirector.startRun();}
+      if(!keepMenu){this.audio.unlock();this.audio.play('start');this.log('Sesión iniciada. Dificultad: ridícula. Probabilidad de arrepentimiento: no disponible.');this.toast('Llega a la salida. O encuentra algo más divertido.');if(this.meta)this.meta.onRunStart();if(this.runModifiers)this.runModifiers.startRun();if(this.missionDirector)this.missionDirector.startRun();if(this.scoreSystem)this.scoreSystem.startRun();}
     }
     get difficultyScale(){return (this.difficulty==='story'?.78:this.difficulty==='nightmare'?1.62:1)*(this.runModifiers?this.runModifiers.scale:1);}
     cycleDifficulty(){const modes=['story','normal','nightmare'];this.difficulty=modes[(modes.indexOf(this.difficulty)+1)%modes.length];const label={story:'HISTORIA',normal:'NORMAL',nightmare:'PESADILLA'}[this.difficulty];this.toast('DIFICULTAD // '+label);this.log('Parámetros de dificultad cambiados: '+label+'.','alert');if(this.hud)this.hud.sync();return this.difficulty;}
@@ -79,7 +79,7 @@
       if(this.input.justPressed('KeyT'))this.openTauntConsole();if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
       if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else if(this.world===6)this.updateWorld6(dt);else if(this.world===7||this.world===10)this.updateWorld7(dt);else this.updateWorld4(dt);
-      this.ai.update(dt);this.particles.update(dt);if(this.meta)this.meta.update(this,dt);if(this.missionDirector)this.missionDirector.update(this,dt);if(this.codex)this.codex.update(this);if(this.runModifiers)this.runModifiers.update(this);if(this.tutorialDirector)this.tutorialDirector.update(this,dt);if(this.touchControls)this.touchControls.update();
+      this.ai.update(dt);this.particles.update(dt);if(this.meta)this.meta.update(this,dt);if(this.missionDirector)this.missionDirector.update(this,dt);if(this.codex)this.codex.update(this);if(this.runModifiers)this.runModifiers.update(this);if(this.tutorialDirector)this.tutorialDirector.update(this,dt);if(this.scoreSystem)this.scoreSystem.update(this,dt);if(this.touchControls)this.touchControls.update();
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
     }
