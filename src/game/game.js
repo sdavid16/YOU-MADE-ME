@@ -77,21 +77,41 @@
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
     }
-    solidsWorld1(){const L=YMM.Levels.world1;return [...L.floors.map(f=>({x:f.x,y:L.groundY,w:f.w,h:180,oneWay:false})),...this.world1Platforms.filter(p=>p.state!=='gone'&&p.state!=='falling').map(p=>({...p,h:p.h,oneWay:true,_source:p}))];}
+    solidsWorld1(){const L=YMM.Levels.world1;return [...L.floors.map(f=>({x:f.x,y:L.groundY,w:f.w,h:180,oneWay:false})),...this.world1Platforms.filter(p=>p.state!=='gone').map(p=>({...p,y:p.y+(p.fallY||0),h:p.h,oneWay:true,_source:p}))];}
     advanceCollapses(items,dt){
       for(const item of items||[]){
-        if(item.state==='warning'){item.timer-=dt;if(item.timer<=0){item.state='falling';item.timer=.52;this.ai.observe('collapse');this.ai.record('terrain-collapse',{id:item.id,x:item.x});this.log('COLAPSO: una sección del escenario acaba de perder sus anclajes.','danger');}}
-        else if(item.state==='falling'){item.timer-=dt;item.fallY=(item.fallY||0)+260*dt;if(item.timer<=0)item.state='gone';}
+        if(item.state==='warning'){
+          item.timer-=dt;
+          if(item.timer<=0){item.state='falling';item.timer=.52;item.originalX=item.originalX??item.x;item.originalW=item.originalW??item.w;this.ai.observe('collapse');this.ai.record('terrain-collapse',{id:item.id,x:item.x,world:this.world});this.log('COLAPSO: una sección del escenario acaba de perder sus anclajes.','danger');}
+        }else if(item.state==='falling'){
+          item.timer-=dt;
+          const safeFloorSet=items===this.runnerFloors,optionalPlatformSet=items===this.world1Platforms;
+          // Keep collision support while the warning/fall animation plays. The collapse is visual first,
+          // then leaves a narrow debris bridge instead of creating an impossible full-width gap.
+          if(safeFloorSet)item.fallY=Math.sin(this.clock*32+(item.id||0))*2.5;
+          else item.fallY=Math.sin(this.clock*28+(item.id||0))*3;
+          if(item.timer<=0&&(safeFloorSet||optionalPlatformSet)){
+            const originalX=item.originalX??item.x,originalW=item.originalW??item.w;
+            const inset=safeFloorSet?Math.min(85,Math.floor((originalW-120)/2)):Math.min(24,Math.floor((originalW-70)/2));
+            item.x=originalX+inset;item.w=Math.max(safeFloorSet?120:70,originalW-inset*2);
+            item.state='fallen';item.fallY=safeFloorSet?0:24;item.rubble=true;
+            this.ai.record('terrain-rubble-bridge',{id:item.id,x:item.x,width:item.w,world:this.world});
+            this.log(safeFloorSet?'Los restos forman un puente estrecho. Salta el hueco y sigue avanzando.':'La plataforma se ha fracturado, pero quedan restos sobre los que apoyarse.','alert');
+          }else if(item.timer<=0){item.state='gone';}
+        }
       }
     }
     triggerCollapse(item){
       const source=item&&item._source||item;if(!source||!source.collapse||source.state!=='stable')return;
-      source.state='warning';source.timer=.7;this.audio.tone(125,.09,'sawtooth',.05,55);this.ai.observe('collapse');this.ai.record('collapse-warning',{id:source.id,x:source.x,world:this.world});
+      source.originalX=source.originalX??source.x;source.originalW=source.originalW??source.w;
+      source.state='warning';
+      source.timer=this.difficulty==='story'?1.05:this.difficulty==='nightmare'?.48:.72;
+      this.audio.tone(125,.09,'sawtooth',.05,55);this.ai.observe('collapse');this.ai.record('collapse-warning',{id:source.id,x:source.x,world:this.world});
     }
     runnerSolids(){
       const L=YMM.Levels.world5;
       return [
-        ...this.runnerFloors.filter(f=>f.state==='stable'||f.state==='warning').map(f=>({...f,y:L.groundY+(f.fallY||0),h:180,oneWay:false,_source:f})),
+        ...this.runnerFloors.filter(f=>f.state!=='gone').map(f=>({...f,y:L.groundY+(f.fallY||0),h:180,oneWay:false,_source:f})),
         ...this.runnerPlatforms.filter(p=>p.state==='stable'||p.state==='warning').map(p=>({...p,y:p.y+(p.fallY||0),h:p.h,oneWay:true,_source:p}))
       ];
     }
@@ -156,10 +176,10 @@
     }
     enterWorld5(){
       const L=YMM.Levels.world5;this.world=5;this.camera=0;this.runnerCells=L.cells.map((v,id)=>({...v,id}));
-      this.runnerCellCount=0;this.runnerFloors=L.floors.map((v,id)=>({...v,id,state:'stable',timer:0,fallY:0}));
-      this.runnerPlatforms=L.platforms.map((v,id)=>({...v,id,state:'stable',timer:0,fallY:0}));
+      this.runnerCellCount=0;this.runnerFloors=L.floors.map((v,id)=>({...v,id,collapsible:!!v.collapse,originalX:v.x,originalW:v.w,state:'stable',timer:0,fallY:0}));
+      this.runnerPlatforms=L.platforms.map((v,id)=>({...v,id,collapsible:!!v.collapse,originalX:v.x,originalW:v.w,state:'stable',timer:0,fallY:0}));
       this.runnerEnemies=L.enemies.map((v,id)=>({...v,spawnX:v.x,stun:0,windup:v.windup||0,chargeTimer:0,hitFlash:0,phase:'patrol'}));
-      this.runnerProjectiles=[];this.runnerEvent=null;this.runnerDirectorTimer=3.4;this.runnerScenarioIndex=-1;this.runnerShake=0;this.lastRunnerCheckpoint=80;
+      this.runnerProjectiles=[];this.runnerEvent=null;this.runnerDirectorTimer=3.4/this.difficultyScale;this.runnerScenarioIndex=-1;this.runnerShake=0;this.lastRunnerCheckpoint=80;
       this.runnerAlly={x:30,y:430,pulseCooldown:0,dialogue:'No mires atrás. El suelo ya ha decidido.',dialogueTimer:2.8,warningTimer:0};
       this.player={x:80,y:482,w:28,h:38,vx:245,vy:0,grounded:false,health:4,maxHealth:4,stamina:100,maxStamina:100,sprinting:false,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,combo:0,comboTimer:0};
       this.ai.speak('corruptor');this.ai.dialogueTimer=3.8;this.audio.play('phase');
@@ -283,7 +303,7 @@
     runnerCamera(){return YMM.Util.clamp(this.player.x-270,0,YMM.Levels.world5.width-this.canvas.width);}
     repairRunnerCheckpoint(){
       const x=this.lastRunnerCheckpoint||80;
-      for(const s of [...this.runnerFloors,...this.runnerPlatforms])if(Math.abs((s.x+s.w/2)-x)<360){s.state='stable';s.timer=0;s.fallY=0;}
+      for(const s of [...this.runnerFloors,...this.runnerPlatforms])if(Math.abs(((s.originalX??s.x)+(s.originalW??s.w)/2)-x)<360){s.x=s.originalX??s.x;s.w=s.originalW??s.w;s.collapse=s.collapsible??s.collapse;s.state='stable';s.timer=0;s.fallY=0;s.rubble=false;}
       for(const e of this.runnerEnemies)if(Math.abs(e.spawnX-x)<310&&e.hp<=0){e.hp=e.maxHp;e.stun=0;}
       this.player.stamina=this.player.maxStamina;
     }
@@ -291,7 +311,7 @@
       this.runnerDirectorTimer-=dt;const p=this.player;
       if(!this.runnerEvent&&this.runnerDirectorTimer<=0&&p.x<YMM.Levels.world5.goal.x-300){
         const kinds=['ceiling-sweep','ground-rift','drone-salvo','shadow-rush','collapse-wave'],kind=this.ai.chooseTactic('runner',kinds);
-        this.runnerEvent={kind,x:p.x+560,state:'warning',timer:1.3,triggered:false,spawned:false};this.runnerDirectorTimer=4.5+Math.random()*2.2;
+        this.runnerEvent={kind,x:p.x+560,state:'warning',timer:1.3,triggered:false,spawned:false};this.runnerDirectorTimer=(4.5+Math.random()*2.2)/this.difficultyScale;
         this.ai.record('runner-threat',{kind,x:Math.round(this.runnerEvent.x),prediction:this.ai.predictIntent()});this.ai.speak('adaptive');this.ai.dialogueTimer=2;
         this.log('DIRECTOR DE ESCENARIO: amenaza seleccionada según tu patrón ('+kind+').','danger');
       }
