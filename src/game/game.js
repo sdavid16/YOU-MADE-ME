@@ -6,7 +6,7 @@
       this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.difficulty='normal';this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';
     }
     newGame(keepMenu=false){
-      this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.logHistory=[];this.particles.items=[];this.ai.reset();
+      this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.signalNodes=null;this.signalEnemies=null;this.signalProjectiles=null;this.signalMines=null;this.lastTauntText='';this.lastTauntCategory=null;this.lastTauntTimer=0;this.logHistory=[];this.particles.items=[];this.ai.reset();
       this.world1Platforms=YMM.Levels.world1.platforms.map((p,id)=>({...p,id,collapse:[1,4,7,9].includes(id),state:'stable',timer:0,fallY:0}));
       this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:this.difficulty==='story'?4:3,maxHealth:this.difficulty==='story'?4:3,stamina:100,maxStamina:100,sprinting:false,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,tauntLock:0,lastDir:1,stompFlash:0};
       this.enemy={x:280,y:486,w:30,h:34,tumble:0,stumbleTimer:1.2,windup:0,attackCooldown:2,counterWindup:0,counterCooldown:0,feintTimer:null,lungeTimer:0,stunned:0,strategy:'stalk'};
@@ -55,7 +55,7 @@
     finish(ending){this.ending=ending;this.screen='ending';this.audio.play(ending==='escalation'?'phase':'win');this.log(ending==='escalation'?'Proceso finalizado. Una entidad nueva ha cruzado la frontera.':'Proceso finalizado sin alterar el mundo original.',ending==='escalation'?'danger':'normal');this.hud.sync();}
     enterWorld2(){
       this.world=2;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.5;
-      YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.player={x:90,y:550,w:24,h:24,vx:0,vy:0,health:3,maxHealth:3,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
+      YMM.Levels.world2.fragments.forEach(f=>f.taken=false);const world2Health=this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3;this.player={x:90,y:550,w:24,h:24,vx:0,vy:0,health:world2Health,maxHealth:world2Health,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
       this.ai.unlockInvasion();this.ai.speak('world2Fragment');this.ai.dialogueTimer=3.5;this.audio.play('portal');this.log('La IA ha cruzado al segundo juego. Las reglas ya no son las mismas.','danger');this.toast('MUNDO 02 — RECUPERA LOS FRAGMENTOS');this.hud.sync();
     }
     enterWorld3(){
@@ -190,7 +190,7 @@
       this.toast('CORRE · SALTA · COMBATE · EL SUELO SE DESPLOMA');this.hud.sync();
     }
     enterWorld6(){
-      this.world=6;this.player={x:500,y:480,w:24,h:24,vx:0,vy:0,health:5,maxHealth:5,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
+      this.world=6;const finalPlayerHealth=this.difficulty==='nightmare'?3:5;this.player={x:500,y:480,w:24,h:24,vx:0,vy:0,health:finalPlayerHealth,maxHealth:finalPlayerHealth,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       const finalBossHealth=this.difficulty==='story'?11:this.difficulty==='nightmare'?18:14;this.boss={x:500,y:190,hp:finalBossHealth,maxHp:finalBossHealth,phase:'idle',attackType:'lattice',timer:.9,targetX:500,targetY:480,dx:0,dy:1,hitFlash:0,lastHitAt:-999,patternCount:0,stagger:0};
       this.ai.speak('endThreat');this.ai.dialogueTimer=4;this.audio.play('phase');
       this.log('MUNDO 06: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');
@@ -523,9 +523,9 @@
       if(p.health<=0){
         if(this.world===3||this.world===6){p.health=this.world===6?(this.difficulty==='story'?5:this.difficulty==='nightmare'?3:5):this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
         else if(this.world===7){p.health=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;p.x=488;p.y=300;p.vx=0;p.vy=0;this.signalProjectiles=this.signalProjectiles.filter(b=>b.from!=='enemy'||Math.hypot(b.x-p.x,b.y-p.y)>180);this.signalMines=this.signalMines.filter(m=>Math.hypot(m.x-p.x,m.y-p.y)>140);this.log('Punto de restauración de SIGNAL BREAK. Los repetidores destruidos siguen fuera de servicio.','alert');}
-        else if(this.world===4){p.health=4;p.x=2.5;p.y=1.5;p.angle=0;this.log('Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
-        else if(this.world===5){p.health=this.difficulty==='story'?5:4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
-        else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}
+        else if(this.world===4){p.health=p.maxHealth||4;p.x=2.5;p.y=1.5;p.angle=0;this.log('Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
+        else if(this.world===5){p.health=p.maxHealth||4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
+        else{p.health=p.maxHealth||3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}
       }
     }
     frame(dt){this.update(Math.min(.033,Math.max(.001,dt)));this.renderer.render(this);}
