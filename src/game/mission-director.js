@@ -60,7 +60,9 @@
       if(game.world!==this.world)this.chooseForWorld(game.world);
       if(!this.mission||this.mission.completed)return;
       this.elapsed+=dt;this.metrics.alive+=dt;this.metrics.noDamage+=dt;
-      if(game.player&&Math.hypot(game.player.vx||0,game.player.vy||0)>15)this.metrics.moving+=dt;\n      if(game.input&&game.input.justPressed('ShiftLeft','ShiftRight'))this.metrics.dashes++;\n      if(game.input&&game.input.justPressed('KeyJ','KeyF','KeyQ','KeyK','Space'))this.metrics.attacks++;
+      if(game.player&&Math.hypot(game.player.vx||0,game.player.vy||0)>15)this.metrics.moving+=dt;
+      if(game.input&&game.input.justPressed('ShiftLeft','ShiftRight'))this.metrics.dashes++;
+      if(game.input&&game.input.justPressed('KeyJ','KeyF','KeyQ','KeyK','Space'))this.metrics.attacks++;
       if(this.lastTauntAt>=0)this.metrics.postTaunt=this.elapsed-this.lastTauntAt;
       const p=game.player||{};const dx=(p.x||0)-this.mission.lastX,dy=(p.y||0)-this.mission.lastY;this.metrics.distance=(this.metrics.distance||0)+Math.hypot(dx,dy);this.mission.lastX=p.x||0;this.mission.lastY=p.y||0;
       const current=this.currentAliveCount();if(this.mission.baseKills!==null&&current<this.mission.baseKills)this.metrics.kills+=(this.mission.baseKills-current);this.mission.baseKills=current;
