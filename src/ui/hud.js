@@ -15,6 +15,7 @@
         button.addEventListener('click',()=>{this.game.closeTauntConsole();this.game.provoke(kind);});
       }
       this.el.tauntForm.addEventListener('submit',event=>{event.preventDefault();const value=this.el.tauntInput.value;if(this.game.provokeCustom(value))this.el.tauntInput.value='';});
+      this.el.tauntInput.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();this.game.closeTauntConsole();}});
       this.el.tauntInput.addEventListener('input',()=>{const value=this.el.tauntInput.value.trim();const labels={intellect:'INTELIGENCIA',logic:'LÓGICA / CÓDIGO',threat:'AMENAZA',psychology:'GUERRA PSICOLÓGICA',custom:'IMPROVISACIÓN'};this.el.tauntFeedback.textContent=value?'CLASIFICACIÓN EN TIEMPO REAL // '+labels[this.game.ai.classifyTaunt(value)]+' · Texto local, no se envía.':'Escribe una frase o selecciona una estrategia verbal.';});
       this.el.difficulty.addEventListener('click',()=>this.game.cycleDifficulty());
       document.getElementById('resume-button').addEventListener('click',()=>this.game.resume());
