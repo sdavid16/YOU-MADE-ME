@@ -191,5 +191,10 @@ assert(g.meta.profile.upgrades.vitality===1&&g.meta.modifiers.health===1,'health
 g.meta.applyPlayerModifiers(g.player);
 assert(g.player.maxHealth===baseHealth+1,'health upgrade increases maximum health on a fresh player object');
 assert(g.meta.profile.contracts.items.length===3,'daily contract rotation creates three objectives');
-assert(g.meta.profile.stats.worldVisits&&typeof g.meta.profile.stats.worldVisits==='object','campaign profile stores world visit records');\nassert(g.missionDirector instanceof sandbox.YMM.MissionDirector,'per-world mission director initializes');\nassert(g.missionDirector.mission&&g.missionDirector.mission.world===1,'a run starts with an optional side objective');\ng.missionDirector.metrics.alive=g.missionDirector.mission.goal;g.missionDirector.update(g,0.01);\nassert(g.missionDirector.mission.completed,'side objective completion is detected');\nassert(g.missionDirector.completeCount>=1,'completed side objective is recorded in mission history');
+assert(g.meta.profile.stats.worldVisits&&typeof g.meta.profile.stats.worldVisits==='object','campaign profile stores world visit records');
+assert(g.missionDirector instanceof sandbox.YMM.MissionDirector,'per-world mission director initializes');
+assert(g.missionDirector.mission&&g.missionDirector.mission.world===1,'a run starts with an optional side objective');
+g.missionDirector.metrics.alive=g.missionDirector.mission.goal;g.missionDirector.update(g,0.01);
+assert(g.missionDirector.mission.completed,'side objective completion is detected');
+assert(g.missionDirector.completeCount>=1,'completed side objective is recorded in mission history');
 console.log('PASS: twelve-world campaign, adaptive AI, campaign progression, upgrade economy, touch-control compatibility, achievements, contracts, PWA shell and persistent dossiers.');
