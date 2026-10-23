@@ -144,6 +144,7 @@
     notify(message){if(this.game&&this.game.toast)this.game.toast('DOSSIER // '+message);}
     formatTime(s){s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
     update(game,dt){
+      if(game.player){this.applyPlayerModifiers(game.player);if(game.screen==='playing'&&game.player.stamina!==undefined&&this.modifiers.stamina>1&&!game.player.sprinting)game.player.stamina=Math.min(game.player.maxStamina||100,game.player.stamina+dt*(this.modifiers.stamina-1)*12);}
       if(game.screen==='playing'){
         this.profile.playSeconds+=dt;if(game.difficulty==='nightmare')this.profile.nightmareSeconds+=dt;
         this.runNoHit+=dt;if(game.world===3||game.world===6)this.runBoss+=dt;
