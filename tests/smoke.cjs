@@ -177,4 +177,4 @@ const forecast=g.ai.predictIntent();
 assert(forecast.order===2&&forecast.action==='dash'&&forecast.confidence>.5,'two-order sequence model predicts the next action with confidence');
 g.ai.observations=[{action:'strafeLeft',t:1,meta:{}},{action:'strafeRight',t:2,meta:{}},{action:'strafeLeft',t:3,meta:{}},{action:'strafeRight',t:4,meta:{}}];
 assert(g.ai.profile.strafeLeft>0&&g.ai.profile.strafeRight>0,'behavior profile distinguishes both strafing directions');
-console.log('PASS: seven worlds, safe collapse debris, insult classifier/console/effects, difficulty modes, per-world transitions, 3D squad tactics, Signal Break shooter, relays, EMP, adaptive formations and persistent AI dossier.');
+console.log('PASS: twelve-world campaign, safe collapse debris, insult classifier/console/effects, difficulty modes, per-world transitions, 3D squad tactics, Signal Break shooter, relays, EMP, adaptive formations and persistent AI dossier.');
