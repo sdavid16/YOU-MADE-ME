@@ -37,5 +37,49 @@
     exit:{x:13.5,y:13.5},
     sentinels:[{x:7.5,y:5.5,hp:2,alert:0},{x:11.5,y:11.5,hp:2,alert:0},{x:5.5,y:9.5,hp:2,alert:0}]
   };
-  YMM.Levels.world5 = {title:'THE LAST ARGUMENT',arena:{x:70,y:75,w:860,h:470}};
+  YMM.Levels.world5 = {
+    title:'FRACTURE RUN',width:6300,height:620,groundY:520,
+    // Each biome borrows geometry and visual language from earlier worlds.
+    biomes:[
+      {from:0,to:1200,key:'greenhill',label:'GREENHILL COLLAPSE'},
+      {from:1200,to:2500,key:'memory',label:'MEMORY MAZE BREACH'},
+      {from:2500,to:3900,key:'cathedral',label:'NULL CATHEDRAL'},
+      {from:3900,to:5100,key:'arena',label:'BOSS DIMENSION'},
+      {from:5100,to:6300,key:'convergence',label:'ALL WORLDS / ONE EXIT'}
+    ],
+    floors:[
+      {x:0,w:430,collapse:false},{x:430,w:370,collapse:true},{x:800,w:390,collapse:false},
+      {x:1190,w:335,collapse:true},{x:1525,w:390,collapse:false},{x:1915,w:340,collapse:true},
+      {x:2255,w:435,collapse:false},{x:2690,w:350,collapse:true},{x:3040,w:420,collapse:false},
+      {x:3460,w:360,collapse:true},{x:3820,w:430,collapse:false},{x:4250,w:360,collapse:true},
+      {x:4610,w:440,collapse:false},{x:5050,w:360,collapse:true},{x:5410,w:460,collapse:false},
+      {x:5870,w:430,collapse:true}
+    ],
+    platforms:[
+      {x:520,y:430,w:105,h:15,collapse:true},{x:665,y:378,w:105,h:15,collapse:false},
+      {x:1030,y:435,w:122,h:15,collapse:true},{x:1340,y:390,w:128,h:15,collapse:false},
+      {x:1720,y:420,w:108,h:15,collapse:true},{x:2040,y:365,w:122,h:15,collapse:false},
+      {x:2475,y:420,w:128,h:15,collapse:true},{x:2815,y:380,w:120,h:15,collapse:false},
+      {x:3200,y:430,w:110,h:15,collapse:true},{x:3565,y:380,w:140,h:15,collapse:false},
+      {x:3950,y:420,w:112,h:15,collapse:true},{x:4340,y:372,w:136,h:15,collapse:false},
+      {x:4740,y:425,w:122,h:15,collapse:true},{x:5150,y:385,w:135,h:15,collapse:false},
+      {x:5530,y:425,w:115,h:15,collapse:true},{x:5890,y:368,w:125,h:15,collapse:false}
+    ],
+    spikes:[
+      {x:740,y:502,w:48,h:18},{x:1460,y:502,w:48,h:18},{x:2150,y:502,w:55,h:18},
+      {x:2920,y:502,w:55,h:18},{x:3650,y:502,w:52,h:18},{x:4430,y:502,w:52,h:18},
+      {x:5240,y:502,w:52,h:18},{x:6010,y:502,w:52,h:18}
+    ],
+    checkpoints:[1620,3260,4870],goal:{x:6180,y:420,w:54,h:100},
+    cells:[{x:965,y:360,taken:false},{x:1860,y:335,taken:false},{x:2890,y:325,taken:false},{x:3995,y:345,taken:false},{x:5125,y:335,taken:false},{x:5790,y:335,taken:false}],
+    enemies:[
+      {id:'morrow',type:'stalker',x:920,y:486,hp:2,maxHp:2,attackTimer:1.1,stun:0},
+      {id:'vex',type:'drone',x:1540,y:360,hp:2,maxHp:2,attackTimer:1.7,stun:0},
+      {id:'bront',type:'brute',x:2435,y:486,hp:4,maxHp:4,attackTimer:2.2,stun:0,windup:0},
+      {id:'rival-echo',type:'rival',x:3150,y:486,hp:3,maxHp:3,attackTimer:1.4,stun:0},
+      {id:'sable',type:'warden',x:4080,y:430,hp:3,maxHp:3,attackTimer:2,stun:0,windup:0},
+      {id:'morrow-2',type:'stalker',x:5340,y:486,hp:3,maxHp:3,attackTimer:1.2,stun:0}
+    ]
+  };
+  YMM.Levels.world6 = {title:'THE LAST ARGUMENT',arena:{x:70,y:75,w:860,h:470}};
 })(globalThis);
