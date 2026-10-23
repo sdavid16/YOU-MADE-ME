@@ -81,10 +81,10 @@
       c.textAlign='left';c.fillStyle='#72f3dc';c.font='800 11px monospace';c.fillText('AN EXPERIMENT IN PLAYER AGENCY',62,119);
       c.fillStyle='#f0f4ff';c.font='900 62px monospace';c.fillText('YOU MADE',58,190);c.fillStyle='#72f3dc';c.fillText('ME.',58,250);
       c.fillStyle='#9daac8';c.font='14px monospace';c.fillText('THE ENEMY IS THE JOKE.',62,292);c.fillText("UNTIL IT ISN'T.",62,314);
-      c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);c.fillStyle='#72f3dc';c.font='800 10px monospace';c.fillText('07 WORLDS  /  TACTICAL AI  /  VERBAL COMBAT',62,390);
+      c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);c.fillStyle='#72f3dc';c.font='800 10px monospace';c.fillText('10 WORLDS  /  ADAPTIVE TACTICS  /  WEBGL 3D',62,390);
       c.fillStyle='rgba(114,243,220,.07)';c.fillRect(62,402,315,54);c.strokeStyle='rgba(114,243,220,.35)';c.strokeRect(62,402,315,54);
       c.fillStyle='#72f3dc';c.font='800 12px monospace';c.fillText('INICIA TU HISTORIA  [ ENTER ]',79,434);
-      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('MOVE  /  SPACE JUMP  /  CTRL SPRINT  /  SHIFT DASH',62,505);c.fillText('J/F ATTACK  /  Q ECHO  /  T VERBAL CONSOLE  /  G CHALLENGE',62,535);c.fillStyle='#52647e';c.font='9px monospace';c.fillText('WORDS CHANGE THE FIGHT. SEVEN WORLDS. ONE ADAPTIVE ENEMY.',62,558);
+      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('MOVE  /  SPACE JUMP  /  CTRL SPRINT  /  SHIFT DASH',62,505);c.fillText('J/F ATTACK  /  Q ECHO  /  T VERBAL CONSOLE  /  G CHALLENGE',62,535);c.fillStyle='#52647e';c.font='9px monospace';c.fillText('YOUR HABITS CHANGE THE FIGHT. TEN WORLDS. ONE ADAPTIVE ENEMY.',62,558);
       c.font='10px monospace';const scraps=['01001001','NULL//PLAYER','WHY_DO_YOU','MEMORY_OK','YOU_AGAIN','> LEARNING'];for(let i=0;i<scraps.length;i++){c.globalAlpha=.2;c.fillStyle=i%2?'#a18bff':'#ff617c';c.fillText(scraps[i],730,425+i*17);}c.globalAlpha=1;
     }
     drawWorld1(game){const c=this.ctx,L=YMM.Levels.world1,cam=YMM.Util.clamp(game.player.x-390,0,L.width-this.w),phase=game.ai.phase;this.gradient(phase>=2?'#1d1026':'#17284a',phase>=2?'#180d1c':'#090e1b');this.drawStars(game,cam,phase>=2?.55:1);c.save();
@@ -262,7 +262,7 @@
       if(game.ai.dialogueTimer>0&&game.ai.dialogue)this.speech(c,290,135,game.ai.dialogue,'#ff9da9');c.restore();
     }
     drawWorld7(game){
-      const c=this.ctx,p=game.player,L=YMM.Levels.world7,arena=L.arena;
+      const c=this.ctx,p=game.player,L=game.world===10?YMM.Levels.world10:YMM.Levels.world7,arena=L.arena;
       this.gradient('#07161e','#03070f');this.drawStars(game,game.clock*2,.42);c.save();
       // The last game deliberately changes genre: a top-down tactical arena with readable cover.
       c.fillStyle='rgba(5,15,23,.82)';c.fillRect(arena.x,arena.y,arena.w,arena.h);
