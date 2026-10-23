@@ -60,9 +60,9 @@ El botón superior **DIF** alterna entre:
 
 La dificultad afecta varias mecánicas, no solo una etiqueta de interfaz.
 
-## IA táctica
+## IA táctica adaptativa avanzada
 
-El agente combina un perfil móvil de conducta, predicción de transiciones entre acciones, elección contextual de tácticas y aprendizaje mediante recompensas observadas. Los directores de los mundos 4–10 combinan políticas por contexto, enemigos por rol, elección táctica, anticipación de movimiento y recompensas observadas. En primera persona, los centinelas coordinan flanqueos y pueden ser interrumpidos con el pulso Q. En Pesadilla, la IA aumenta el peso de la predicción y contrarresta hábitos como correr, retirarse, quedarse quieto, repetir el dash o desplazarse lateralmente en bucle. El dossier opcional de `localStorage` guarda únicamente estadísticas agregadas entre partidas, nunca coordenadas ni textos de provocación. Si el navegador bloquea el almacenamiento, el juego sigue funcionando.
+El agente combina un perfil móvil de conducta, un predictor de secuencias de dos pasos (con retroceso a transiciones de un paso y frecuencias recientes), elección contextual de tácticas y aprendizaje mediante recompensas observadas. El predictor calcula confianza, margen y entropía; el director mezcla esa previsión con el historial de éxito, penaliza repetir la misma táctica y conserva una pequeña exploración para evitar bucles rígidos. El HUD muestra la acción prevista y su confianza cuando existen muestras suficientes. Los directores de los mundos 4–10 combinan políticas por contexto, enemigos por rol, elección táctica, anticipación de movimiento y recompensas observadas. En primera persona, los centinelas coordinan flanqueos y pueden ser interrumpidos con el pulso Q. En Pesadilla, la IA aumenta el peso de la predicción y contrarresta hábitos como correr, retirarse, quedarse quieto, repetir el dash o desplazarse lateralmente en bucle. El dossier opcional de `localStorage` guarda únicamente estadísticas agregadas entre partidas, nunca coordenadas ni textos de provocación. Si el navegador bloquea el almacenamiento, el juego sigue funcionando.
 
 No es un LLM ni una red neuronal entrenada. Es una IA de juego local con predicción y aprendizaje online; no genera diálogo abierto ni realiza inferencia con un modelo remoto. La renderización WebGL usa Three.js desde una CDN, pero no transmite datos del jugador.
 
@@ -74,4 +74,4 @@ Con Node.js instalado, ejecuta:
 node tests/smoke.cjs
 ```
 
-GitHub Actions ejecuta verificaciones sintácticas y pruebas de progresión. Consulta [Actions](https://github.com/sdavid16/YOU-MADE-ME/actions). La suite automatizada no sustituye un playtest manual de los diez mundos ni la validación de WebGL en distintos navegadores.
+GitHub Actions ejecuta verificaciones sintácticas y pruebas de progresión. Consulta [Actions](https://github.com/sdavid16/YOU-MADE-ME/actions). La suite automatizada no sustituye un playtest manual de los doce mundos ni la validación de WebGL en distintos navegadores.
