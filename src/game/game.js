@@ -238,7 +238,7 @@
           else{this.damagePlayer(1,e.type.toUpperCase()+' te ha interceptado. Alterna salto, dash y ataques.');p.x=Math.max(this.lastRunnerCheckpoint,p.x-65);p.vy=-185;p.grounded=false;this.runnerShake=.18;}
         }
       }
-      for(const bolt of this.runnerProjectiles){bolt.x+=bolt.vx*dt;bolt.y+=bolt.vy*dt;bolt.ttl-=dt;if(bolt.ttl>0&&Math.abs(bolt.x-p.x)<22&&Math.abs(bolt.y-(p.y+p.h/2))<24&&p.invuln<=0){this.damagePlayer(1,'Proyectil predictivo. ECHO puede interrumpir las salvas con Q.');bolt.ttl=0;p.vy=-140;}}
+      for(const bolt of this.runnerProjectiles){bolt.x+=bolt.vx*dt;bolt.y+=bolt.vy*dt;bolt.ttl-=dt;if(bolt.ttl>0&&Math.abs(bolt.x-p.x)<22&&Math.abs(bolt.y-(p.y+p.h/2))<24&&p.invuln<=0){this.damagePlayer(1,'Proyectil predictivo. ECHO puede interrumpir las salvas con Q.');if(bolt.eventKind&&this.runnerEvent&&this.runnerEvent.kind===bolt.eventKind){this.ai.reportOutcome(bolt.eventKind,true,{projectileHit:true});this.runnerEvent.outcomeRecorded=true;}bolt.ttl=0;p.vy=-140;}}
       this.runnerProjectiles=this.runnerProjectiles.filter(b=>b.ttl>0&&b.x>this.lastRunnerCheckpoint-180&&b.x<p.x+1000);
       if(this.input.justPressed('KeyJ','KeyF')&&p.attackTimer<=0){
         const heavy=this.input.justPressed('KeyF'),reach=heavy?132:88;p.attackTimer=heavy?.55:.28;p.attackKind=heavy?'heavy':'light';p.stamina=YMM.Util.clamp(p.stamina-(heavy?19:6),0,p.maxStamina);this.ai.observe('attack',{world:5,kind:p.attackKind});
@@ -275,14 +275,14 @@
       if(e.state==='warning'&&e.timer<=0){e.state='active';e.timer=1.45;this.runnerShake=.16;this.ai.record('runner-threat-armed',{kind:e.kind});}
       if(e.state==='active'&&!e.triggered){
         const d=Math.abs(p.x-e.x);
-        if(e.kind==='drone-salvo'&&!e.spawned){e.spawned=true;for(let n=0;n<3;n++)this.runnerProjectiles.push({x:e.x+90+n*22,y:420+n*28,vx:-385,vy:(p.y+15-(420+n*28))*.12,ttl:2.5,type:'director-drone',r:8});}
+        if(e.kind==='drone-salvo'&&!e.spawned){e.spawned=true;for(let n=0;n<3;n++)this.runnerProjectiles.push({x:e.x+90+n*22,y:420+n*28,vx:-385,vy:(p.y+15-(420+n*28))*.12,ttl:2.5,type:'director-drone',eventKind:e.kind,r:8});}
         if(e.kind==='shadow-rush'&&!e.spawned){e.spawned=true;this.runnerEnemies.push({id:'director-shadow-'+Math.round(this.elapsed),type:'shadow',x:e.x+80,y:YMM.Levels.world5.groundY-34,hp:2,maxHp:2,attackTimer:0,stun:0,windup:0,chargeTimer:0,hitFlash:0,spawnX:e.x+80,phase:'ambush'});}
-        if(e.kind==='collapse-wave'&&!e.spawned){e.spawned=true;const candidates=this.runnerFloors.filter(s=>s.collapse&&s.state==='stable'&&s.x>p.x+20&&s.x<p.x+700).slice(0,2);for(const s of candidates)this.triggerCollapse(s);this.runnerShake=.55;this.particles.burst(270,510,'#ff617c',32,180);}
-        if(d<72&&e.kind==='ground-rift'&&p.grounded&&p.invuln<=0){e.triggered=true;this.damagePlayer(1,'La grieta ha leído que permaneces en el suelo. Salta durante la señal.');p.vy=-160;p.grounded=false;this.runnerShake=.3;this.ai.reportOutcome(e.kind,true,{playerHit:true});}
-        else if(d<92&&e.kind==='ceiling-sweep'&&p.y<435&&p.invuln<=0){e.triggered=true;this.damagePlayer(1,'El barrido aéreo ha leído tus saltos. Cambia de altura o usa ECHO.');p.vy=80;this.runnerShake=.3;this.ai.reportOutcome(e.kind,true,{playerHit:true});}
+        if(e.kind==='collapse-wave'&&!e.spawned){e.spawned=true;const candidates=this.runnerFloors.filter(s=>s.collapse&&s.state==='stable'&&s.x>p.x+20&&s.x<p.x+700).slice(0,2);for(const s of candidates)this.triggerCollapse(s);this.runnerShake=.55;this.particles.burst(270,510,'#ff617c',32,180);this.ai.reportOutcome(e.kind,candidates.length>0,{sections:candidates.length});e.outcomeRecorded=true;}
+        if(d<72&&e.kind==='ground-rift'&&p.grounded&&p.invuln<=0){e.triggered=true;this.damagePlayer(1,'La grieta ha leído que permaneces en el suelo. Salta durante la señal.');p.vy=-160;p.grounded=false;this.runnerShake=.3;this.ai.reportOutcome(e.kind,true,{playerHit:true});e.outcomeRecorded=true;}
+        else if(d<92&&e.kind==='ceiling-sweep'&&p.y<435&&p.invuln<=0){e.triggered=true;this.damagePlayer(1,'El barrido aéreo ha leído tus saltos. Cambia de altura o usa ECHO.');p.vy=80;this.runnerShake=.3;this.ai.reportOutcome(e.kind,true,{playerHit:true});e.outcomeRecorded=true;}
         if(p.x>e.x+130)e.triggered=true;
       }
-      if(e.timer<=0||p.x>e.x+230){this.ai.record('runner-threat-ended',{kind:e.kind,triggered:e.triggered});this.runnerEvent=null;}
+      if(e.timer<=0||p.x>e.x+230){if(!e.outcomeRecorded)this.ai.reportOutcome(e.kind,false,{playerEvaded:true,triggered:e.triggered});this.ai.record('runner-threat-ended',{kind:e.kind,triggered:e.triggered,outcomeLearned:!!e.outcomeRecorded});this.runnerEvent=null;}
     }
     updateWorld6(dt){
       const p=this.player,b=this.boss;let dx=(this.input.isDown('ArrowRight','KeyD')?1:0)-(this.input.isDown('ArrowLeft','KeyA')?1:0),dy=(this.input.isDown('ArrowDown','KeyS')?1:0)-(this.input.isDown('ArrowUp','KeyW')?1:0);
