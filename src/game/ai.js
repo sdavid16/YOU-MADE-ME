@@ -182,6 +182,12 @@
           else if(option==='pinch')score=p.approach*.45+p.sprint*.62;
           else if(option==='retreat-punish')score=p.retreat*1.16+p.dashLeft*.22;
           else score=.05;
+        }else if(domain==='shooter'){
+          if(option==='crossfire')score=p.dash*.62+p.retreat*.32+p.sprint*.2;
+          else if(option==='lead-shot')score=p.sprint*.9+p.approach*.25+(prediction.action==='sprint'?prediction.confidence*.22:0);
+          else if(option==='encircle')score=p.still*.85+p.attack*.24;
+          else if(option==='minefield')score=p.approach*.34+p.collect*.26+p.repeat*.15;
+          else score=.05;
         }else{
           if(option==='anti-air')score=p.jump*1.25;
           else if(option==='intercept')score=p.retreat*1.15+p.dashLeft*.25;
