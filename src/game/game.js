@@ -244,7 +244,7 @@
       this.signalEnemies=L.agents.concat(extra).map((e,index)=>({...e,index,spawnX:e.x,spawnY:e.y,hp:Math.ceil(e.hp*enemyFactor),maxHp:Math.ceil(e.maxHp*enemyFactor),vx:0,vy:0,stun:0,hitFlash:0}));
       this.signalProjectiles=[];this.signalMines=[];this.signalTactic='crossfire';this.signalDirectorTimer=.6;this.signalKills=0;this.signalShotCount=0;
       const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?2:3;
-      this.player={x:490,y:300,w:24,h:24,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,heavyCooldown:0,specialCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,intelTimer:0};
+      this.player={x:490,y:350,w:24,h:24,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,heavyCooldown:0,specialCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,intelTimer:0};
       this.ai.speak('endThreat');this.ai.dialogue='He calculado miles de finales. Ninguno incluye que me detengas.';this.ai.dialogueTimer=5.2;
       this.log('MUNDO 10: THE SINGULARITY ENGINE. Cuatro nodos, líneas de tiro cruzadas y refuerzos en Pesadilla.','danger');
       this.log('OBJETIVO // Destruye el motor de predicción. J dispara; K libera una salva triple; F activa EMP; Shift esquiva.','alert');
