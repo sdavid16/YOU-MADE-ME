@@ -35,7 +35,7 @@
     ],
     shards:[{x:3.5,y:3.5,taken:false},{x:12.5,y:7.5,taken:false},{x:5.5,y:12.5,taken:false}],
     exit:{x:13.5,y:13.5},
-    sentinels:[{x:7.5,y:5.5,hp:2,alert:0},{x:11.5,y:11.5,hp:2,alert:0},{x:4.5,y:9.5,hp:2,alert:0}]
+    sentinels:[{x:7.5,y:5.5,hp:2,alert:0},{x:11.5,y:11.5,hp:2,alert:0},{x:5.5,y:9.5,hp:2,alert:0}]
   };
   YMM.Levels.world5 = {title:'THE LAST ARGUMENT',arena:{x:70,y:75,w:860,h:470}};
 })(globalThis);
