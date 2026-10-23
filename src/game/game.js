@@ -7,7 +7,7 @@
     }
     newGame(keepMenu=false){
       this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.logHistory=[];this.particles.items=[];this.ai.reset();
-      this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:3,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
+      this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:3,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,tauntLock:0,lastDir:1,stompFlash:0};
       this.enemy={x:280,y:486,w:30,h:34,tumble:0,stumbleTimer:1.2,windup:0,attackCooldown:2,counterWindup:0,counterCooldown:0,feintTimer:null,lungeTimer:0,stunned:0,strategy:'stalk'};
       YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.lastCheckpoint=75;this.screen=keepMenu?'menu':'playing';
       if(this.hud){this.hud.clearLog();this.hud.sync(true);}
@@ -19,7 +19,7 @@
     log(message,kind='normal'){this.logHistory.unshift({message,kind,t:this.elapsed});if(this.logHistory.length>30)this.logHistory.pop();if(this.hud)this.hud.addLog(message,kind);}
     provoke(kind){
       if(this.screen!=='playing')return;
-      if(this.world===1){this.ai.taunt(kind);this.hud.sync();return;}
+      if(this.world===1){if(kind==='humiliate'){this.player.tauntLock=.28;const close=Math.abs((this.player.x+this.player.w/2)-(this.enemy.x+15))<170;if(this.ai.phase>=1&&close){this.enemy.windup=Math.max(this.enemy.windup,.35);this.log('Desafío aceptado. La IA castiga la provocación a corta distancia.','danger');}else this.log('Desafío lanzado. Más progreso, menos margen de error.','alert');}this.ai.taunt(kind);this.hud.sync();return;}
       this.ai.record('taunt-after-invasion',{world:this.world});
       if(this.world===2)this.ai.speak(this.fragments>=2?'corruptor':'world2Fragment',true);
       else this.ai.speak(this.boss&&this.boss.hp<=3?'lowHealth':'world3Start',true);
@@ -42,10 +42,10 @@
       if(this.screen==='paused'){if(this.input.justPressed('Escape'))this.resume();this.input.endFrame();return;}
       if(this.screen==='ending'){if(this.input.justPressed('Enter','Space'))this.newGame();this.input.endFrame();return;}
       if(this.input.justPressed('Escape')){this.pause();this.input.endFrame();return;}
-      this.elapsed+=dt;this.player.invuln=Math.max(0,this.player.invuln-dt);this.player.attackTimer=Math.max(0,this.player.attackTimer-dt);this.player.dashTimer=Math.max(0,this.player.dashTimer-dt);this.player.dashCooldown=Math.max(0,this.player.dashCooldown-dt);this.player.stompFlash=Math.max(0,this.player.stompFlash-dt);
+      this.elapsed+=dt;this.player.invuln=Math.max(0,this.player.invuln-dt);this.player.tauntLock=Math.max(0,this.player.tauntLock-dt);this.player.attackTimer=Math.max(0,this.player.attackTimer-dt);this.player.dashTimer=Math.max(0,this.player.dashTimer-dt);this.player.dashCooldown=Math.max(0,this.player.dashCooldown-dt);this.player.stompFlash=Math.max(0,this.player.stompFlash-dt);
       if(this.ai.dialogueTimer>0)this.ai.dialogueTimer=Math.max(0,this.ai.dialogueTimer-dt);
       this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
-      if(this.input.justPressed('KeyT'))this.provoke('mock');
+      if(this.input.justPressed('KeyT'))this.provoke('mock');if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
       if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else this.updateWorld3(dt);
       this.ai.update(dt);this.particles.update(dt);
@@ -54,7 +54,7 @@
     }
     solidsWorld1(){const L=YMM.Levels.world1;return [...L.floors.map(f=>({x:f.x,y:L.groundY,w:f.w,h:180,oneWay:false})),...L.platforms.map(p=>({...p,h:p.h,oneWay:true}))];}
     updateWorld1(dt){
-      const p=this.player,L=YMM.Levels.world1,left=this.input.isDown('ArrowLeft','KeyA'),right=this.input.isDown('ArrowRight','KeyD'),dir=(right?1:0)-(left?1:0);
+      const p=this.player,L=YMM.Levels.world1,left=this.input.isDown('ArrowLeft','KeyA'),right=this.input.isDown('ArrowRight','KeyD'),dir=p.tauntLock>0?0:(right?1:0)-(left?1:0);
       if(dir)p.lastDir=dir;
       if(this.input.justPressed('ShiftLeft','ShiftRight')&&p.dashCooldown<=0){p.dashTimer=.17;p.dashCooldown=1.05;this.ai.observe('dash');this.ai.observe(p.lastDir<0?'dashLeft':'dashRight');this.audio.play('attack');this.particles.burst(p.x+p.w/2,p.y+p.h/2,'#72f3dc',12,90);}
       p.vx=dir*(p.dashTimer>0?590:265);
@@ -76,7 +76,7 @@
       for(const s of L.spikes){if(YMM.Util.overlap(p,{x:s.x,y:s.y+3,w:s.w,h:s.h-3})&&p.invuln<=0){this.damagePlayer(1,'La geometría también quiere hacerte daño.');p.x=this.lastCheckpoint;p.y=430;p.vy=0;break;}}
       e.attackCooldown=Math.max(0,e.attackCooldown-dt);e.counterCooldown=Math.max(0,(e.counterCooldown||0)-dt);e.stunned=Math.max(0,e.stunned-dt);
       const distance=Math.abs((p.x+p.w/2)-(e.x+15)),near=distance<155;
-      if(this.ai.phase>=2&&this.ai.activeStrategy==='anti-air'&&p.y<455&&near&&e.counterCooldown<=0&&!(e.counterWindup>0)){e.counterWindup=.55;e.counterCooldown=3.7;this.ai.reportOutcome('anti-air',false);this.log('La IA se coloca donde calcula que vas a caer.','danger');}
+      if(this.ai.phase>=2&&this.ai.activeStrategy==='anti-air'&&p.y<455&&near&&e.counterCooldown<=0&&!(e.counterWindup>0)){e.counterWindup=.55;e.counterCooldown=3.7;this.log('La IA se coloca donde calcula que vas a caer.','danger');}
       if(e.counterWindup>0){e.counterWindup-=dt;if(e.counterWindup<=0){const hit=distance<145&&p.y<468&&p.invuln<=0;this.ai.reportOutcome('anti-air',hit);if(hit)this.damagePlayer(1,'La IA ha anticipado tu salto. Prueba otro ritmo.');}}
       if(this.ai.phase>=2&&near&&e.attackCooldown<=0&&!e.windup&&e.stunned<=0&&(this.ai.activeStrategy!=='pressure'||distance<105)){e.windup=this.ai.activeStrategy==='feint'?.38:.52;e.attackCooldown=this.ai.activeStrategy==='intercept'?1.65:2.1;this.log(this.ai.activeStrategy==='feint'?'La IA se queda quieta. Demasiado quieta.':'La IA está preparando una contraestrategia.','alert');}
       if(e.windup>0){e.windup-=dt;if(e.windup<=0){const hit=Math.abs((p.x+p.w/2)-(e.x+15))<55&&Math.abs(p.y-e.y)<48&&p.invuln<=0;this.ai.reportOutcome(e.strategy,hit);if(hit)this.damagePlayer(1,'La IA te alcanzó. Ha actualizado su modelo de tus movimientos.');}}
@@ -128,7 +128,7 @@
     }
     damagePlayer(amount,message){
       const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=1.15;this.audio.play('hit');this.particles.burst(p.x,p.y,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
-      if(this.world===1&&this.enemy&&this.enemy.strategy)this.ai.reportOutcome(this.enemy.strategy,true);
+      
       if(p.health<=0){if(this.world===3){p.health=3;p.x=500;p.y=485;this.boss.x=500;this.boss.y=210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
         else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}}
     }
