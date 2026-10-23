@@ -117,6 +117,7 @@ g.boss.phase='vulnerable';g.boss.timer=1;g.boss.x=g.player.x+20;g.boss.y=g.playe
 assert(g.boss.hp===12,'heavy attack deals two damage during vulnerability');
 /* World seven changes the game genre: top-down shooter, destructible relays, and an adaptive enemy director. */
 g.enterWorld7();
+g.renderer.render(g);assert(g.renderer.transition&&g.renderer.transition.style==='circuit','world seven uses a distinct circuit transition');
 assert(g.world===7&&g.signalNodes.length===3&&g.signalEnemies.length===5,'Signal Break initializes relays and varied shooter agents');
 assert(['crossfire','lead-shot','encircle','minefield'].includes(g.ai.chooseTactic('shooter',['crossfire','lead-shot','encircle','minefield'])),'shooter director selects a valid tactical formation');
 g.player.invuln=10;g.input.pressed.add('KeyJ');g.updateWorld7(.016);g.input.pressed.clear();
