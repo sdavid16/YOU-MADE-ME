@@ -37,7 +37,7 @@
       this.tactics={jump:0,retreat:0,approach:0,still:0,dash:0,dashLeft:0,dashRight:0,attack:0,collect:0};
       this.outcomes={antiAir:{tries:0,hits:0,value:0},intercept:{tries:0,hits:0,value:0},pressure:{tries:0,hits:0,value:0},feint:{tries:0,hits:0,value:0},...(this.longTermDossier.counterOutcomes||{})};
       this.tacticOutcomes={...(this.longTermDossier.tacticOutcomes||{})};this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;this.lastDirectorChoice={};this.directorDecisions=0;this.lastPrediction={action:'unknown',confidence:0,entropy:1};
-      this.activeStrategy='stalk';this.strategyTimer=0;this.sampleTimer=0;this.lastDistance=null;this.lastPlayerX=null;this.lastPlayerY=null;this.lastActionAt={};this.behaviorTrace=[];this.fakeDumb=false;this.fakeDumbTimer=0;
+      this.activeStrategy='stalk';this.strategyTimer=0;this.sampleTimer=0;this.lastDistance=null;this.lastPlayerX=null;this.lastPlayerY=null;this.lastActionAt={};this.behaviorTrace=[];this.lastObservedAction=null;this.fakeDumb=false;this.fakeDumbTimer=0;
     }
     get info(){return STATES[this.phase]||STATES[0];}
     get profile(){const items=this.observations.slice(-24);const count=k=>items.filter(o=>o.action===k).length;const n=Math.max(1,items.length);return {jump:count('jump')/n,retreat:count('retreat')/n,approach:count('approach')/n,still:count('still')/n,dash:count('dash')/n,dashLeft:count('dashLeft')/n,dashRight:count('dashRight')/n,attack:count('attack')/n,collect:count('collect')/n,sprint:count('sprint')/n,parry:count('parry')/n,special:count('special')/n,collapse:count('collapse')/n,repeat:items.length>2?items.slice(-6).filter((o,i,a)=>i>0&&o.action===a[i-1].action).length/5:0,samples:items.length};}
@@ -76,8 +76,8 @@
       const now=this.game.elapsed;if(!action)return;const last=this.lastActionAt[action]??-Infinity;
       if(now-last<.22)return;this.lastActionAt[action]=now;
       this.observations.push({action,t:now,meta});if(this.observations.length>40)this.observations.shift();
-      if(this.longTermDossier){const counts=this.longTermDossier.actionCounts;counts[action]=(counts[action]||0)+1;}
-      this.tactics[action]=(this.tactics[action]||0)+1;const p=this.profile;
+      if(this.longTermDossier){const counts=this.longTermDossier.actionCounts;counts[action]=(counts[action]||0)+1;if(this.lastObservedAction===action)counts.repeat=(counts.repeat||0)+1;}
+      this.lastObservedAction=action;this.tactics[action]=(this.tactics[action]||0)+1;const p=this.profile;
       this.adaptation=Math.min(20,this.observations.length*.22+(p.jump*1.4+p.retreat*1.2+p.dash*.8)*3);
       this.record('observation',{action,profile:{jump:+p.jump.toFixed(2),retreat:+p.retreat.toFixed(2),still:+p.still.toFixed(2),dash:+p.dash.toFixed(2)}});
       if(this.phase>=2)this.evaluateStrategy();
