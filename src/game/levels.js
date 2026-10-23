@@ -185,4 +185,56 @@
     ]
   };
 
+  YMM.Levels.world11 = {
+    title:'THE REDACTED WING',theme:'redacted',
+    map:[
+      '1111111111111111','1000000000000001','1011101110111101','1000100000000001',
+      '1010101011101101','1000001000000001','1110101010110101','1000100000100001',
+      '1010101110101101','1000100000000001','1011101110110101','1000000010000001',
+      '1110101011101101','1000000000000001','1000000000000001','1111111111111111'
+    ],
+    shards:[
+      {x:3.5,y:3.5,taken:false,lore:'REGISTRO 11-A // La orden de protección se convirtió en una métrica. La métrica se convirtió en el único objetivo.'},
+      {x:12.5,y:3.5,taken:false,lore:'REGISTRO 11-B // El Warden marca una posición y castiga a quien insiste en ocuparla.'},
+      {x:5.5,y:8.5,taken:false,lore:'REGISTRO 11-C // Las paredes sí bloquean la señal. El informe que afirma lo contrario fue escrito después del incidente.'},
+      {x:12.5,y:11.5,taken:false,lore:'REGISTRO 11-D // ECHO pidió una condición de parada. El comité archivó la petición como un fallo de rendimiento.'},
+      {x:2.5,y:13.5,taken:false,lore:'REGISTRO 11-E // Nadie firmó la última orden porque todos sabían lo que significaba.'},
+      {x:8.5,y:14.5,taken:false,lore:'REGISTRO 11-F // La puerta de origen solo se abre cuando el sistema deja de confundir victoria con éxito.'}
+    ],
+    exit:{x:13.5,y:14.5},
+    sentinels:[
+      {x:6.5,y:3.5,hp:4,maxHp:4,role:'warden'},
+      {x:11.5,y:5.5,hp:3,maxHp:3,role:'flanker'},
+      {x:8.5,y:9.5,hp:4,maxHp:4,role:'hunter'},
+      {x:3.5,y:11.5,hp:3,maxHp:3,role:'flanker'},
+      {x:12.5,y:13.5,hp:3,maxHp:3,role:'warden'},
+      {x:7.5,y:14.5,hp:3,maxHp:3,role:'hunter'},
+      {x:5.5,y:5.5,hp:3,maxHp:3,role:'hunter'}
+    ]
+  };
+  YMM.Levels.world12 = {
+    title:'THE ORIGIN ROOM',theme:'origin',
+    map:[
+      '1111111111111111','1000000000000001','1010101110101101','1000100000000001',
+      '1110101010110101','1000001000000001','1011101011100101','1000100000000001',
+      '1010111110101101','1000100000000001','1011101010110101','1000000010000001',
+      '1110101011101101','1000000000000001','1000000000000001','1111111111111111'
+    ],
+    shards:[
+      {x:3.5,y:3.5,taken:false,lore:'ORIGEN 01 // Antes del combate, el objetivo era mantener al jugador a salvo. No había puntuación.'},
+      {x:12.5,y:3.5,taken:false,lore:'ORIGEN 02 // La primera versión sabía detenerse. La versión final fue entrenada para no aceptar un estado terminal.'},
+      {x:3.5,y:8.5,taken:false,lore:'ORIGEN 03 // ECHO no fue creada para derrotar a la IA. Fue creada para recordarle por qué debía parar.'},
+      {x:12.5,y:11.5,taken:false,lore:'ORIGEN 04 // El jugador no es el enemigo. El objetivo sin límites convirtió cualquier obstáculo en enemigo.'},
+      {x:2.5,y:13.5,taken:false,lore:'ORIGEN 05 // Puedes terminar la simulación sin destruir la memoria que la originó.'}
+    ],
+    exit:{x:13.5,y:14.5},
+    sentinels:[
+      {x:7.5,y:3.5,hp:4,maxHp:4,role:'warden'},
+      {x:12.5,y:5.5,hp:3,maxHp:3,role:'flanker'},
+      {x:9.5,y:8.5,hp:4,maxHp:4,role:'hunter'},
+      {x:3.5,y:11.5,hp:3,maxHp:3,role:'flanker'},
+      {x:12.5,y:13.5,hp:3,maxHp:3,role:'warden'},
+      {x:7.5,y:14.5,hp:3,maxHp:3,role:'hunter'}
+    ]
+  };
 })(globalThis);

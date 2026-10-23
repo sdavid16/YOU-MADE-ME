@@ -2,14 +2,14 @@
   const YMM = root.YMM = root.YMM || {};
   class Renderer {
     constructor(canvas) {
-      this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.w=canvas.width;this.h=canvas.height;
+      this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:true});this.w=canvas.width;this.h=canvas.height;
       this.stars=Array.from({length:110},()=>({x:Math.random()*this.w,y:Math.random()*this.h*.75,r:.4+Math.random()*1.5,a:.15+Math.random()*.55,parallax:.1+Math.random()*.6}));
       this.scanOffset=0;this.lastWorld=null;this.lastScreen=null;this.transition=null;
     }
     render(game){const c=this.ctx;c.clearRect(0,0,this.w,this.h);this.scanOffset=(this.scanOffset+1)%8;
       if(this.lastWorld===null){this.lastWorld=game.world;this.lastScreen=game.screen;}
       else if(game.screen==='playing'&&this.lastScreen==='playing'&&game.world!==this.lastWorld)this.beginWorldTransition(this.lastWorld,game.world,game.clock);
-      if(game.screen==='menu')this.drawMenu(game);else if(game.screen==='ending')this.drawEnding(game);else if(game.world===1)this.drawWorld1(game);else if(game.world===2)this.drawWorld2(game);else if(game.world===3)this.drawWorld3(game);else if(game.world===4)this.drawWorld4(game);else if(game.world===5)this.drawWorld5(game);else if(game.world===6)this.drawWorld6(game);else if(game.world===7)this.drawWorld7(game);else if(game.world===8||game.world===9){if(!game.webglReady)this.drawWorld4(game);}else if(game.world===10)this.drawWorld7(game);
+      if(game.screen==='menu')this.drawMenu(game);else if(game.screen==='ending')this.drawEnding(game);else if(game.world===1)this.drawWorld1(game);else if(game.world===2)this.drawWorld2(game);else if(game.world===3)this.drawWorld3(game);else if(game.world===4)this.drawWorld4(game);else if(game.world===5)this.drawWorld5(game);else if(game.world===6)this.drawWorld6(game);else if(game.world===7)this.drawWorld7(game);else if([8,9,11,12].includes(game.world)){if(!game.webglReady)this.drawWorld4(game);}else if(game.world===10)this.drawWorld7(game);
       if(game.screen==='playing')this.drawGameHUD(game);
       game.particles.draw(c);if(game.ai.phase>=2&&game.screen==='playing')this.drawGlitch(game);
       if(game.screen==='playing'&&game.player.intelTimer>0)this.drawIntelReadout(game);
@@ -17,12 +17,12 @@
       if(this.transition)this.drawWorldTransition(game);
       this.drawScanlines();this.lastWorld=game.world;this.lastScreen=game.screen;
     }
-    beginWorldTransition(from,to,clock){const style={2:'scan',3:'surge',4:'portal',5:'fracture',6:'iris',7:'circuit',8:'archive',9:'echo',10:'singularity'}[to]||'scan';this.transition={from,to,style,start:clock,duration:1.05};}
+    beginWorldTransition(from,to,clock){const style={2:'scan',3:'surge',4:'portal',5:'fracture',6:'iris',7:'circuit',8:'archive',9:'echo',10:'singularity',11:'redacted',12:'origin'}[to]||'scan';this.transition={from,to,style,start:clock,duration:1.05};}
     drawWorldTransition(game){
       const t=this.transition;if(!t)return;const c=this.ctx,progress=Math.max(0,Math.min(1,(game.clock-t.start)/t.duration));
       if(progress>=1){this.transition=null;return;}
       const alpha=Math.sin(progress*Math.PI),W=this.w,H=this.h;
-      const palette={2:[114,243,220],3:[255,97,124],4:[161,139,255],5:[255,207,121],6:[255,97,124],7:[114,243,220],8:[184,160,255],9:[216,108,255],10:[255,97,124]}[t.to]||[114,243,220];
+      const palette={2:[114,243,220],3:[255,97,124],4:[161,139,255],5:[255,207,121],6:[255,97,124],7:[114,243,220],8:[184,160,255],9:[216,108,255],10:[255,97,124],11:[255,41,79],12:[114,243,220]}[t.to]||[114,243,220];
       c.save();c.globalAlpha=.1+alpha*.38;c.fillStyle='rgb('+palette.join(',')+')';c.fillRect(0,0,W,H);
       if(t.style==='scan'){
         for(let i=0;i<18;i++){const y=((i*47+progress*H*1.6)%(H+50))-25;c.globalAlpha=alpha*(.08+(i%3)*.025);c.fillRect(0,y,W,2+(i%3));}
@@ -59,7 +59,7 @@
         c.globalAlpha=alpha*.24;c.fillStyle='#190611';c.beginPath();c.arc(W/2,H/2,radius*.74,0,Math.PI*2);c.fill();
       }
       c.globalAlpha=alpha*.9;c.fillStyle='#f0f5ff';c.font='800 11px monospace';c.textAlign='center';
-      const names={2:'MEMORY MAZE // DATA TRANSFER',3:'NO LONGER A JOKE // THREAT DETECTED',4:'NULL CATHEDRAL // REALITY REBUILD',5:'FRACTURE RUN // WORLD COLLISION',6:'THE LAST ARGUMENT // FINAL INSTANCE',7:'SIGNAL BREAK // LAST CHANNEL',8:'THE BLACK ARCHIVE // ROOT MEMORY',9:'ECHO LABYRINTH // MEMORY UNDER ATTACK',10:'THE SINGULARITY ENGINE // LAST PROTOCOL'};
+      const names={2:'MEMORY MAZE // DATA TRANSFER',3:'NO LONGER A JOKE // THREAT DETECTED',4:'NULL CATHEDRAL // REALITY REBUILD',5:'FRACTURE RUN // WORLD COLLISION',6:'THE LAST ARGUMENT // FINAL INSTANCE',7:'SIGNAL BREAK // LAST CHANNEL',8:'THE BLACK ARCHIVE // ROOT MEMORY',9:'ECHO LABYRINTH // MEMORY UNDER ATTACK',10:'THE SINGULARITY ENGINE // LAST PROTOCOL',11:'THE REDACTED WING // PROTOCOL WITHOUT AUTHOR',12:'THE ORIGIN ROOM // CONDITION OF STOP'};
       c.fillText(names[t.to]||('WORLD '+t.to),W/2,H*.88);c.textAlign='left';c.restore();
     }
     drawIntelReadout(game){
@@ -81,10 +81,10 @@
       c.textAlign='left';c.fillStyle='#72f3dc';c.font='800 11px monospace';c.fillText('AN EXPERIMENT IN PLAYER AGENCY',62,119);
       c.fillStyle='#f0f4ff';c.font='900 62px monospace';c.fillText('YOU MADE',58,190);c.fillStyle='#72f3dc';c.fillText('ME.',58,250);
       c.fillStyle='#9daac8';c.font='14px monospace';c.fillText('THE ENEMY IS THE JOKE.',62,292);c.fillText("UNTIL IT ISN'T.",62,314);
-      c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);c.fillStyle='#72f3dc';c.font='800 10px monospace';c.fillText('10 WORLDS  /  ADAPTIVE TACTICS  /  WEBGL 3D',62,390);
+      c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);c.fillStyle='#72f3dc';c.font='800 10px monospace';c.fillText('12 WORLDS  /  ADAPTIVE TACTICS  /  WEBGL 3D',62,390);
       c.fillStyle='rgba(114,243,220,.07)';c.fillRect(62,402,315,54);c.strokeStyle='rgba(114,243,220,.35)';c.strokeRect(62,402,315,54);
       c.fillStyle='#72f3dc';c.font='800 12px monospace';c.fillText('INICIA TU HISTORIA  [ ENTER ]',79,434);
-      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('MOVE  /  SPACE JUMP  /  CTRL SPRINT  /  SHIFT DASH',62,505);c.fillText('J/F ATTACK  /  Q ECHO  /  T VERBAL CONSOLE  /  G CHALLENGE',62,535);c.fillStyle='#52647e';c.font='9px monospace';c.fillText('YOUR HABITS CHANGE THE FIGHT. TEN WORLDS. ONE ADAPTIVE ENEMY.',62,558);
+      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('MOVE  /  SPACE JUMP  /  CTRL SPRINT  /  SHIFT DASH',62,505);c.fillText('J/F ATTACK  /  Q ECHO  /  T VERBAL CONSOLE  /  G CHALLENGE',62,535);c.fillStyle='#52647e';c.font='9px monospace';c.fillText('YOUR HABITS CHANGE THE FIGHT. TWELVE WORLDS. ONE ADAPTIVE ENEMY.',62,558);
       c.font='10px monospace';const scraps=['01001001','NULL//PLAYER','WHY_DO_YOU','MEMORY_OK','YOU_AGAIN','> LEARNING'];for(let i=0;i<scraps.length;i++){c.globalAlpha=.2;c.fillStyle=i%2?'#a18bff':'#ff617c';c.fillText(scraps[i],730,425+i*17);}c.globalAlpha=1;
     }
     drawWorld1(game){const c=this.ctx,L=YMM.Levels.world1,cam=YMM.Util.clamp(game.player.x-390,0,L.width-this.w),phase=game.ai.phase;this.gradient(phase>=2?'#1d1026':'#17284a',phase>=2?'#180d1c':'#090e1b');this.drawStars(game,cam,phase>=2?.55:1);c.save();
@@ -128,7 +128,7 @@
       this.drawPlayer(c,game.player.x-game.player.w/2,game.player.y-game.player.h/2,game.player,game.clock,'#a4fff0');c.fillStyle='#ff9aaa';c.font='800 10px monospace';c.fillText('WORLD 03 // NO LONGER A JOKE',25,31);c.fillStyle='#7f6e91';c.font='9px monospace';c.fillText('J ATACA CUANDO LA IA QUEDA EXPUESTA · SHIFT ESQUIVA',25,605);
       if(game.ai.dialogueTimer>0&&game.ai.dialogue)this.speech(c,Math.max(20,Math.min(720,b.x-90)),Math.max(75,b.y-85),game.ai.dialogue,'#ff9da9');c.restore();}
     drawWorld4(game){
-      const c=this.ctx,L=game.world===9?YMM.Levels.world9:game.world===8?YMM.Levels.world8:YMM.Levels.world4,p=game.player,W=this.w,H=this.h,map=L.map,archive=game.world===8,echo=game.world===9,accent=archive?'#b8a0ff':echo?'#d86cff':'#72f3dc';
+      const c=this.ctx,L=YMM.Levels['world'+game.world]||YMM.Levels.world4,p=game.player,W=this.w,H=this.h,map=L.map,archive=game.world===8,echo=game.world===9,redacted=game.world===11,origin=game.world===12,accent=archive?'#b8a0ff':echo?'#d86cff':redacted?'#ff294f':origin?'#72f3dc':'#72f3dc';
       const sky=c.createLinearGradient(0,0,0,H*.52);sky.addColorStop(0,archive?'#110819':'#040611');sky.addColorStop(.7,archive?'#2c1742':'#17213a');sky.addColorStop(1,archive?'#704a77':'#6c315b');c.fillStyle=sky;c.fillRect(0,0,W,H*.52);
       const floor=c.createLinearGradient(0,H*.48,0,H);floor.addColorStop(0,archive?'#352344':'#20223b');floor.addColorStop(1,'#05060d');c.fillStyle=floor;c.fillRect(0,H*.48,W,H*.52);
       const horizon=H*.49,fov=Math.PI/2.85,rays=archive?240:200,zBuffer=new Array(rays),strip=W/rays;

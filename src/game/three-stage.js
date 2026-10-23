@@ -2,7 +2,7 @@
   const YMM=root.YMM=root.YMM||{};
   class ThreeStage{
     constructor(canvas){
-      this.canvas=canvas;this.ready=false;this.failed=false;this.scene=null;this.camera=null;this.renderer=null;this.world=-1;this.entities={walls:[],shards:[],enemies:[],projectiles:[]};this.lastResize=0;
+      this.canvas=canvas;this.ready=false;this.failed=false;this.scene=null;this.camera=null;this.renderer=null;this.world=-1;this.entities={walls:[],shards:[],enemies:[],projectiles:[],lockBeams:[]};this.lastResize=0;
       this.readyPromise=this.boot();
     }
     async boot(){
@@ -34,11 +34,11 @@
       return new this.THREE.MeshStandardMaterial({color,roughness,metalness,emissive,emissiveIntensity:emissive?1.2:0});
     }
     rebuild(game){
-      const T=this.THREE,L=game.world===9?YMM.Levels.world9:YMM.Levels.world8;
+      const T=this.THREE,L=YMM.Levels['world'+game.world]||YMM.Levels.world8;
       this.world=game.world;this.scene.background=new T.Color(game.world===9?0x110b20:0x080b17);
       this.scene.fog.color.set(game.world===9?0x110b20:0x080b17);
       for(const child of [...this.scene.children])if(child.userData.ymmWorldObject)this.scene.remove(child);
-      this.entities={walls:[],shards:[],enemies:[],projectiles:[]};
+      this.entities={walls:[],shards:[],enemies:[],projectiles:[],lockBeams:[]};
       const floor=new T.Mesh(new T.PlaneGeometry(16,16),this.material(game.world===9?0x1c1530:0x10182a,.86,.12));
       floor.rotation.x=-Math.PI/2;floor.position.set(8,0,8);floor.userData.ymmWorldObject=true;this.scene.add(floor);
       const grid=new T.GridHelper(16,32,game.world===9?0x9b65df:0x286c83,0x273047);grid.position.set(8,.012,8);grid.userData.ymmWorldObject=true;this.scene.add(grid);
@@ -55,12 +55,19 @@
       }
       const roster=game.sentinels||[];
       roster.forEach((e,i)=>{
-        const group=new T.Group(),color=e.role==='warden'?0xff617c:e.role==='flanker'?0xb8a0ff:0xffcf79;
-        const body=new T.Mesh(new T.CapsuleGeometry(.19,.45,3,6),this.material(color,.32,.36,color));body.position.y=.46;group.add(body);
-        const eye=new T.Mesh(new T.BoxGeometry(.22,.06,.035),this.material(0xf4f8ff,.2,.1,0xffffff));eye.position.set(0,.63,-.17);group.add(eye);
+        const group=new T.Group(),color=e.role==='warden'?0xff294f:e.role==='flanker'?0xb8a0ff:0xffcf79;
+        const body=new T.Mesh(new T.CapsuleGeometry(.2,.48,4,8),this.material(color,.3,.42,color));body.position.y=.47;group.add(body);
+        const head=new T.Mesh(new T.IcosahedronGeometry(.17,1),this.material(0x20283a,.28,.58,color));head.position.y=.82;group.add(head);
+        const visor=new T.Mesh(new T.BoxGeometry(.25,.055,.04),this.material(0xf4f8ff,.16,.12,0xffffff));visor.position.set(0,.82,-.145);group.add(visor);
+        for(const side of [-1,1]){const shoulder=new T.Mesh(new T.BoxGeometry(.13,.2,.16),this.material(color,.3,.45,color));shoulder.position.set(side*.24,.55,0);group.add(shoulder);}
+        const core=new T.Mesh(new T.OctahedronGeometry(.085,0),this.material(0xf8fbff,.18,.2,color));core.position.y=.43;group.add(core);
         group.position.set(e.x,.02,e.y);group.userData.ymmWorldObject=true;this.scene.add(group);this.entities.enemies.push({mesh:group,source:e});
+        const beamMat=new T.LineBasicMaterial({color:0xff294f,transparent:true,opacity:.96});
+        const beamGeom=new T.BufferGeometry().setFromPoints([new T.Vector3(e.x,.72,e.y),new T.Vector3(e.x,.72,e.y)]);
+        const beam=new T.Line(beamGeom,beamMat);beam.userData.ymmWorldObject=true;beam.visible=false;this.scene.add(beam);this.entities.lockBeams.push({mesh:beam,source:e});
       });
-      const pmat=this.material(0x72f3dc,.24,.4,0x168f8b),player=new T.Mesh(new T.CapsuleGeometry(.18,.55,4,8),pmat);player.userData.ymmWorldObject=true;this.scene.add(player);this.entities.player=player;
+      // First-person camera: do not render a capsule at the camera origin.
+      this.entities.player=null;
       this.camera.fov=game.world===9?72:78;this.camera.updateProjectionMatrix();
     }
     resize(){
@@ -70,24 +77,31 @@
     }
     render(game){
       if(!this.ready||!this.renderer)return;
-      const active=game.screen==='playing'&&(game.world===8||game.world===9);
+      const active=game.screen==='playing'&&[8,9,11,12].includes(game.world);
       this.canvas.classList.toggle('webgl-active',active);
       if(!active)return;
       if(this.world!==game.world)this.rebuild(game);
       this.resize();
       const p=game.player,T=this.THREE;
       const px=p.x,pz=p.y,angle=p.angle||0;
-      this.entities.player.position.set(px,.02,pz);
-      this.entities.player.rotation.y=-angle;
       this.camera.position.set(px,.72,pz);
       this.camera.lookAt(px+Math.cos(angle)*4,.64,pz+Math.sin(angle)*4);
-      this.entities.enemies.forEach(({mesh,source})=>{
+      this.entities.enemies.forEach(({mesh,source},i)=>{
         mesh.visible=source.hp>0;
-        mesh.position.x=source.x;mesh.position.z=source.y;
+        mesh.position.x=source.x;mesh.position.z=source.y;mesh.position.y=.02+Math.sin(game.clock*2.3+(source.id||i))*.035;
         mesh.rotation.y=Math.atan2(p.y-source.y,p.x-source.x)-Math.PI/2;
-        mesh.children[0].material.emissiveIntensity=source.stun>0?2.4:1.2;
+        mesh.children[0].material.emissiveIntensity=source.stun>0?2.8:source.role==='warden'?1.8:1.2;
+        mesh.children[2].rotation.z=Math.sin(game.clock*4.2+i)*.045;
       });
-      this.entities.shards.forEach(({mesh,source},i)=>{mesh.visible=!source.taken;mesh.rotation.y=game.clock*1.4+i;mesh.rotation.z=Math.sin(game.clock*1.7+i)*.2;mesh.position.y=.62+Math.sin(game.clock*2+i)*.08;});
+      this.entities.lockBeams.forEach(({mesh,source})=>{
+        const locking=source.hp>0&&source.role==='warden'&&source.windup>0&&Number.isFinite(source.lockX)&&Number.isFinite(source.lockY);
+        mesh.visible=!!locking;
+        if(locking){
+          mesh.geometry.setFromPoints([new T.Vector3(source.x,.78,source.y),new T.Vector3(source.lockX,.12,source.lockY)]);
+          mesh.material.opacity=.55+.4*Math.sin(game.clock*28);
+        }
+      });
+      this.entities.shards.forEach(({mesh,source},i)=>{mesh.visible=!source.taken;mesh.rotation.y=game.clock*1.4+i;mesh.rotation.z=Math.sin(game.clock*1.7+i)*.2;mesh.position.y=.62+Math.sin(game.clock*2+i)*.08;mesh.scale.setScalar(1+Math.sin(game.clock*3+i)*.07);});
       const projectiles=game.archiveProjectiles||[];
       while(this.entities.projectiles.length<projectiles.length){
         const orb=new T.Mesh(new T.SphereGeometry(.075,8,6),this.material(0x9cfaff,.15,.2,0x72f3dc));orb.userData.ymmWorldObject=true;this.scene.add(orb);this.entities.projectiles.push(orb);

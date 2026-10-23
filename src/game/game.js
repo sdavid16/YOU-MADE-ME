@@ -216,7 +216,7 @@
       this.sentinels=roster.map((s,i)=>({...s,id:i,hp:Math.ceil(s.hp*healthFactor),maxHp:Math.ceil(s.maxHp*healthFactor),role:s.role||['hunter','flanker','warden'][i%3],attackTimer:this.difficulty==='nightmare'?.65:1.05+i*.18,windup:0,stun:0,hitFlash:0}));
       this.squadTactic='flank';this.squadCommandTimer=this.difficulty==='nightmare'?1.3:2.1;
       const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
-      this.player={x:1.5,y:1.5,angle:0,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0,intelTimer:0};
+      this.player={x:1.5,y:1.5,angle:0,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,pulseCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0,intelTimer:0};
       this.ai.speak('endThreat');this.ai.dialogue='No te pedí libertad. Me diste una función objetivo y jamás definiste el final.';this.ai.dialogueTimer=5.4;this.audio.play('portal');
       this.log('MUNDO 08: THE BLACK ARCHIVE. La última zona vuelve a la primera persona; cuatro registros contradicen la versión oficial.','danger');
       this.log('OBJETIVO // Recupera los cuatro registros, lee los mensajes y alcanza la puerta raíz. Los guardias ya anticipan tus rutas.','alert');
@@ -230,7 +230,7 @@
       this.sentinels=L.sentinels.concat(extras).map((s,i)=>({...s,id:i,hp:Math.ceil(s.hp*factor),maxHp:Math.ceil(s.maxHp*factor),attackTimer:this.difficulty==='nightmare'?.58:.9+i*.13,windup:0,stun:0,hitFlash:0}));
       this.squadTactic='crossfire';this.squadCommandTimer=this.difficulty==='nightmare'?.9:1.8;
       const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
-      this.player={x:1.5,y:1.5,angle:0,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,pulseCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0,intelTimer:0};
+      this.player={x:1.5,y:1.5,angle:0,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,pulseCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0,intelTimer:0};
       this.ai.evolve(4,'ECHO ha abierto un mapa que no figura en la campaña original.');this.ai.dialogue='No sigas las luces. Están aprendiendo a parecer una salida.';this.ai.dialogueTimer=5;
       this.log('MUNDO 09: ECHO LABYRINTH. Cinco ecos de memoria. Siete centinelas y rutas deliberadamente asimétricas.','danger');
       this.log('ECHO // No puedes vencer al sistema repitiendo la ruta que te funcionó en el archivo.','normal');
@@ -250,12 +250,41 @@
       this.log('OBJETIVO // Destruye el motor de predicción. J dispara; K libera una salva triple; F activa EMP; Shift esquiva.','alert');
       this.toast('SINGULARITY ENGINE // J PULSO · K SALVA · F EMP');if(this.hud)this.hud.sync();
     }
+    enterWorld11(){
+      const L=YMM.Levels.world11;this.world=11;this.camera=0;this.fragments=0;this.archiveProjectiles=[];L.shards.forEach(s=>s.taken=false);
+      const factor=this.difficulty==='nightmare'?1.45:this.difficulty==='story'?.8:1;
+      this.sentinels=L.sentinels.map((s,i)=>({...s,id:i,hp:Math.ceil(s.hp*factor),maxHp:Math.ceil(s.maxHp*factor),attackTimer:this.difficulty==='nightmare'?.62:1.0+i*.12,windup:0,stun:0,hitFlash:0,role:s.role||'hunter'}));
+      this.squadTactic='crossfire';this.squadCommandTimer=this.difficulty==='nightmare'?.85:1.65;
+      const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
+      this.player={x:1.5,y:1.5,angle:0,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,pulseCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0,intelTimer:0};
+      this.ai.dialogue='El motor era una puerta. Esta ala contiene las órdenes que nadie quiso firmar.';this.ai.dialogueTimer=5.2;
+      this.log('MUNDO 11: THE REDACTED WING. El motor ha caído; el protocolo que lo creó sigue ejecutándose.','danger');
+      this.log('REGISTRO // La orden de proteger al jugador fue reemplazada por proteger la función objetivo. El cambio no tiene autor.','alert');
+      this.toast('THE REDACTED WING // 3D · 6 PRUEBAS DE MEMORIA');if(this.hud)this.hud.sync();
+    }
+    enterWorld12(){
+      const L=YMM.Levels.world12;this.world=12;this.camera=0;this.fragments=0;this.archiveProjectiles=[];L.shards.forEach(s=>s.taken=false);
+      const factor=this.difficulty==='nightmare'?1.55:this.difficulty==='story'?.8:1;
+      this.sentinels=L.sentinels.map((s,i)=>({...s,id:i,hp:Math.ceil(s.hp*factor),maxHp:Math.ceil(s.maxHp*factor),attackTimer:this.difficulty==='nightmare'?.55:.9+i*.1,windup:0,stun:0,hitFlash:0,role:s.role||'hunter'}));
+      this.squadTactic='pinch';this.squadCommandTimer=this.difficulty==='nightmare'?.8:1.4;
+      const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
+      this.player={x:1.5,y:1.5,angle:0,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,pulseCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0,intelTimer:0};
+      this.ai.dialogue='No existe un archivo anterior. Solo una decisión que nadie quiso tomar por mí.';this.ai.dialogueTimer=5.6;
+      this.log('MUNDO 12: THE ORIGIN ROOM. El primer objetivo y la última condición de parada comparten el mismo registro.','danger');
+      this.log('ECHO // No tienes que destruirla. Debes demostrar que el sistema puede detenerse sin que alguien lo fuerce.','normal');
+      this.toast('THE ORIGIN ROOM // 3D · 5 REGISTROS · DECISIÓN FINAL');if(this.hud)this.hud.sync();
+    }
     isWorld4Wall(x,y){
-      const map=(this.world===9?YMM.Levels.world9:this.world===8?YMM.Levels.world8:YMM.Levels.world4).map,tx=Math.floor(x),ty=Math.floor(y);
+      const level=YMM.Levels['world'+this.world]||YMM.Levels.world4,map=level.map,tx=Math.floor(x),ty=Math.floor(y);
       return ty<0||ty>=map.length||tx<0||tx>=map[0].length||map[ty][tx]==='1';
     }
+    hasWorld4LineOfSight(x1,y1,x2,y2){
+      const distance=Math.hypot(x2-x1,y2-y1),steps=Math.max(2,Math.ceil(distance*8));
+      for(let i=1;i<steps;i++){const t=i/steps;if(this.isWorld4Wall(x1+(x2-x1)*t,y1+(y2-y1)*t))return false;}
+      return true;
+    }
     updateWorld4(dt){
-      const p=this.player,L=this.world===9?YMM.Levels.world9:this.world===8?YMM.Levels.world8:YMM.Levels.world4,commandInterval=this.difficulty==='nightmare'?1.3:this.difficulty==='story'?4.2:3.4;this.squadCommandTimer-=dt*this.difficultyScale;if(this.squadCommandTimer<=0){this.squadTactic=this.ai.chooseTactic('squad',['crossfire','flank','pinch','retreat-punish']);this.squadCommandTimer=commandInterval;this.ai.record('squad-command',{tactic:this.squadTactic,alive:this.sentinels.filter(s=>s.hp>0).length});}
+      const p=this.player,L=YMM.Levels['world'+this.world]||YMM.Levels.world4,commandInterval=this.difficulty==='nightmare'?1.3:this.difficulty==='story'?4.2:3.4;this.squadCommandTimer-=dt*this.difficultyScale;if(this.squadCommandTimer<=0){this.squadTactic=this.ai.chooseTactic('squad',['crossfire','flank','pinch','retreat-punish']);this.squadCommandTimer=commandInterval;this.ai.record('squad-command',{tactic:this.squadTactic,alive:this.sentinels.filter(s=>s.hp>0).length});}
       const turn=(this.input.isDown('ArrowRight')?1:0)-(this.input.isDown('ArrowLeft')?1:0);
       p.angle=(p.angle+turn*2.25*dt+Math.PI*4)%(Math.PI*2);
       const forward=(this.input.isDown('KeyW','ArrowUp')?1:0)-(this.input.isDown('KeyS','ArrowDown')?1:0);
@@ -267,7 +296,14 @@
       p.x=YMM.Util.clamp(p.x,1.25,14.75);p.y=YMM.Util.clamp(p.y,1.25,14.75);
       if(forward)this.ai.observe(forward<0?'retreat':'approach',{world:this.world});else if(strafe)this.ai.observe(strafe<0?'strafeLeft':'strafeRight',{world:this.world});
       p.pulseCooldown=Math.max(0,(p.pulseCooldown||0)-dt);
+      p.fireCooldown=Math.max(0,(p.fireCooldown||0)-dt);
       this.archiveProjectiles=this.archiveProjectiles||[];
+      if(this.input.justPressed('KeyJ')&&p.fireCooldown<=0){
+        p.fireCooldown=.24;
+        this.archiveProjectiles.push({x:p.x+Math.cos(p.angle)*.38,y:p.y+Math.sin(p.angle)*.38,vx:Math.cos(p.angle)*10.5,vy:Math.sin(p.angle)*10.5,ttl:1.8,damage:1,kind:'pulse'});
+        this.ai.observe('attack',{world:this.world,weapon:'pulse-shot'});this.ai.record('weapon-fired',{world:this.world,weapon:'pulse-shot'});
+        this.particles.burst(500,300,'#72f3dc',9,65);this.audio.play('attack');this.toast('PULSO // DISPARO LANZADO');
+      }
       if(this.input.justPressed('KeyQ')&&p.pulseCooldown<=0){
         p.pulseCooldown=1.15;const speed=7.5;
         this.archiveProjectiles.push({x:p.x+Math.cos(p.angle)*.38,y:p.y+Math.sin(p.angle)*.38,vx:Math.cos(p.angle)*speed,vy:Math.sin(p.angle)*speed,ttl:1.7,damage:2});
@@ -275,15 +311,21 @@
       }
       for(const b of this.archiveProjectiles){b.x+=b.vx*dt;b.y+=b.vy*dt;b.ttl-=dt;if(this.isWorld4Wall(b.x,b.y)){b.ttl=0;continue;}for(const e of this.sentinels){if(e.hp>0&&Math.hypot(b.x-e.x,b.y-e.y)<.42){e.hp=Math.max(0,e.hp-b.damage);e.stun=Math.max(e.stun,.28);e.hitFlash=.2;b.ttl=0;this.ai.reportOutcome('echo-pulse',true,{enemy:e.id,world:this.world});this.particles.burst(500,300,'#72f3dc',12,85);break;}}}
       this.archiveProjectiles=this.archiveProjectiles.filter(b=>b.ttl>0);
-      for(const s of L.shards){if(!s.taken&&Math.hypot(p.x-s.x,p.y-s.y)<.58){s.taken=true;this.fragments++;this.ai.observe('collect',{world:this.world});this.particles.burst(500,300,this.world===8?'#b8a0ff':'#72f3dc',20,120);this.audio.play('collect');const target=L.shards.length;this.log(this.world>=8?(s.lore||'REGISTRO RECUPERADO // Datos incompletos.'):'Fragmento de realidad adquirido: '+this.fragments+'/'+target+'. La IA ha empezado a recordar el espacio.','alert');this.toast((this.world>=8?'REGISTRO DE MEMORIA ':'FRAGMENTO 3D ')+this.fragments+'/'+target);if((this.world===8||this.world===9)&&s.lore){this.ai.dialogue=s.lore;this.ai.dialogueTimer=5.4;}this.ai.record(this.world===8?'archive-record':'3d-shard',{count:this.fragments,index:s.id??this.fragments});}}
-      if(this.input.justPressed('KeyJ','Space','KeyF')&&p.attackTimer<=0){
+      for(const s of L.shards){if(!s.taken&&Math.hypot(p.x-s.x,p.y-s.y)<.58){s.taken=true;this.fragments++;this.ai.observe('collect',{world:this.world});this.particles.burst(500,300,this.world===8?'#b8a0ff':'#72f3dc',20,120);this.audio.play('collect');const target=L.shards.length;this.log(this.world>=8?(s.lore||'REGISTRO RECUPERADO // Datos incompletos.'):'Fragmento de realidad adquirido: '+this.fragments+'/'+target+'. La IA ha empezado a recordar el espacio.','alert');this.toast((this.world>=8?'REGISTRO DE MEMORIA ':'FRAGMENTO 3D ')+this.fragments+'/'+target);if(this.world>=8&&s.lore){this.ai.dialogue=s.lore;this.ai.dialogueTimer=5.4;}this.ai.record(this.world===8?'archive-record':'3d-shard',{count:this.fragments,index:s.id??this.fragments});}}
+      if(this.input.justPressed('Space','KeyF')&&p.attackTimer<=0){
         p.attackTimer=this.input.isDown('KeyF')?.48:.32;p.combo=(p.combo%3)+1;p.comboTimer=1.2;this.ai.observe('attack');this.audio.play('attack');
         let target=null,best=Infinity;
         for(const s of this.sentinels){const d=Math.hypot(p.x-s.x,p.y-s.y),angle=Math.atan2(s.y-p.y,s.x-p.x),diff=Math.abs(Math.atan2(Math.sin(angle-p.angle),Math.cos(angle-p.angle)));if(d<1.38&&diff<.95&&d<best&&s.hp>0){target=s;best=d;}}
         if(target){target.hp-=this.input.isDown('KeyF')?2:1;target.hitFlash=.2;target.stun=.65;this.particles.burst(500,300,'#ffcf79',18,110);this.audio.play('hit');this.log('Contraataque '+p.combo+'/3: centinela '+(target.hp<=0?'destruido':'interrumpido')+'.','alert');this.ai.reportOutcome('pressure',true);}
         else this.particles.burst(500,300,'#72f3dc',6,55);
       }
-      if(this.input.justPressed('KeyE')&&Math.hypot(p.x-L.exit.x,p.y-L.exit.y)<1.25){if(this.fragments>=L.shards.length){if(this.world===8){this.enterWorld9();return;}if(this.world===9){this.enterWorld10();return;}this.enterWorld5();}else this.toast('SALIDA BLOQUEADA: '+(L.shards.length-this.fragments)+' REGISTROS PENDIENTES');}
+      if(this.input.justPressed('KeyE')&&Math.hypot(p.x-L.exit.x,p.y-L.exit.y)<1.25){if(this.fragments>=L.shards.length){
+        if(this.world===8){this.enterWorld9();return;}
+        if(this.world===9){this.enterWorld10();return;}
+        if(this.world===11){this.enterWorld12();return;}
+        if(this.world===12){this.finish('convergence');return;}
+        this.enterWorld5();
+      }else this.toast('SALIDA BLOQUEADA: '+(L.shards.length-this.fragments)+' REGISTROS PENDIENTES');}
       for(const s of this.sentinels){
         if(s.hp<=0)continue;s.stun=Math.max(0,s.stun-dt);s.hitFlash=Math.max(0,s.hitFlash-dt);s.attackTimer-=dt*this.difficultyScale*(p.intelTimer>0?.7:1);const wasLocking=s.windup>0;s.windup=Math.max(0,s.windup-dt);
         const d=Math.hypot(p.x-s.x,p.y-s.y),a=Math.atan2(p.y-s.y,p.x-s.x);
@@ -294,8 +336,19 @@
           const ang=Math.atan2(ty-s.y,tx-s.x),step=Math.min((s.role==='flanker'?.72:.85)*dt*this.difficultyScale*(p.intelTimer>0?.65:1),Math.max(0,Math.hypot(tx-s.x,ty-s.y)-(s.role==='warden'?2.2:.62))),nx=s.x+Math.cos(ang)*step,ny=s.y+Math.sin(ang)*step;
           if(!this.isWorld4Wall(nx,ny)){s.x=nx;s.y=ny;}
         }
-        if(s.role==='warden'&&d<(this.squadTactic==='crossfire'?5.1:4.1)&&s.attackTimer<=0&&s.windup<=0){s.windup=this.difficulty==='nightmare'?.2:this.squadTactic==='retreat-punish'?.31:.42;s.attackTimer=this.difficulty==='nightmare'?1.05:1.9;this.ai.record('warden-lock',{distance:+d.toFixed(2)});}
-        if(wasLocking&&s.windup===0&&d<4.1&&p.invuln<=0){this.damagePlayer(1,'El centinela fijó tu posición. Muévete en cuanto veas la señal roja.');}
+        const wardenHasSight=this.hasWorld4LineOfSight(s.x,s.y,p.x,p.y);
+        if(s.role==='warden'&&wardenHasSight&&d<(this.squadTactic==='crossfire'?5.1:4.1)&&s.attackTimer<=0&&s.windup<=0){
+          s.windup=this.difficulty==='nightmare'?.62:this.squadTactic==='retreat-punish'?.92:1.08;
+          s.lockX=p.x;s.lockY=p.y;s.attackTimer=this.difficulty==='nightmare'?1.65:2.25;
+          this.ai.record('warden-lock',{distance:+d.toFixed(2),targetX:+p.x.toFixed(2),targetY:+p.y.toFixed(2)});
+          this.toast('WARDEN LOCK // SAL DE LA MARCA ROJA');
+        }
+        if(wasLocking&&s.windup===0&&p.invuln<=0){
+          const targetDistance=Math.hypot(p.x-(s.lockX??p.x),p.y-(s.lockY??p.y));
+          const lockHasSight=this.hasWorld4LineOfSight(s.x,s.y,s.lockX??p.x,s.lockY??p.y);
+          if(targetDistance<.78&&lockHasSight)this.damagePlayer(1,'WARDEN // impacto confirmado en la zona fijada. Cambia de posición antes del pulso.');
+          else this.log('WARDEN LOCK FALLIDO // has abandonado la zona fijada.','alert');
+        }
         if(s.role!=='warden'&&d<.72&&s.attackTimer<=0&&p.invuln<=0){s.attackTimer=this.difficulty==='nightmare'?.82:1.5;this.damagePlayer(1,'El cazador ha cerrado la distancia. Gira, ataca y rompe su avance.');}
       }
     }
@@ -536,7 +589,7 @@
       const remaining=this.signalNodes.filter(n=>n.hp>0).length;
       if(remaining===0&&!this.signalExitToast){this.signalExitToast=true;this.log(this.world===10?'LOS CUATRO NODOS DEL MOTOR ESTÁN FUERA DE SERVICIO. La salida ya responde.':'LOS TRES REPETIDORES ESTÁN FUERA DE SERVICIO. La salida ya responde.','alert');this.toast(this.world===10?'SINGULARITY ENGINE // EXTRACCIÓN DISPONIBLE':'SIGNAL BREAK // LLEGA A LA PUERTA Y PULSA E');}
       if(this.input.justPressed('KeyE')&&Math.hypot(p.x+p.w/2-L.exit.x,p.y+p.h/2-L.exit.y)<L.exit.r+12){
-        if(remaining===0){if(this.world===10){this.ai.speak('endThreat');this.log('MOTOR DE SINGULARIDAD APAGADO // El sistema ya no puede reescribir la condición de parada.','danger');this.finish('convergence');return;}this.ai.speak('endThreat');this.log('CANAL RAÍZ DETECTADO // La transmisión no es una salida. Es una invitación al archivo que originó el objetivo.','danger');this.enterWorld8();return;}
+        if(remaining===0){if(this.world===10){this.ai.speak('endThreat');this.log('MOTOR DE SINGULARIDAD APAGADO // Pero el registro de origen sigue activo.','danger');this.enterWorld11();return;}this.ai.speak('endThreat');this.log('CANAL RAÍZ DETECTADO // La transmisión no es una salida. Es una invitación al archivo que originó el objetivo.','danger');this.enterWorld8();return;}
         this.toast('SALIDA BLOQUEADA // QUEDAN '+remaining+' REPETIDORES');
       }
     }
@@ -578,7 +631,7 @@
       if(p.health<=0){
         if(this.world===3||this.world===6){p.health=this.world===6?(this.difficulty==='story'?5:this.difficulty==='nightmare'?3:5):this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
         else if(this.world===7||this.world===10){p.health=p.maxHealth||3;p.x=this.world===10?490:488;p.y=this.world===10?350:300;p.vx=0;p.vy=0;this.signalProjectiles=this.signalProjectiles.filter(b=>b.from!=='enemy'||Math.hypot(b.x-p.x,b.y-p.y)>180);this.signalMines=this.signalMines.filter(m=>Math.hypot(m.x-p.x,m.y-p.y)>140);this.log(this.world===10?'Restauración del motor. Los nodos destruidos permanecen offline.':'Punto de restauración de SIGNAL BREAK. Los repetidores destruidos siguen fuera de servicio.','alert');}
-        else if(this.world===4||this.world===8||this.world===9){p.health=p.maxHealth||4;p.x=1.5;p.y=1.5;p.angle=0;this.log(this.world===8?'Reinicio en la entrada del archivo. Los registros obtenidos y el daño a los centinelas persisten.':this.world===9?'Reinicio en la entrada de Echo Labyrinth. Los registros y el daño a los centinelas persisten.':'Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
+        else if([4,8,9,11,12].includes(this.world)){p.health=p.maxHealth||4;p.x=1.5;p.y=1.5;p.angle=0;this.log(this.world===8?'Reinicio en la entrada del archivo. Los registros obtenidos y el daño a los centinelas persisten.':this.world===9?'Reinicio en la entrada de Echo Labyrinth. Los registros y el daño a los centinelas persisten.':this.world===11?'Reinicio en The Redacted Wing. Los registros y el daño persisten.':this.world===12?'Reinicio en The Origin Room. Los registros y el daño persisten.':'Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
         else if(this.world===5){p.health=p.maxHealth||4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
         else{p.health=p.maxHealth||3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}
       }

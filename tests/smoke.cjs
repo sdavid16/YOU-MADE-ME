@@ -157,7 +157,14 @@ assert(g.ai.memory.some(m=>m.type==='weapon-fired'&&m.detail.weapon==='triple-sa
 for(const n of g.signalNodes)n.hp=0;
 g.player.x=sandbox.YMM.Levels.world10.exit.x-g.player.w/2;g.player.y=sandbox.YMM.Levels.world10.exit.y-g.player.h/2;
 g.input.pressed.add('KeyE');g.updateWorld7(.016);g.input.pressed.clear();
-assert(g.screen==='ending'&&g.ending==='convergence','disabling the four Singularity nodes unlocks the true campaign ending');
+assert(g.world===11&&g.screen==='playing','Singularity Engine opens the Redacted Wing');
+assert(g.sentinels.length===7&&sandbox.YMM.Levels.world11.shards.length===6,'world eleven loads its records and sentinels');
+for(const shard of sandbox.YMM.Levels.world11.shards){g.player.x=shard.x;g.player.y=shard.y;g.player.invuln=10;g.updateWorld4(.01);}
+g.player.x=sandbox.YMM.Levels.world11.exit.x;g.player.y=sandbox.YMM.Levels.world11.exit.y;g.input.pressed.add('KeyE');g.updateWorld4(.016);g.input.pressed.clear();
+assert(g.world===12&&sandbox.YMM.Levels.world12.shards.length===5,'Redacted Wing opens the Origin Room');
+for(const shard of sandbox.YMM.Levels.world12.shards){g.player.x=shard.x;g.player.y=shard.y;g.player.invuln=10;g.updateWorld4(.01);}
+g.player.x=sandbox.YMM.Levels.world12.exit.x;g.player.y=sandbox.YMM.Levels.world12.exit.y;g.input.pressed.add('KeyE');g.updateWorld4(.016);g.input.pressed.clear();
+assert(g.screen==='ending'&&g.ending==='convergence','Origin Room closes the campaign after the final records');
 g.renderer.render(g);
 // Aggregate behavior and reward estimates survive a fresh AI run when browser storage is available.
 g.ai.longTermDossier.actionCounts.jump=17;g.ai.tacticOutcomes['drone-salvo']={tries:4,hits:2,value:.5};

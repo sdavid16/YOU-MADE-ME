@@ -4,9 +4,9 @@ Un juego de ciencia ficción sobre una IA que empieza siendo una broma y termina
 
 ## Ejecutar
 
-Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No necesitas instalar un motor ni ejecutar un proceso de compilación. La campaña base usa Canvas; los mundos 8 y 9 cargan Three.js desde una CDN para renderizar geometría real por WebGL. Necesitas conexión para cargar esa biblioteca; si no está disponible, el juego vuelve al renderizador de raycasting.
+Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No necesitas instalar un motor ni ejecutar un proceso de compilación. La campaña base usa Canvas; los mundos 8, 9, 11 y 12 cargan Three.js desde una CDN para renderizar geometría real por WebGL. Necesitas conexión para cargar esa biblioteca; si no está disponible, el juego vuelve al renderizador compatible. El HUD usa una capa transparente para no tapar la escena 3D.
 
-## Campaña: diez mundos
+## Campaña: doce mundos
 
 1. **Greenhill.exe** — plataformas, sprint con resistencia, salto, dash, ataques y plataformas que se resquebrajan.
 2. **Memory Maze** — laberinto, tres fragmentos, terminal y portal.
@@ -17,7 +17,9 @@ Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No 
 7. **Signal Break** — shooter táctico cenital. Destruye tres repetidores, sobrevive a escuadrones con diferentes roles y abre el canal raíz. En Pesadilla la IA despliega dos agentes adicionales.
 8. **The Black Archive** — escenario 3D en primera persona, seis centinelas, cuatro registros narrativos y la revelación del objetivo original.
 9. **Echo Labyrinth** — otro mapa WebGL en primera persona, cinco registros, siete centinelas, rutas asimétricas y un ataque a distancia nuevo. En Pesadilla se añaden tres guardias.
-10. **The Singularity Engine** — arena táctica final con cuatro nodos, nueve agentes en Pesadilla y una salva triple de alto daño. Desactivar el motor desbloquea el desenlace de la campaña.
+10. **The Singularity Engine** — arena táctica con cuatro nodos, nueve agentes en Pesadilla y una salva triple. Desactivar el motor abre el archivo de origen.
+11. **The Redacted Wing** — escenario 3D, seis registros, siete centinelas y Warden con ataques marcados. Rompe la línea de visión o abandona la zona fijada.
+12. **The Origin Room** — escenario 3D final con cinco registros que revelan el objetivo original y una salida que cierra la simulación.
 
 ### Derrumbes sin bloqueo de ruta
 
@@ -32,9 +34,8 @@ Las superficies frágiles muestran advertencias antes de caer. Los restos dejan 
 - **Mundo 5:** avance automático; Ctrl/D acelerar; A/← frenar; Espacio saltar; Shift dash; J/F atacar; Q pulso de ECHO.
 - **Mundo 6:** WASD/flechas moverte; J/Espacio ataque ligero; F pesado; E parada perfecta; Shift dash.
 - **Mundo 7:** WASD/flechas moverte; J dispara un pulso; F activa un EMP de área con enfriamiento; Shift dash; E abre el canal raíz tras destruir todos los repetidores.
-- **Mundo 8:** W/S avanzar; ←/→ girar; A/D desplazamiento lateral; J/F ataque; Q pulso a distancia; Shift dash; E salir tras cuatro registros.
-- **Mundo 9:** los mismos controles de primera persona; recoge cinco registros, usa Q para disparar el pulso y pulsa E en la salida.
-- **Mundo 10:** WASD moverte; J pulso; K salva triple; F EMP; Shift dash; E extraer después de desactivar los cuatro nodos.
+- **Mundos 4, 8, 9, 11 y 12:** W/S avanzar; ←/→ girar; A/D desplazamiento lateral; J disparo a distancia; Espacio/F ataque cuerpo a cuerpo; Q pulso; Shift dash; E salida tras recoger los registros.
+- **Mundo 10:** WASD moverte; J pulso; K salva triple; F EMP; Shift dash; E extraer después de desactivar los cuatro nodos. La extracción abre el mundo 11.
 - **R** reinicia la sesión. Los botones superiores controlan sonido, pantalla completa y reinicio.
 
 ## Provocación verbal: una mecánica jugable
