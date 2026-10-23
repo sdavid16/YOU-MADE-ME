@@ -62,7 +62,7 @@
       if(this.lastPlayerX===null){this.lastPlayerX=x;this.lastPlayerY=y;return;}
       const dx=x-this.lastPlayerX,dy=y-this.lastPlayerY,enemy=this.game.enemy;
       if(this.game.world===1&&enemy){const distance=Math.abs(x-(enemy.x+15));if(this.lastDistance!==null){const change=distance-this.lastDistance;if(change>24)this.observe('retreat');else if(change< -24)this.observe('approach');else if(Math.abs(dx)<15&&Math.abs(dy)<15)this.observe('still');}this.lastDistance=distance;}
-      else{if(Math.abs(dx)<14&&Math.abs(dy)<14)this.observe('still');else if(Math.abs(dx)>Math.abs(dy)){this.observe(dx<0?'dashLeft':'dashRight');}}
+      else{if(Math.abs(dx)<14&&Math.abs(dy)<14)this.observe('still');else if(Math.abs(dx)>Math.abs(dy)){this.observe(dx<0?'approach':'retreat');}}
       this.lastPlayerX=x;this.lastPlayerY=y;
     }
     evaluateStrategy(){
