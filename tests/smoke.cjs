@@ -24,7 +24,7 @@ const document={readyState:'complete',getElementById(id){if(!elements.has(id))el
 const sandbox={console,document,window:null,globalThis:null,requestAnimationFrame(fn){sandbox.nextFrame=fn;return 1;},performance:{now(){return 0}},setTimeout,clearTimeout,Math,Date,Set,Map,Array,Object,String,Number,JSON,Infinity};
 sandbox.window=sandbox;sandbox.globalThis=sandbox;sandbox.addEventListener=(n,fn)=>{(listeners['window:'+n] ||= []).push(fn)};const storage=new Map();sandbox.localStorage={getItem(k){return storage.has(k)?storage.get(k):null;},setItem(k,v){storage.set(k,String(v));}};
 vm.createContext(sandbox);
-const files=['src/core/util.js','src/core/events.js','src/core/input.js','src/core/audio.js','src/game/levels.js','src/game/ai.js','src/game/particles.js','src/game/renderer.js','src/ui/hud.js','src/game/game.js','src/main.js'];
+const files=['src/core/util.js','src/core/events.js','src/core/input.js','src/core/audio.js','src/game/levels.js','src/game/ai.js','src/game/particles.js','src/game/renderer.js','src/ui/hud.js','src/game/meta-progression.js','src/ui/touch-controls.js','src/game/game.js','src/main.js'];
 for(const f of files)vm.runInContext(fs.readFileSync(path.join(base,f),'utf8'),sandbox,{filename:f});
 const g=sandbox.youMadeMe;
 function assert(v,msg){if(!v)throw new Error('ASSERTION FAILED: '+msg);}
@@ -177,4 +177,19 @@ const forecast=g.ai.predictIntent();
 assert(forecast.order===2&&forecast.action==='dash'&&forecast.confidence>.5,'two-order sequence model predicts the next action with confidence');
 g.ai.observations=[{action:'strafeLeft',t:1,meta:{}},{action:'strafeRight',t:2,meta:{}},{action:'strafeLeft',t:3,meta:{}},{action:'strafeRight',t:4,meta:{}}];
 assert(g.ai.profile.strafeLeft>0&&g.ai.profile.strafeRight>0,'behavior profile distinguishes both strafing directions');
-console.log('PASS: twelve-world campaign, safe collapse debris, insult classifier/console/effects, difficulty modes, per-world transitions, 3D squad tactics, Signal Break shooter, relays, EMP, adaptive formations and persistent AI dossier.');
+// Meta-progression persists between runs, tracks verbal actions, and applies purchased upgrades.
+assert(g.meta instanceof sandbox.YMM.MetaProgression,'campaign meta-progression system initializes');
+g.newGame();
+assert(g.meta.profile.runs>=1,'new campaign run increments the persistent profile');
+const xpBefore=g.meta.profile.xp;
+g.meta.recordTaunt('intellect');
+assert(g.meta.profile.taunts>=1&&g.meta.profile.xp>xpBefore,'accepted taunts grant profile experience');
+g.meta.profile.credits=1000;
+const baseHealth=g.player.maxHealth;
+g.meta.action('upgrade','vitality');
+assert(g.meta.profile.upgrades.vitality===1&&g.meta.modifiers.health===1,'health upgrade can be purchased and changes player modifiers');
+g.meta.applyPlayerModifiers(g.player);
+assert(g.player.maxHealth===baseHealth+1,'health upgrade increases maximum health on a fresh player object');
+assert(g.meta.profile.contracts.items.length===3,'daily contract rotation creates three objectives');
+assert(g.meta.profile.stats.worldVisits&&typeof g.meta.profile.stats.worldVisits==='object','campaign profile stores world visit records');
+console.log('PASS: twelve-world campaign, adaptive AI, campaign progression, upgrade economy, touch-control compatibility, achievements, contracts, PWA shell and persistent dossiers.');
