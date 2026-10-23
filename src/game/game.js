@@ -8,7 +8,7 @@
     newGame(keepMenu=false){
       this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.signalNodes=null;this.signalEnemies=null;this.signalProjectiles=null;this.signalMines=null;this.lastTauntText='';this.lastTauntCategory=null;this.lastTauntTimer=0;this.logHistory=[];this.particles.items=[];this.ai.reset();
       this.world1Platforms=YMM.Levels.world1.platforms.map((p,id)=>({...p,id,collapse:[1,4,7,9].includes(id),state:'stable',timer:0,fallY:0}));
-      this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:this.difficulty==='story'?4:3,maxHealth:this.difficulty==='story'?4:3,stamina:100,maxStamina:100,sprinting:false,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,tauntLock:0,lastDir:1,stompFlash:0};
+      this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3,maxHealth:this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3,stamina:100,maxStamina:100,sprinting:false,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,tauntLock:0,lastDir:1,stompFlash:0};
       this.enemy={x:280,y:486,w:30,h:34,tumble:0,stumbleTimer:1.2,windup:0,attackCooldown:2,counterWindup:0,counterCooldown:0,feintTimer:null,lungeTimer:0,stunned:0,strategy:'stalk'};
       YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.lastCheckpoint=75;this.screen=keepMenu?'menu':'playing';
       if(this.hud){this.hud.clearLog();this.hud.sync(true);}
