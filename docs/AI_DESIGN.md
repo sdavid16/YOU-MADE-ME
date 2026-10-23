@@ -10,19 +10,21 @@ La IA mantiene una ventana móvil de acciones: salto, aproximación, retirada, q
 
 ## Elección táctica y recompensas
 
-Los directores puntúan opciones contextualmente, añaden exploración y utilizan recompensas observadas para ajustar el valor de las tácticas. En el primer jefe, la elección se adapta a quietud, dash, salto y retirada. En la catedral un director de escuadrón emite directivas compartidas de fuego cruzado, flanqueo, pinza o castigo de retirada.
+Los directores puntúan opciones contextualmente, añaden exploración y utilizan recompensas observadas para ajustar el valor de las tácticas. En el primer jefe, la elección se adapta a quietud, dash, salto y retirada. En la catedral y Echo Labyrinth un director de escuadrón emite directivas compartidas de fuego cruzado, flanqueo, pinza o castigo de retirada. El agente registra desplazamientos laterales como acciones distintas; si predice strafing repetitivo, puede elegir disparos anticipados o fuego cruzado.
 
 **Fracture Run** selecciona entre barrido aéreo, grieta de suelo, salvas de drones, sombra perseguidora y colapso en cadena. Registra si el jugador fue alcanzado o esquivó la amenaza.
 
 **Signal Break** es un shooter cenital con cazadores, francotiradores, guardianes y agentes que disparan salvas múltiples. En Pesadilla recibe dos agentes adicionales y cambia de táctica con mayor frecuencia.
 
-**The Black Archive** reutiliza el raycaster de primera persona del mundo 4 con un mapa diferente y seis centinelas coordinados (ocho en Pesadilla). Cuatro registros desvelan la cadena de decisiones que dejó a la IA sin condición de parada y desbloquean el final narrativo. El renderer sigue siendo Canvas + raycasting, no geometría WebGL. El director elige entre:
+**The Black Archive** y **Echo Labyrinth** disponen de mapas distintos en primera persona, renderizados con geometría Three.js/WebGL, enemigos 3D básicos, iluminación, niebla y coleccionables animados. La lógica de movimiento y combate sigue usando la cuadrícula y el sistema de colisiones del juego; si la CDN de Three.js no carga, se usa el raycaster Canvas. Echo Labyrinth añade cinco registros, siete centinelas y proyectiles Q.
+
+**The Singularity Engine** es la arena final con cuatro nodos y agentes coordinados. J dispara un pulso, K lanza una salva triple de mayor daño y F libera un EMP. Pesadilla agrega dos agentes más y escala la salud de nodos y enemigos. El director elige entre:
 - **Crossfire:** incrementa la cadencia de fuego.
 - **Lead shot:** anticipa la trayectoria y dispara hacia la posición probable del jugador.
 - **Encircle:** los cazadores intentan rodear al jugador.
 - **Minefield:** coloca minas con una señal previa antes de armarlas.
 
-Los jefes de los mundos 3 y 6 también cambian los patrones según el perfil. Pesadilla aumenta el multiplicador de presión a 1,62, recorta las ventanas de aviso, acelera la cadencia del director y refuerza las unidades de los mundos 7 y 8. Correr o retirarse favorece los disparos predictivos/intercepción, repetir dash favorece fintas o fuego cruzado, permanecer quieto invita al cerco y perseguir coleccionables invita a sembrar minas. El director reduce el ruido exploratorio y penaliza repetir su propia táctica, sin eliminar por completo la variación.
+Los jefes de los mundos 3 y 6 también cambian los patrones según el perfil. Pesadilla aumenta el multiplicador de presión a 1,62, recorta las ventanas de aviso, acelera la cadencia del director y refuerza las unidades de los mundos 7–10. Correr o retirarse favorece los disparos predictivos/intercepción, repetir dash favorece fintas o fuego cruzado, permanecer quieto invita al cerco y perseguir coleccionables invita a sembrar minas. El director reduce el ruido exploratorio y penaliza repetir su propia táctica, sin eliminar por completo la variación.
 
 ## Provocación verbal como mecánica
 
@@ -45,3 +47,4 @@ Si `localStorage` está disponible, `ymm-ai-dossier-v1` conserva estadísticas a
 - El mundo 4 utiliza raycasting sobre una cuadrícula 2D para simular perspectiva en primera persona; no es geometría poligonal ni WebGL.
 - La consola de provocación clasifica palabras clave; no entiende lenguaje libre como un modelo de lenguaje.
 - No hay una red neuronal entrenada. La complejidad reside en los perfiles, predicción, director contextual, recompensas y coordinación de roles.
+\n\n## Límite de la IA y seguridad\n\nLa adaptación actual es IA de juego local basada en reglas, predicción de acciones y recompensas online; no es un modelo de lenguaje ni una red neuronal general. La clave de un proveedor no debe aparecer en el cliente, HTML, repositorio público o dossier local. Para diálogos generativos se necesita un backend propio con la credencial en variables de entorno, límites de uso, validación de entradas y política de privacidad.\n

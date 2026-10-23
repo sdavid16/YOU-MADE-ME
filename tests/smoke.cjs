@@ -120,7 +120,7 @@ g.difficulty='nightmare';g.enterWorld7();
 assert(g.difficultyScale===1.62,'Nightmare has a materially higher pressure multiplier');
 assert(g.signalEnemies.length===7,'Nightmare deploys two extra Signal Break agents');
 g.difficulty='normal';g.enterWorld7();
-/* Signal Break unlocks the final first-person archive instead of ending early. */
+/* The campaign now continues through two distinct worlds and ends at the Singularity Engine. */
 g.renderer.render(g);assert(g.renderer.transition&&g.renderer.transition.style==='circuit','world seven uses a distinct circuit transition');
 assert(g.world===7&&g.signalNodes.length===3&&g.signalEnemies.length===5,'Signal Break initializes relays and varied agents on Normal');
 assert(['crossfire','lead-shot','encircle','minefield'].includes(g.ai.chooseTactic('shooter',['crossfire','lead-shot','encircle','minefield'])),'shooter director selects a valid tactical formation');
@@ -133,16 +133,31 @@ g.input.pressed.add('KeyE');g.updateWorld7(.016);g.input.pressed.clear();
 assert(g.screen==='playing','Signal Break exit remains locked while relays are active');
 for(const n of g.signalNodes)n.hp=0;
 g.input.pressed.add('KeyE');g.updateWorld7(.016);g.input.pressed.clear();
-assert(g.world===8&&g.screen==='playing','disabling relays opens the final archive world');
+assert(g.world===8&&g.screen==='playing','Signal Break opens the Black Archive');
 g.renderer.render(g);assert(g.renderer.transition&&g.renderer.transition.style==='archive','world eight has a distinct archive transition');
-assert(g.fragments===0&&g.sentinels.length===6&&sandbox.YMM.Levels.world8.shards.length===4,'Black Archive initializes a new map, six guards and four story records');
+assert(g.fragments===0&&g.sentinels.length===6&&sandbox.YMM.Levels.world8.shards.length===4,'Black Archive initializes six guards and four story records');
 g.player.x=sandbox.YMM.Levels.world8.exit.x;g.player.y=sandbox.YMM.Levels.world8.exit.y;g.input.pressed.add('KeyE');g.updateWorld4(.016);g.input.pressed.clear();
 assert(g.screen==='playing','Black Archive exit stays locked until all four records');
-for(const shard of sandbox.YMM.Levels.world8.shards){g.player.x=shard.x;g.player.y=shard.y;g.player.invuln=10;g.updateWorld4(.016);}
-assert(g.fragments===4,'all four archive records can be collected');
+for(const shard of sandbox.YMM.Levels.world8.shards){g.player.x=shard.x;g.player.y=shard.y;g.player.invuln=10;g.updateWorld4(.01);}
+assert(g.fragments===4,'all archive records can be collected');
 assert(g.logHistory.some(item=>String(item.message).includes('REGISTRO 04')),'archive records expose campaign backstory');
 g.player.x=sandbox.YMM.Levels.world8.exit.x;g.player.y=sandbox.YMM.Levels.world8.exit.y;g.input.pressed.add('KeyE');g.updateWorld4(.016);g.input.pressed.clear();
-assert(g.screen==='ending'&&g.ending==='archive','four records unlock the campaign true ending');
+assert(g.world===9&&g.screen==='playing','four archive records unlock Echo Labyrinth');
+g.renderer.render(g);assert(g.renderer.transition&&g.renderer.transition.style==='echo','world nine has a unique transition');
+assert(g.sentinels.length===7&&sandbox.YMM.Levels.world9.shards.length===5,'Echo Labyrinth initializes a new map, seven guards and five story records');
+g.player.pulseCooldown=0;g.input.pressed.add('KeyQ');g.updateWorld4(.016);g.input.pressed.clear();
+assert(g.archiveProjectiles.length>0,'Q fires a ranged echo pulse in first-person worlds');
+for(const shard of sandbox.YMM.Levels.world9.shards){g.player.x=shard.x;g.player.y=shard.y;g.player.invuln=10;g.updateWorld4(.01);}
+assert(g.fragments===5,'all five Echo Labyrinth records can be collected');
+g.player.x=sandbox.YMM.Levels.world9.exit.x;g.player.y=sandbox.YMM.Levels.world9.exit.y;g.input.pressed.add('KeyE');g.updateWorld4(.016);g.input.pressed.clear();
+assert(g.world===10&&g.signalNodes.length===4&&g.signalEnemies.length===7,'Echo Labyrinth opens the Singularity Engine with four nodes and seven agents');
+g.renderer.render(g);assert(g.renderer.transition&&g.renderer.transition.style==='singularity','world ten has a unique transition');
+g.player.invuln=10;g.input.pressed.add('KeyK');g.updateWorld7(.016);g.input.pressed.clear();
+assert(g.ai.memory.some(m=>m.type==='weapon-fired'&&m.detail.weapon==='triple-salvo'),'K fires the heavy triple-salvo attack');
+for(const n of g.signalNodes)n.hp=0;
+g.player.x=sandbox.YMM.Levels.world10.exit.x-g.player.w/2;g.player.y=sandbox.YMM.Levels.world10.exit.y-g.player.h/2;
+g.input.pressed.add('KeyE');g.updateWorld7(.016);g.input.pressed.clear();
+assert(g.screen==='ending'&&g.ending==='convergence','disabling the four Singularity nodes unlocks the true campaign ending');
 g.renderer.render(g);
 // Aggregate behavior and reward estimates survive a fresh AI run when browser storage is available.
 g.ai.longTermDossier.actionCounts.jump=17;g.ai.tacticOutcomes['drone-salvo']={tries:4,hits:2,value:.5};

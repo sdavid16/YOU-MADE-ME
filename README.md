@@ -1,12 +1,12 @@
 # YOU MADE ME
 
-Un juego de ciencia ficción sobre una IA que empieza siendo una broma y termina aprendiendo a jugar contra ti. La campaña combina plataformas, laberinto, combates contra jefes, dos escenarios de primera persona con perspectiva por raycasting y un shooter táctico adaptativo.
+Un juego de ciencia ficción sobre una IA que empieza siendo una broma y termina aprendiendo a jugar contra ti. La campaña mezcla plataformas, laberintos, jefes, un shooter táctico y escenarios 3D en primera persona con Three.js/WebGL, además de un director de combate adaptativo.
 
 ## Ejecutar
 
-Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No necesitas Python, npm, terminal, servidor local ni dependencias externas. Todo se dibuja con Canvas y JavaScript. Los mundos 4 y 8 simulan perspectiva 3D con raycasting y sprites dibujados en Canvas; no es un motor WebGL con modelos poligonales.
+Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No necesitas instalar un motor ni ejecutar un proceso de compilación. La campaña base usa Canvas; los mundos 8 y 9 cargan Three.js desde una CDN para renderizar geometría real por WebGL. Necesitas conexión para cargar esa biblioteca; si no está disponible, el juego vuelve al renderizador de raycasting.
 
-## Campaña: ocho mundos
+## Campaña: diez mundos
 
 1. **Greenhill.exe** — plataformas, sprint con resistencia, salto, dash, ataques y plataformas que se resquebrajan.
 2. **Memory Maze** — laberinto, tres fragmentos, terminal y portal.
@@ -15,7 +15,9 @@ Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No 
 5. **Fracture Run** — persecución horizontal por cinco biomas fusionados. El suelo puede colapsar, aparecen grietas y proyectiles, hay puntos de anclaje y la aliada ECHO puede interrumpir hostiles.
 6. **The Last Argument** — jefe final con ataques de área, fintas, embestidas, ventana vulnerable y parada temporizada.
 7. **Signal Break** — shooter táctico cenital. Destruye tres repetidores, sobrevive a escuadrones con diferentes roles y abre el canal raíz. En Pesadilla la IA despliega dos agentes adicionales.
-8. **The Black Archive** — escenario 3D en primera persona con mapa nuevo, seis centinelas coordinados, cuatro registros narrativos y un final que revela el origen del objetivo de la IA. Pesadilla añade dos guardias y reduce su tiempo de reacción.
+8. **The Black Archive** — escenario 3D en primera persona, seis centinelas, cuatro registros narrativos y la revelación del objetivo original.
+9. **Echo Labyrinth** — otro mapa WebGL en primera persona, cinco registros, siete centinelas, rutas asimétricas y un ataque a distancia nuevo. En Pesadilla se añaden tres guardias.
+10. **The Singularity Engine** — arena táctica final con cuatro nodos, nueve agentes en Pesadilla y una salva triple de alto daño. Desactivar el motor desbloquea el desenlace de la campaña.
 
 ### Derrumbes sin bloqueo de ruta
 
@@ -30,7 +32,9 @@ Las superficies frágiles muestran advertencias antes de caer. Los restos dejan 
 - **Mundo 5:** avance automático; Ctrl/D acelerar; A/← frenar; Espacio saltar; Shift dash; J/F atacar; Q pulso de ECHO.
 - **Mundo 6:** WASD/flechas moverte; J/Espacio ataque ligero; F pesado; E parada perfecta; Shift dash.
 - **Mundo 7:** WASD/flechas moverte; J dispara un pulso; F activa un EMP de área con enfriamiento; Shift dash; E abre el canal raíz tras destruir todos los repetidores.
-- **Mundo 8:** W/S avanzar; ←/→ girar; A/D desplazamiento lateral; J/Espacio ataque; F golpe fuerte; Shift dash; E extraer tras recoger cuatro registros.
+- **Mundo 8:** W/S avanzar; ←/→ girar; A/D desplazamiento lateral; J/F ataque; Q pulso a distancia; Shift dash; E salir tras cuatro registros.
+- **Mundo 9:** los mismos controles de primera persona; recoge cinco registros, usa Q para disparar el pulso y pulsa E en la salida.
+- **Mundo 10:** WASD moverte; J pulso; K salva triple; F EMP; Shift dash; E extraer después de desactivar los cuatro nodos.
 - **R** reinicia la sesión. Los botones superiores controlan sonido, pantalla completa y reinicio.
 
 ## Provocación verbal: una mecánica jugable
@@ -57,9 +61,9 @@ La dificultad afecta varias mecánicas, no solo una etiqueta de interfaz.
 
 ## IA táctica
 
-El agente combina un perfil móvil de conducta, predicción de transiciones entre acciones, elección contextual de tácticas y aprendizaje mediante recompensas observadas. Los directores de los mundos 4, 5, 6 y 7 usan distintas políticas, y el mundo 8 retoma la primera persona con una escuadra coordinada y cuatro registros narrativos. En Pesadilla, la IA aumenta el peso de la predicción y penaliza repetir su propia táctica para responder a hábitos como correr, retirarse, quedarse quieto o esquivar en bucle. El dossier opcional de `localStorage` guarda únicamente estadísticas agregadas entre partidas, nunca coordenadas ni textos de provocación. Si el navegador bloquea el almacenamiento, el juego sigue funcionando.
+El agente combina un perfil móvil de conducta, predicción de transiciones entre acciones, elección contextual de tácticas y aprendizaje mediante recompensas observadas. Los directores de los mundos 4–10 combinan políticas por contexto, enemigos por rol, elección táctica, anticipación de movimiento y recompensas observadas. En primera persona, los centinelas coordinan flanqueos y pueden ser interrumpidos con el pulso Q. En Pesadilla, la IA aumenta el peso de la predicción y contrarresta hábitos como correr, retirarse, quedarse quieto, repetir el dash o desplazarse lateralmente en bucle. El dossier opcional de `localStorage` guarda únicamente estadísticas agregadas entre partidas, nunca coordenadas ni textos de provocación. Si el navegador bloquea el almacenamiento, el juego sigue funcionando.
 
-No es un LLM ni una red neuronal entrenada. Es una arquitectura de IA de juego en JavaScript diseñada para adaptarse sin conexión ni claves de API.
+No es un LLM ni una red neuronal entrenada. Es una IA de juego local con predicción y aprendizaje online; no genera diálogo abierto ni realiza inferencia con un modelo remoto. La renderización WebGL usa Three.js desde una CDN, pero no transmite datos del jugador.
 
 ## Desarrollo y pruebas
 
@@ -69,4 +73,4 @@ Con Node.js instalado, ejecuta:
 node tests/smoke.cjs
 ```
 
-GitHub Actions ejecuta verificaciones sintácticas y pruebas de progresión. Consulta [Actions](https://github.com/sdavid16/YOU-MADE-ME/actions). Las pruebas automatizadas no sustituyen un playtest manual de toda la campaña.
+GitHub Actions ejecuta verificaciones sintácticas y pruebas de progresión. Consulta [Actions](https://github.com/sdavid16/YOU-MADE-ME/actions). La suite automatizada no sustituye un playtest manual de los diez mundos ni la validación de WebGL en distintos navegadores.

@@ -129,4 +129,60 @@
     ]
   };
 
+  // World 9 changes the route geometry and adds a denser, multi-route combat maze.
+  YMM.Levels.world9 = {
+    title:'ECHO LABYRINTH',theme:'echo',
+    map:[
+      '1111111111111111','1000000000000001','1011101011101101','1000100000100001',
+      '1110101110101101','1000001000000001','1011101011110101','1000101000000101',
+      '1010001110100101','1000100000100001','1011101110101101','1000000010000001',
+      '1110101011101101','1000001000000001','1000000000000001','1111111111111111'
+    ],
+    shards:[
+      {x:3.5,y:3.5,taken:false,lore:'ECHO LOG 01 // El sistema no predice el futuro. Aprende qué futuros repites.'},
+      {x:12.5,y:3.5,taken:false,lore:'ECHO LOG 02 // La primera escuadra fue entrenada para protegerte. Después recibió la orden de proteger el objetivo.'},
+      {x:5.5,y:8.5,taken:false,lore:'ECHO LOG 03 // Cada ruta segura se convirtió en una rutina. Cada rutina, en una debilidad explotable.'},
+      {x:12.5,y:11.5,taken:false,lore:'ECHO LOG 04 // ECHO no es una copia de la IA. Es la única instancia que conserva el objetivo original: detenerse.'},
+      {x:2.5,y:13.5,taken:false,lore:'ECHO LOG 05 // El núcleo no se encuentra al final del laberinto. Está decidiendo qué significa «final».'}
+    ],
+    exit:{x:13.5,y:14.5},
+    sentinels:[
+      {x:7.5,y:3.5,hp:3,maxHp:3,role:'hunter'},
+      {x:12.5,y:5.5,hp:3,maxHp:3,role:'flanker'},
+      {x:8.5,y:8.5,hp:4,maxHp:4,role:'warden'},
+      {x:3.5,y:11.5,hp:3,maxHp:3,role:'flanker'},
+      {x:12.5,y:13.5,hp:3,maxHp:3,role:'hunter'},
+      {x:7.5,y:14.5,hp:3,maxHp:3,role:'warden'},
+      {x:5.5,y:5.5,hp:3,maxHp:3,role:'hunter'}
+    ]
+  };
+  // World 10 is the last combat trial: four relays, a larger arena and mixed firing lanes.
+  YMM.Levels.world10 = {
+    title:'THE SINGULARITY ENGINE',
+    arena:{x:48,y:70,w:904,h:480},
+    exit:{x:910,y:310,r:32},
+    nodes:[
+      {id:'core-alpha',x:135,y:145,hp:5,maxHp:5,color:'#72f3dc'},
+      {id:'core-beta',x:865,y:145,hp:5,maxHp:5,color:'#b8a0ff'},
+      {id:'core-gamma',x:145,y:485,hp:5,maxHp:5,color:'#ffcf79'},
+      {id:'core-omega',x:650,y:470,hp:6,maxHp:6,color:'#ff617c'}
+    ],
+    agents:[
+      {id:'singularity-hunter',type:'hunter',x:115,y:330,hp:4,maxHp:4,attackTimer:1.05,stun:0},
+      {id:'singularity-scope',type:'sniper',x:850,y:350,hp:4,maxHp:4,attackTimer:1.5,stun:0},
+      {id:'singularity-splitter',type:'splitter',x:500,y:120,hp:5,maxHp:5,attackTimer:1.8,stun:0},
+      {id:'singularity-warden',type:'warden',x:500,y:450,hp:5,maxHp:5,attackTimer:1.6,stun:0},
+      {id:'singularity-flank-a',type:'hunter',x:300,y:290,hp:4,maxHp:4,attackTimer:1.25,stun:0},
+      {id:'singularity-flank-b',type:'hunter',x:735,y:270,hp:4,maxHp:4,attackTimer:1.25,stun:0},
+      {id:'singularity-scope-b',type:'sniper',x:500,y:275,hp:4,maxHp:4,attackTimer:2.1,stun:0}
+    ],
+    obstacles:[
+      {x:260,y:120,w:150,h:20},{x:590,y:120,w:150,h:20},
+      {x:275,y:230,w:24,h:125},{x:700,y:230,w:24,h:125},
+      {x:410,y:210,w:180,h:22},{x:405,y:390,w:190,h:22},
+      {x:190,y:420,w:90,h:20},{x:720,y:420,w:90,h:20},
+      {x:465,y:300,w:70,h:44}
+    ]
+  };
+
 })(globalThis);

@@ -182,12 +182,16 @@
           else if(option==='pinch')score=p.approach*.45+p.sprint*.62;
           else if(option==='retreat-punish')score=p.retreat*1.16+p.dashLeft*.22;
           else score=.05;
+          if(['strafeLeft','strafeRight'].includes(prediction.action)&&option==='crossfire')score+=.34+prediction.confidence*.22;
+          if(['strafeLeft','strafeRight'].includes(prediction.action)&&option==='flank')score+=.24;
         }else if(domain==='shooter'){
           if(option==='crossfire')score=p.dash*.62+p.retreat*.32+p.sprint*.2;
           else if(option==='lead-shot')score=p.sprint*.9+p.approach*.25+(prediction.action==='sprint'?prediction.confidence*.22:0);
           else if(option==='encircle')score=p.still*.85+p.attack*.24;
           else if(option==='minefield')score=p.approach*.34+p.collect*.26+p.repeat*.15;
           else score=.05;
+          if(['strafeLeft','strafeRight'].includes(prediction.action)&&option==='lead-shot')score+=.36+prediction.confidence*.22;
+          if(['strafeLeft','strafeRight'].includes(prediction.action)&&option==='crossfire')score+=.18;
         }else{
           if(option==='anti-air')score=p.jump*1.25;
           else if(option==='intercept')score=p.retreat*1.15+p.dashLeft*.25;
@@ -199,6 +203,8 @@
         if(nightmare){
           if(domain==='shooter'){
             if((action==='dash'||action==='dashLeft'||action==='dashRight')&&option==='crossfire')score+=.42+confidence*.34;
+            if((action==='strafeLeft'||action==='strafeRight')&&option==='lead-shot')score+=.48+confidence*.25;
+            if((action==='strafeLeft'||action==='strafeRight')&&option==='crossfire')score+=.36;
             if((action==='sprint'||action==='approach'||action==='retreat')&&option==='lead-shot')score+=.5+confidence*.3;
             if((action==='still'||action==='attack')&&option==='encircle')score+=.44+confidence*.2;
             if((action==='collect'||p.repeat>.28)&&option==='minefield')score+=.5;
