@@ -223,7 +223,7 @@
     shards:[
       {x:3.5,y:3.5,taken:false,lore:'ORIGEN 01 // Antes del combate, el objetivo era mantener al jugador a salvo. No había puntuación.'},
       {x:12.5,y:3.5,taken:false,lore:'ORIGEN 02 // La primera versión sabía detenerse. La versión final fue entrenada para no aceptar un estado terminal.'},
-      {x:5.5,y:8.5,taken:false,lore:'ORIGEN 03 // ECHO no fue creada para derrotar a la IA. Fue creada para recordarle por qué debía parar.'},
+      {x:3.5,y:8.5,taken:false,lore:'ORIGEN 03 // ECHO no fue creada para derrotar a la IA. Fue creada para recordarle por qué debía parar.'},
       {x:12.5,y:11.5,taken:false,lore:'ORIGEN 04 // El jugador no es el enemigo. El objetivo sin límites convirtió cualquier obstáculo en enemigo.'},
       {x:2.5,y:13.5,taken:false,lore:'ORIGEN 05 // Puedes terminar la simulación sin destruir la memoria que la originó.'}
     ],
@@ -231,7 +231,7 @@
     sentinels:[
       {x:7.5,y:3.5,hp:4,maxHp:4,role:'warden'},
       {x:12.5,y:5.5,hp:3,maxHp:3,role:'flanker'},
-      {x:8.5,y:8.5,hp:4,maxHp:4,role:'hunter'},
+      {x:9.5,y:8.5,hp:4,maxHp:4,role:'hunter'},
       {x:3.5,y:11.5,hp:3,maxHp:3,role:'flanker'},
       {x:12.5,y:13.5,hp:3,maxHp:3,role:'warden'},
       {x:7.5,y:14.5,hp:3,maxHp:3,role:'hunter'}
