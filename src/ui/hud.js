@@ -38,7 +38,7 @@
         1:{name:'GREENHILL.exe',chapter:'PRÓLOGO',controls:'← → MOVER · ESPACIO SALTAR · CTRL CORRER · J/F ATACAR · T/G PROVOCAR'},
         2:{name:'MEMORY_MAZE.exe',chapter:'INVASIÓN',controls:'WASD / FLECHAS · E INTERACTUAR'},
         3:{name:'NO_LONGER_A_JOKE.exe',chapter:'CONFRONTACIÓN',controls:'WASD / FLECHAS · J ATACAR · SHIFT ESQUIVAR'},
-        4:{name:'NULL_CATHEDRAL.3D',chapter:'REALIDAD CORRUPTA',controls:'W/S AVANZAR · ←/→ GIRAR · A/D ESTRIAR · J ATACAR · F FUERTE · E SALIDA'},
+        4:{name:'NULL_CATHEDRAL.3D',chapter:'REALIDAD CORRUPTA',controls:'W/S AVANZAR · ←/→ GIRAR · A/D ESTRIAR · J DISPARAR · SPACE/F GOLPE · Q PULSO · E SALIDA'},
         5:{name:'FRACTURE_RUN.exe',chapter:'FUGA MULTIVERSAL',controls:'CTRL/D CORRER · A FRENAR · ESPACIO SALTAR · SHIFT DASH · J/F ATACAR · Q ECHO'},
         6:{name:'THE_LAST_ARGUMENT.exe',chapter:'JEFE FINAL',controls:'WASD MOVER · J/ESPACIO ATAQUE · F FUERTE · E PARADA · SHIFT DASH'},
         7:{name:'SIGNAL_BREAK.exe',chapter:'ÚLTIMA TRANSMISIÓN',controls:'WASD MOVER · J DISPARAR · F PULSO EMP · SHIFT DASH · E SALIDA'},
