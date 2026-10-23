@@ -44,7 +44,7 @@
       const index=hash(this.runSeed+':world:'+world+':'+this.recent.join(','))%pool.length;const def=pool[index];
       const scale=this.game.difficulty==='nightmare'?1.25:this.game.difficulty==='story'?.78:1;
       const goal=Math.max(def.min,Math.round(def.base*scale));
-      this.mission={...def,goal,progress:0,completed:false,startedAt:this.game.elapsed,baseTaunts:this.game.ai?this.game.ai.provocation:0,baseCollectibles:this.game.fragments||0,baseBossHp:this.game.boss&&this.game.boss.hp,baseKills:this.currentAliveCount(),lastX:this.game.player&&this.game.player.x||0,lastY:this.game.player&&this.game.player.y||0,tauntSeen:false,award:Math.round(def.xp*scale),creditAward:Math.round(def.credits*scale)};
+      this.mission={...def,world,goal,progress:0,completed:false,startedAt:this.game.elapsed,baseTaunts:this.game.ai?this.game.ai.provocation:0,baseCollectibles:this.game.fragments||0,baseBossHp:this.game.boss&&this.game.boss.hp,baseKills:this.currentAliveCount(),lastX:this.game.player&&this.game.player.x||0,lastY:this.game.player&&this.game.player.y||0,tauntSeen:false,award:Math.round(def.xp*scale),creditAward:Math.round(def.credits*scale)};
       this.render();
       if(this.game.log)this.game.log('OBJETIVO SECUNDARIO // '+def.title+' — '+def.desc.replace('{goal}',String(goal)),'alert');
     }
