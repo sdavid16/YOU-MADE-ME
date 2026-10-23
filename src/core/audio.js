@@ -1,16 +1,16 @@
 (function (root) {
   const YMM = root.YMM = root.YMM || {};
   class AudioSystem {
-    constructor() { this.ctx = null; this.muted = false; this.master = null; }
+    constructor() { this.ctx = null; this.muted = false; this.master = null; this.volume = .12; }
     unlock() {
       if (this.muted) return;
       const AudioCtx = root.AudioContext || root.webkitAudioContext;
       if (!AudioCtx) return;
-      if (!this.ctx) { this.ctx = new AudioCtx(); this.master = this.ctx.createGain(); this.master.gain.value = .12; this.master.connect(this.ctx.destination); }
+      if (!this.ctx) { this.ctx = new AudioCtx(); this.master = this.ctx.createGain(); this.master.gain.value = this.volume; this.master.connect(this.ctx.destination); }
       if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     }
-    setMuted(value) { this.muted = !!value; if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : .12, this.ctx.currentTime, .03); }
-    toggle() { this.setMuted(!this.muted); return this.muted; }
+    setMuted(value) { this.muted = !!value; if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : this.volume, this.ctx.currentTime, .03); }
+    toggle() { this.setMuted(!this.muted); return this.muted; }\n    setVolume(value) { this.volume = Math.max(0, Math.min(.3, Number(value) || 0)); if (this.master && !this.muted) this.master.gain.setTargetAtTime(this.volume, this.ctx.currentTime, .03); }
     tone(freq = 440, duration = .08, type = 'sine', volume = .2, endFreq = null) {
       if (this.muted || !this.ctx || !this.master) return;
       const now = this.ctx.currentTime, osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
