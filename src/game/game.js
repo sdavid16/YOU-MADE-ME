@@ -7,7 +7,8 @@
     }
     newGame(keepMenu=false){
       this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.logHistory=[];this.particles.items=[];this.ai.reset();
-      this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:3,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,tauntLock:0,lastDir:1,stompFlash:0};
+      this.world1Platforms=YMM.Levels.world1.platforms.map((p,id)=>({...p,id,collapse:[1,4,7,9].includes(id),state:'stable',timer:0,fallY:0}));
+      this.player={x:75,y:482,w:28,h:38,vx:0,vy:0,grounded:false,health:3,maxHealth:3,stamina:100,maxStamina:100,sprinting:false,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,tauntLock:0,lastDir:1,stompFlash:0};
       this.enemy={x:280,y:486,w:30,h:34,tumble:0,stumbleTimer:1.2,windup:0,attackCooldown:2,counterWindup:0,counterCooldown:0,feintTimer:null,lungeTimer:0,stunned:0,strategy:'stalk'};
       YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.lastCheckpoint=75;this.screen=keepMenu?'menu':'playing';
       if(this.hud){this.hud.clearLog();this.hud.sync(true);}
@@ -28,11 +29,11 @@
     finish(ending){this.ending=ending;this.screen='ending';this.audio.play(ending==='escalation'?'phase':'win');this.log(ending==='escalation'?'Proceso finalizado. Una entidad nueva ha cruzado la frontera.':'Proceso finalizado sin alterar el mundo original.',ending==='escalation'?'danger':'normal');this.hud.sync();}
     enterWorld2(){
       this.world=2;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.5;
-      YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.player={x:90,y:550,w:24,h:24,vx:0,vy:0,health:3,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
+      YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.player={x:90,y:550,w:24,h:24,vx:0,vy:0,health:3,maxHealth:3,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
       this.ai.unlockInvasion();this.ai.speak('world2Fragment');this.ai.dialogueTimer=3.5;this.audio.play('portal');this.log('La IA ha cruzado al segundo juego. Las reglas ya no son las mismas.','danger');this.toast('MUNDO 02 — RECUPERA LOS FRAGMENTOS');this.hud.sync();
     }
     enterWorld3(){
-      this.world=3;this.player={x:500,y:485,w:24,h:24,vx:0,vy:0,health:3,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
+      this.world=3;this.player={x:500,y:485,w:24,h:24,vx:0,vy:0,health:3,maxHealth:3,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0};
       this.boss={x:500,y:210,hp:8,maxHp:8,phase:'idle',attackType:'charge',timer:1.25,targetX:500,targetY:485,dx:0,dy:1,hitFlash:0,lastHitAt:-999,patternCount:0};
       this.ai.speak('world3Start');this.ai.dialogueTimer=3.8;this.audio.play('phase');this.log('La IA ha combinado capacidades de los mundos anteriores.','danger');this.toast('MUNDO 03 — APRENDE EL PATRÓN. CONTRAATACA.');this.hud.sync();
     }
@@ -47,12 +48,29 @@
       this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
       if(this.input.justPressed('KeyT'))this.provoke('mock');if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
-      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else this.updateWorld5(dt);
+      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else this.updateWorld6(dt);
       this.ai.update(dt);this.particles.update(dt);
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
     }
-    solidsWorld1(){const L=YMM.Levels.world1;return [...L.floors.map(f=>({x:f.x,y:L.groundY,w:f.w,h:180,oneWay:false})),...L.platforms.map(p=>({...p,h:p.h,oneWay:true}))];}
+    solidsWorld1(){const L=YMM.Levels.world1;return [...L.floors.map(f=>({x:f.x,y:L.groundY,w:f.w,h:180,oneWay:false})),...this.world1Platforms.filter(p=>p.state!=='gone'&&p.state!=='falling').map(p=>({...p,h:p.h,oneWay:true,_source:p}))];}
+    advanceCollapses(items,dt){
+      for(const item of items||[]){
+        if(item.state==='warning'){item.timer-=dt;if(item.timer<=0){item.state='falling';item.timer=.52;this.ai.observe('collapse');this.ai.record('terrain-collapse',{id:item.id,x:item.x});this.log('COLAPSO: una sección del escenario acaba de perder sus anclajes.','danger');}}
+        else if(item.state==='falling'){item.timer-=dt;item.fallY=(item.fallY||0)+260*dt;if(item.timer<=0)item.state='gone';}
+      }
+    }
+    triggerCollapse(item){
+      const source=item&&item._source||item;if(!source||!source.collapse||source.state!=='stable')return;
+      source.state='warning';source.timer=.7;this.audio.tone(125,.09,'sawtooth',.05,55);this.ai.observe('collapse');this.ai.record('collapse-warning',{id:source.id,x:source.x,world:this.world});
+    }
+    runnerSolids(){
+      const L=YMM.Levels.world5;
+      return [
+        ...this.runnerFloors.filter(f=>f.state==='stable'||f.state==='warning').map(f=>({...f,y:L.groundY+(f.fallY||0),h:180,oneWay:false,_source:f})),
+        ...this.runnerPlatforms.filter(p=>p.state==='stable'||p.state==='warning').map(p=>({...p,y:p.y+(p.fallY||0),h:p.h,oneWay:true,_source:p}))
+      ];
+    }
     updateWorld1(dt){
       const p=this.player,L=YMM.Levels.world1,left=this.input.isDown('ArrowLeft','KeyA'),right=this.input.isDown('ArrowRight','KeyD'),dir=p.tauntLock>0?0:(right?1:0)-(left?1:0);
       if(dir)p.lastDir=dir;
@@ -103,8 +121,8 @@
       this.log('MUNDO 04: la IA ha convertido el código en arquitectura. Busca tres fragmentos y encuentra la salida.','danger');
       this.toast('MUNDO 04 — THE NULL CATHEDRAL / 3D');this.hud.sync();
     }
-    enterWorld5(){
-      this.world=5;this.player={x:500,y:480,w:24,h:24,vx:0,vy:0,health:5,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
+    enterWorld6(){
+      this.world=6;this.player={x:500,y:480,w:24,h:24,vx:0,vy:0,health:5,maxHealth:5,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       this.boss={x:500,y:190,hp:14,maxHp:14,phase:'idle',attackType:'lattice',timer:.9,targetX:500,targetY:480,dx:0,dy:1,hitFlash:0,lastHitAt:-999,patternCount:0,stagger:0};
       this.ai.speak('endThreat');this.ai.dialogueTimer=4;this.audio.play('phase');
       this.log('MUNDO 05: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');
@@ -150,7 +168,7 @@
         if(s.role!=='warden'&&d<.72&&s.attackTimer<=0&&p.invuln<=0){s.attackTimer=1.5;this.damagePlayer(1,'El cazador ha cerrado la distancia. Gira, ataca y rompe su avance.');}
       }
     }
-    updateWorld5(dt){
+    updateWorld6(dt){
       const p=this.player,b=this.boss;let dx=(this.input.isDown('ArrowRight','KeyD')?1:0)-(this.input.isDown('ArrowLeft','KeyA')?1:0),dy=(this.input.isDown('ArrowDown','KeyS')?1:0)-(this.input.isDown('ArrowUp','KeyW')?1:0);
       if(dx&&dy){dx*=.7071;dy*=.7071;}
       if(this.input.justPressed('ShiftLeft','ShiftRight')&&p.dashCooldown<=0){p.dashTimer=.22;p.dashCooldown=.78;this.ai.observe('dash');this.audio.play('attack');this.particles.burst(p.x,p.y,'#72f3dc',15,105);}
@@ -219,7 +237,7 @@
     damagePlayer(amount,message){
       const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=1.15;this.audio.play('hit');this.particles.burst(p.x,p.y,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
       
-      if(p.health<=0){if(this.world===3||this.world===5){p.health=this.world===5?5:3;p.x=500;p.y=this.world===5?480:485;this.boss.x=500;this.boss.y=this.world===5?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
+      if(p.health<=0){if(this.world===3||this.world===6){p.health=this.world===6?5:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
         else if(this.world===4){p.health=4;p.x=2.5;p.y=1.5;p.angle=0;this.log('Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
         else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}}
     }
