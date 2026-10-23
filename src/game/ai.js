@@ -100,6 +100,7 @@
     update(dt){
       if(this.strategyTimer>0)this.strategyTimer-=dt;
       if(this.game.world!==1)return;const e=this.game.enemy,p=this.game.player;if(!e)return;
+      if(e.stunned>0){e.tumble=Math.max(e.tumble,.12);e.y=486;return;}
       if(this.phase===0){e.stumbleTimer-=dt;if(e.stumbleTimer<=0){e.stumbleTimer=YMM.Util.rand(1.5,3.3);e.tumble=.32;this.game.particles.burst(e.x+14,505,'#ffcf79',5);}e.tumble=Math.max(0,e.tumble-dt);e.x+=Math.sin(this.game.clock*1.45)*18*dt;e.strategy='stalk';}
       else{
         const delta=p.x-e.x,distance=Math.abs(delta);if(this.phase>=2)this.evaluateStrategy();
