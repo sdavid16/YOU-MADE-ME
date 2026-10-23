@@ -2,7 +2,7 @@
   const YMM = root.YMM = root.YMM || {};
   class Renderer {
     constructor(canvas) {
-      this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.w=canvas.width;this.h=canvas.height;
+      this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:true});this.w=canvas.width;this.h=canvas.height;
       this.stars=Array.from({length:110},()=>({x:Math.random()*this.w,y:Math.random()*this.h*.75,r:.4+Math.random()*1.5,a:.15+Math.random()*.55,parallax:.1+Math.random()*.6}));
       this.scanOffset=0;this.lastWorld=null;this.lastScreen=null;this.transition=null;
     }
