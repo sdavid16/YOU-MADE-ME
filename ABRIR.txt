@@ -15,7 +15,9 @@ DOCE MUNDOS
 7. Signal Break: shooter cenital. Destruye tres repetidores y abre el canal raíz.
 8. The Black Archive: zona 3D WebGL, cuatro registros y la verdad sobre el objetivo de la IA.
 9. Echo Labyrinth: mapa WebGL nuevo, cinco registros, siete centinelas y pulso a distancia Q.
-10. The Singularity Engine: arena táctica, cuatro nodos, enemigos coordinados y salva triple K; apaga el motor para terminar.
+10. The Singularity Engine: arena táctica, cuatro nodos, enemigos coordinados y salva triple K; apaga el motor para abrir el ala borrada.
+11. The Redacted Wing: zona WebGL con seis registros, siete centinelas y Warden que marca una posición de impacto.
+12. The Origin Room: capítulo final WebGL con cinco registros y una decisión de cierre.
 
 CONTROLES
 Mundo 1: flechas/A-D mover · Espacio/W/↑ saltar · Ctrl correr · Shift esquivar · J ligero · F pesado · T consola verbal · G desafío.
@@ -27,6 +29,7 @@ Mundo 6: WASD/flechas mover · J/Espacio ligero · F pesado · E parada perfecta
 Mundo 7: WASD/flechas mover · J disparar · F EMP · Shift dash · E abrir el canal tras destruir los tres repetidores.
 Mundo 8: W/S avanzar · ←/→ girar · A/D strafe · J/F atacar · Q pulso · Shift dash · E salida con 4 registros.
 Mundo 9: mismos controles 3D · Q pulso · E salida con 5 registros.
+Mundos 8, 9, 11 y 12: W/S avanzar · ←/→ girar · A/D strafe · J disparar · Espacio/F cuerpo a cuerpo · Q pulso · Shift dash · E salida con registros.
 Mundo 10: WASD mover · J disparar · K salva triple · F EMP · Shift dash · E extracción tras destruir 4 nodos.
 
 PROVOCACIÓN
@@ -36,4 +39,4 @@ DIFICULTAD
 El botón superior DIF alterna Historia, Normal y Pesadilla. Pesadilla es más agresiva: 1,62× de presión, ventanas de aviso reducidas y refuerzos en los mundos 7–10.
 
 IA
-El juego combina perfil conductual, predicción de acciones, elección de amenazas, coordinación por roles y aprendizaje de recompensas. Si el navegador permite almacenamiento local, mantiene estadísticas agregadas entre partidas; no guarda coordenadas ni transcripciones. No usa un modelo de IA externo; los mundos 8–9 cargan Three.js desde una CDN solo para renderizar gráficos 3D.
+El juego combina un predictor secuencial de dos pasos, confianza/entropía, perfil conductual, elección de amenazas, coordinación por roles, penalización de tácticas repetidas y aprendizaje de recompensas. Si el navegador permite almacenamiento local, mantiene estadísticas agregadas entre partidas; no guarda coordenadas ni transcripciones. No usa un modelo de IA externo; los mundos 8, 9, 11 y 12 cargan Three.js desde una CDN solo para renderizar gráficos 3D.
