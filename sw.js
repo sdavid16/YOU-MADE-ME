@@ -19,6 +19,8 @@ const CORE_ASSETS = [
   './src/game/game.js',
   './src/game/meta-progression.js',
   './src/game/mission-director.js',
+  './src/game/codex.js',
+  './src/ui/accessibility-settings.js',
   './src/ui/hud.js',
   './src/ui/touch-controls.js',
   './src/main.js'
