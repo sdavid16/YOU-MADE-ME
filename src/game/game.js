@@ -3,7 +3,7 @@
   class Game {
     constructor(canvas,hud){
       this.canvas=canvas;this.input=new YMM.Input();this.audio=new YMM.AudioSystem();this.renderer=new YMM.Renderer(canvas);this.particles=new YMM.ParticleSystem();this.hud=hud;
-      this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.difficulty='normal';this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';this.meta=YMM.MetaProgression?new YMM.MetaProgression(this):null;this.touchControls=YMM.TouchControls?new YMM.TouchControls(this):null;this.missionDirector=YMM.MissionDirector?new YMM.MissionDirector(this):null;this.codex=YMM.Codex?new YMM.Codex(this):null;this.accessibility=YMM.AccessibilitySettings?new YMM.AccessibilitySettings(this):null;
+      this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.difficulty='normal';this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';this.meta=YMM.MetaProgression?new YMM.MetaProgression(this):null;this.touchControls=YMM.TouchControls?new YMM.TouchControls(this):null;this.missionDirector=YMM.MissionDirector?new YMM.MissionDirector(this):null;this.codex=YMM.Codex?new YMM.Codex(this):null;this.accessibility=YMM.AccessibilitySettings?new YMM.AccessibilitySettings(this):null;this.runModifiers=YMM.RunModifiers?new YMM.RunModifiers(this):null;
     }
     newGame(keepMenu=false){
       this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.signalNodes=null;this.signalEnemies=null;this.signalProjectiles=null;this.signalMines=null;this.lastTauntText='';this.lastTauntCategory=null;this.lastTauntTimer=0;this.logHistory=[];this.particles.items=[];this.ai.reset();
@@ -12,9 +12,9 @@
       this.enemy={x:280,y:486,w:30,h:34,tumble:0,stumbleTimer:1.2,windup:0,attackCooldown:2,counterWindup:0,counterCooldown:0,feintTimer:null,lungeTimer:0,stunned:0,strategy:'stalk'};
       YMM.Levels.world2.fragments.forEach(f=>f.taken=false);this.lastCheckpoint=75;this.screen=keepMenu?'menu':'playing';
       if(this.hud){this.hud.clearLog();this.hud.sync(true);}
-      if(!keepMenu){this.audio.unlock();this.audio.play('start');this.log('Sesión iniciada. Dificultad: ridícula. Probabilidad de arrepentimiento: no disponible.');this.toast('Llega a la salida. O encuentra algo más divertido.');if(this.meta)this.meta.onRunStart();if(this.missionDirector)this.missionDirector.startRun();}
+      if(!keepMenu){this.audio.unlock();this.audio.play('start');this.log('Sesión iniciada. Dificultad: ridícula. Probabilidad de arrepentimiento: no disponible.');this.toast('Llega a la salida. O encuentra algo más divertido.');if(this.meta)this.meta.onRunStart();if(this.runModifiers)this.runModifiers.startRun();if(this.missionDirector)this.missionDirector.startRun();}
     }
-    get difficultyScale(){return this.difficulty==='story'?.78:this.difficulty==='nightmare'?1.62:1;}
+    get difficultyScale(){return (this.difficulty==='story'?.78:this.difficulty==='nightmare'?1.62:1)*(this.runModifiers?this.runModifiers.scale:1);}
     cycleDifficulty(){const modes=['story','normal','nightmare'];this.difficulty=modes[(modes.indexOf(this.difficulty)+1)%modes.length];const label={story:'HISTORIA',normal:'NORMAL',nightmare:'PESADILLA'}[this.difficulty];this.toast('DIFICULTAD // '+label);this.log('Parámetros de dificultad cambiados: '+label+'.','alert');if(this.hud)this.hud.sync();return this.difficulty;}
     openTauntConsole(){if(this.screen!=='playing')return false;this.screen='taunting';if(this.hud){this.hud.sync();this.hud.focusTauntInput();}return true;}
     closeTauntConsole(){if(this.screen!=='taunting')return false;this.screen='playing';if(this.hud)this.hud.sync();return true;}
@@ -27,7 +27,7 @@
       if(this.screen!=='playing')return false;
       const accepted=this.ai.taunt(kind);if(!accepted)return false;if(this.meta)this.meta.recordTaunt(kind);if(this.missionDirector)this.missionDirector.onTaunt();
       const p=this.player;
-      if(kind==='logic'){p.intelTimer=4.6*(this.meta?this.meta.modifiers.intel:1);this.ai.record('taunt-intel',{world:this.world,phase:this.ai.phase});this.toast('LECTURA TÁCTICA // patrones revelados durante 4.6 s');}
+      if(kind==='logic'){p.intelTimer=4.6*(this.meta?this.meta.modifiers.intel:1)*(this.runModifiers?this.runModifiers.intelDuration:1);this.ai.record('taunt-intel',{world:this.world,phase:this.ai.phase});this.toast('LECTURA TÁCTICA // patrones revelados durante 4.6 s');}
       if(kind==='threat'){
         if(this.world===1&&Math.abs((p.x+p.w/2)-(this.enemy.x+15))<200){this.enemy.windup=Math.max(this.enemy.windup,.28);this.enemy.attackCooldown=Math.min(this.enemy.attackCooldown,.7);this.log('La amenaza ha provocado una respuesta inmediata.','danger');}
         else if(this.world===5&&this.runnerDirectorTimer!==undefined){this.runnerDirectorTimer=Math.min(this.runnerDirectorTimer,.85);this.log('La IA acepta el desafío: la siguiente amenaza llegará antes.','danger');}
@@ -79,7 +79,7 @@
       if(this.input.justPressed('KeyT'))this.openTauntConsole();if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
       if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else if(this.world===6)this.updateWorld6(dt);else if(this.world===7||this.world===10)this.updateWorld7(dt);else this.updateWorld4(dt);
-      this.ai.update(dt);this.particles.update(dt);if(this.meta)this.meta.update(this,dt);if(this.missionDirector)this.missionDirector.update(this,dt);if(this.codex)this.codex.update(this);if(this.touchControls)this.touchControls.update();
+      this.ai.update(dt);this.particles.update(dt);if(this.meta)this.meta.update(this,dt);if(this.missionDirector)this.missionDirector.update(this,dt);if(this.codex)this.codex.update(this);if(this.runModifiers)this.runModifiers.update(this);if(this.touchControls)this.touchControls.update();
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
     }
@@ -629,7 +629,7 @@
       }else if(b.phase==='vulnerable'&&b.timer<=0){b.phase='idle';b.timer=.62;}
     }
     damagePlayer(amount,message){
-      const p=this.player;if(p.invuln>0)return;if(this.missionDirector)this.missionDirector.onDamage();if(this.meta&&this.meta.modifiers.shield)amount=Math.max(.5,amount*(1-this.meta.modifiers.shield));p.health-=amount;p.invuln=this.difficulty==='story'?1.5:this.difficulty==='nightmare'?.88:1.15;this.audio.play('hit');
+      const p=this.player;if(p.invuln>0)return;if(this.missionDirector)this.missionDirector.onDamage();if(this.runModifiers)amount*=this.runModifiers.incomingDamage;if(this.meta&&this.meta.modifiers.shield)amount=Math.max(.5,amount*(1-this.meta.modifiers.shield));p.health-=amount;p.invuln=this.difficulty==='story'?1.5:this.difficulty==='nightmare'?.88:1.15;this.audio.play('hit');
       const px=this.world===5? p.x-this.runnerCamera():p.x,py=p.y;this.particles.burst(px,py,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
       if(p.health<=0){
         if(this.world===3||this.world===6){p.health=this.world===6?(this.difficulty==='story'?5:this.difficulty==='nightmare'?3:5):this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
