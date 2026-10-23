@@ -265,7 +265,7 @@
       if(!this.isWorld4Wall(p.x+dx+Math.sign(dx)*.2,p.y))p.x+=dx;
       if(!this.isWorld4Wall(p.x,p.y+dy+Math.sign(dy)*.2))p.y+=dy;
       p.x=YMM.Util.clamp(p.x,1.25,14.75);p.y=YMM.Util.clamp(p.y,1.25,14.75);
-      if(forward||strafe)this.ai.observe(forward<0?'retreat':'approach');
+      if(forward)this.ai.observe(forward<0?'retreat':'approach',{world:this.world});else if(strafe)this.ai.observe(strafe<0?'strafeLeft':'strafeRight',{world:this.world});
       p.pulseCooldown=Math.max(0,(p.pulseCooldown||0)-dt);
       this.archiveProjectiles=this.archiveProjectiles||[];
       if(this.input.justPressed('KeyQ')&&p.pulseCooldown<=0){
