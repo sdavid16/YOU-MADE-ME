@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "YOU MADE ME — Adaptive AI Game",
+  "short_name": "YOU MADE ME",
+  "description": "Una campaña de ciencia ficción con combate adaptativo, progresión y escenarios 3D.",
+  "lang": "es",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#05070d",
+  "theme_color": "#05070d",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "./assets/icons/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
