@@ -31,7 +31,7 @@
       this.provocation=0;this.adaptation=0;this.corruption=0;this.phase=0;this.lastTauntAt=-999;this.tauntCombo=0;
       this.phaseKeys=new Set();this.memory=[];this.dialogue='';this.dialogueTimer=0;this.recentLines=[];this.observations=[];
       this.tactics={jump:0,retreat:0,approach:0,still:0,dash:0,dashLeft:0,dashRight:0,attack:0,collect:0};
-      this.outcomes={antiAir:{tries:0,hits:0},intercept:{tries:0,hits:0},pressure:{tries:0,hits:0},feint:{tries:0,hits:0}};
+      this.outcomes={antiAir:{tries:0,hits:0,value:0},intercept:{tries:0,hits:0,value:0},pressure:{tries:0,hits:0,value:0},feint:{tries:0,hits:0,value:0}};
       this.activeStrategy='stalk';this.strategyTimer=0;this.sampleTimer=0;this.lastDistance=null;this.lastPlayerX=null;this.lastPlayerY=null;this.lastActionAt={};this.behaviorTrace=[];this.fakeDumb=false;this.fakeDumbTimer=0;
     }
     get info(){return STATES[this.phase]||STATES[0];}
@@ -71,18 +71,21 @@
       const p=this.profile;if(p.samples<4)return;
       // Utility-based policy: score counters against the player's recent behavior, then add a
       // small exploration term so the enemy cannot be solved by repeating one action forever.
+      const totalTrials=Object.values(this.outcomes).reduce((sum,item)=>sum+item.tries,0);
+      const learned=key=>{const stat=this.outcomes[key];const confidence=Math.sqrt(Math.log(totalTrials+2)/(stat.tries+1));return stat.value*.28+confidence*.12;};
       const score={
-        antiAir:p.jump*1.55+(this.outcomes.antiAir.hits/Math.max(1,this.outcomes.antiAir.tries))*.22,
-        intercept:p.retreat*1.42+p.dashLeft*.22+(this.outcomes.intercept.hits/Math.max(1,this.outcomes.intercept.tries))*.2,
-        pressure:p.still*1.35+p.approach*.2+(this.outcomes.pressure.hits/Math.max(1,this.outcomes.pressure.tries))*.18,
-        feint:p.dash*.7+p.repeat*.45+(this.outcomes.feint.hits/Math.max(1,this.outcomes.feint.tries))*.2
+        antiAir:p.jump*1.55+learned('antiAir'),
+        intercept:p.retreat*1.42+p.dashLeft*.22+learned('intercept'),
+        pressure:p.still*1.35+p.approach*.2+learned('pressure'),
+        feint:p.dash*.7+p.repeat*.45+learned('feint')
       };
       const current={ 'anti-air':'antiAir',intercept:'intercept',pressure:'pressure',feint:'feint'}[this.activeStrategy];if(current)score[current]+=.08;
-      for(const k in score)score[k]+=(this.phase>=3?.035:.015)*Math.sin(this.game.clock*1.7+k.length*2);
+      // Tiny exploration noise prevents a perfectly predictable policy when scores are tied.
+      for(const k in score)score[k]+=(this.phase>=3?.025:.012)*Math.random();
       const key=Object.keys(score).sort((a,b)=>score[b]-score[a])[0];const strategy={antiAir:'anti-air',intercept:'intercept',pressure:'pressure',feint:'feint'}[key];
       if(strategy!==this.activeStrategy&&this.strategyTimer<=0){const old=this.activeStrategy;this.activeStrategy=strategy;this.strategyTimer=4.5;this.record('strategy',{from:old,to:strategy,score});const buckets={'anti-air':'jumpRead',intercept:'retreatRead',pressure:'stillRead',feint:'adaptive'};if(this.phase>=2&&this.game.world===1)this.speak(buckets[strategy]);this.game.log('Contraestrategia activa: '+({ 'anti-air':'anticipación de salto',intercept:'interceptar retirada',pressure:'presión de zona',feint:'engaño táctico'}[strategy])+'.','alert');}
     }
-    reportOutcome(strategy,hit){const key=({'anti-air':'antiAir',intercept:'intercept',pressure:'pressure',feint:'feint'})[strategy];if(!key)return;this.outcomes[key].tries++;if(hit)this.outcomes[key].hits++;this.record('outcome',{strategy,hit});}
+    reportOutcome(strategy,hit){const key=({'anti-air':'antiAir',intercept:'intercept',pressure:'pressure',feint:'feint'})[strategy];if(!key)return;const stat=this.outcomes[key],reward=hit?1:0;stat.tries++;if(hit)stat.hits++;stat.value+=(reward-stat.value)/stat.tries;this.record('outcome',{strategy,hit,reward,learnedValue:+stat.value.toFixed(3)});}
     evolve(next,message){
       if(next<=this.phase)return;this.phase=next;this.corruption=Math.max(this.corruption,next*22);this.record('evolve',{phase:next});this.game.log(message,next>=3?'danger':'alert');this.game.toast(message);this.game.audio.play('phase');this.game.particles.burst(500,260,next>=3?'#ff617c':'#ffcf79',48);YMM.events.emit('ai:evolve',{phase:next,info:this.info});this.game.hud.syncAI();
       if(next===2){this.fakeDumb=true;this.fakeDumbTimer=2.4;this.speak('fakeDumb');}
