@@ -3,7 +3,7 @@
   class Game {
     constructor(canvas,hud){
       this.canvas=canvas;this.input=new YMM.Input();this.audio=new YMM.AudioSystem();this.renderer=new YMM.Renderer(canvas);this.particles=new YMM.ParticleSystem();this.hud=hud;
-      this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.difficulty='normal';this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';this.meta=YMM.MetaProgression?new YMM.MetaProgression(this):null;this.touchControls=YMM.TouchControls?new YMM.TouchControls(this):null;this.missionDirector=YMM.MissionDirector?new YMM.MissionDirector(this):null;
+      this.elapsed=0;this.clock=0;this.screen='menu';this.world=1;this.ending=null;this.difficulty='normal';this.lastHudSync=0;this.camera=0;this.logHistory=[];this.ai=new YMM.AntagonistAI(this);this.newGame(true);this.screen='menu';this.meta=YMM.MetaProgression?new YMM.MetaProgression(this):null;this.touchControls=YMM.TouchControls?new YMM.TouchControls(this):null;this.missionDirector=YMM.MissionDirector?new YMM.MissionDirector(this):null;this.codex=YMM.Codex?new YMM.Codex(this):null;this.accessibility=YMM.AccessibilitySettings?new YMM.AccessibilitySettings(this):null;
     }
     newGame(keepMenu=false){
       this.elapsed=0;this.world=1;this.ending=null;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;this.hazardTimer=1.6;this.boss=null;this.signalNodes=null;this.signalEnemies=null;this.signalProjectiles=null;this.signalMines=null;this.lastTauntText='';this.lastTauntCategory=null;this.lastTauntTimer=0;this.logHistory=[];this.particles.items=[];this.ai.reset();
@@ -66,6 +66,8 @@
     update(dt){
       this.clock+=dt;
       if(this.screen==='meta'){if(this.input.justPressed('Escape','KeyM')&&this.meta)this.meta.close();if(this.touchControls)this.touchControls.update();this.input.endFrame();return;}
+      if(this.screen==='codex'){if(this.input.justPressed('Escape')&&this.codex)this.codex.close();this.input.endFrame();return;}
+      if(this.screen==='settings'){if(this.input.justPressed('Escape')&&this.accessibility)this.accessibility.close();this.input.endFrame();return;}
       if(this.screen==='menu'){if(this.input.justPressed('Enter','Space')){this.audio.unlock();this.newGame();}this.input.endFrame();return;}
       if(this.screen==='taunting'){if(this.input.justPressed('Escape'))this.closeTauntConsole();else if(this.input.justPressed('Digit1','Digit2','Digit3','Digit4')){const codes=['Digit1','Digit2','Digit3','Digit4'],kinds=['intellect','logic','threat','psychology'],index=codes.findIndex(k=>this.input.justPressed(k));this.closeTauntConsole();if(index>=0)this.provoke(kinds[index]);}this.input.endFrame();return;}
       if(this.screen==='paused'){if(this.input.justPressed('Escape'))this.resume();this.input.endFrame();return;}
@@ -77,7 +79,7 @@
       if(this.input.justPressed('KeyT'))this.openTauntConsole();if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
       if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else if(this.world===6)this.updateWorld6(dt);else if(this.world===7||this.world===10)this.updateWorld7(dt);else this.updateWorld4(dt);
-      this.ai.update(dt);this.particles.update(dt);if(this.meta)this.meta.update(this,dt);if(this.missionDirector)this.missionDirector.update(this,dt);if(this.touchControls)this.touchControls.update();
+      this.ai.update(dt);this.particles.update(dt);if(this.meta)this.meta.update(this,dt);if(this.missionDirector)this.missionDirector.update(this,dt);if(this.codex)this.codex.update(this);if(this.touchControls)this.touchControls.update();
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
     }
