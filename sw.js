@@ -17,7 +17,8 @@ const CORE_ASSETS = [
   './src/game/renderer.js',
   './src/game/three-stage.js',
   './src/game/game.js',
-  './src/game/meta-progression.js',\n  './src/game/mission-director.js',
+  './src/game/meta-progression.js',
+  './src/game/mission-director.js',
   './src/ui/hud.js',
   './src/ui/touch-controls.js',
   './src/main.js'
