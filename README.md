@@ -6,7 +6,7 @@ Un juego de ciencia ficción sobre una IA que empieza siendo una broma y termina
 
 Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No necesitas instalar un motor ni ejecutar un proceso de compilación. La campaña base usa Canvas; los mundos 8 y 9 cargan Three.js desde una CDN para renderizar geometría real por WebGL. Necesitas conexión para cargar esa biblioteca; si no está disponible, el juego vuelve al renderizador de raycasting.
 
-## Campaña: diez mundos
+## Campaña: doce mundos
 
 1. **Greenhill.exe** — plataformas, sprint con resistencia, salto, dash, ataques y plataformas que se resquebrajan.
 2. **Memory Maze** — laberinto, tres fragmentos, terminal y portal.
