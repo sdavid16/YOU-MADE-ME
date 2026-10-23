@@ -20,10 +20,10 @@
       c.textAlign='left';c.fillStyle='#72f3dc';c.font='800 11px monospace';c.fillText('AN EXPERIMENT IN PLAYER AGENCY',62,119);
       c.fillStyle='#f0f4ff';c.font='900 62px monospace';c.fillText('YOU MADE',58,190);c.fillStyle='#72f3dc';c.fillText('ME.',58,250);
       c.fillStyle='#9daac8';c.font='14px monospace';c.fillText('THE ENEMY IS THE JOKE.',62,292);c.fillText("UNTIL IT ISN'T.",62,314);
-      c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);c.fillStyle='#72f3dc';c.font='800 10px monospace';c.fillText('05 WORLDS  /  ADAPTIVE HUNTER  /  FIRST-PERSON CHAPTER',62,390);
+      c.fillStyle='#65728f';c.font='10px monospace';c.fillText('UNA AVENTURA SOBRE CONSECUENCIAS',62,368);c.fillStyle='#72f3dc';c.font='800 10px monospace';c.fillText('06 WORLDS  /  TACTICAL AI  /  COLLAPSING REALITIES',62,390);
       c.fillStyle='rgba(114,243,220,.07)';c.fillRect(62,402,315,54);c.strokeStyle='rgba(114,243,220,.35)';c.strokeRect(62,402,315,54);
       c.fillStyle='#72f3dc';c.font='800 12px monospace';c.fillText('INICIA TU HISTORIA  [ ENTER ]',79,434);
-      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('← → MOVE  /  SPACE JUMP  /  SHIFT DASH',62,505);c.fillText('T MOCK  /  G CHALLENGE  /  ESC PAUSE',62,535);c.fillStyle='#52647e';c.font='9px monospace';c.fillText('THE RULES CHANGE AFTER EVERY WORLD.',62,558);
+      c.fillStyle='#53617e';c.font='10px monospace';c.fillText('MOVE  /  SPACE JUMP  /  CTRL SPRINT  /  SHIFT DASH',62,505);c.fillText('J/F ATTACK  /  Q ECHO PULSE  /  T/G TAUNT  /  ESC PAUSE',62,535);c.fillStyle='#52647e';c.font='9px monospace';c.fillText('SIX WORLDS. THE GROUND WILL NOT WAIT FOR YOU.',62,558);
       c.font='10px monospace';const scraps=['01001001','NULL//PLAYER','WHY_DO_YOU','MEMORY_OK','YOU_AGAIN','> LEARNING'];for(let i=0;i<scraps.length;i++){c.globalAlpha=.2;c.fillStyle=i%2?'#a18bff':'#ff617c';c.fillText(scraps[i],730,425+i*17);}c.globalAlpha=1;
     }
     drawWorld1(game){const c=this.ctx,L=YMM.Levels.world1,cam=YMM.Util.clamp(game.player.x-390,0,L.width-this.w),phase=game.ai.phase;this.gradient(phase>=2?'#1d1026':'#17284a',phase>=2?'#180d1c':'#090e1b');this.drawStars(game,cam,phase>=2?.55:1);c.save();
@@ -176,7 +176,6 @@
       c.fillStyle=pal[3];c.font='800 10px monospace';c.fillText('WORLD 05 // FRACTURE RUN',34,34);c.fillStyle='#edf3ff';c.font='800 9px monospace';c.fillText(biome.label+' · '+Math.round(p.x/L.width*100)+'% ROUTE',34,50);
       c.fillStyle='#29314b';c.fillRect(34,58,240,6);c.fillStyle=pal[3];c.fillRect(34,58,240*Math.min(1,p.x/L.width),6);
       c.fillStyle='#9aa9c5';c.font='8px monospace';c.fillText('CELLS '+game.runnerCellCount+'/'+game.runnerCells.length+' · ECHO Q '+(ally.pulseCooldown>0?ally.pulseCooldown.toFixed(1)+'s':'READY')+' · ANCHOR '+Math.round(game.lastRunnerCheckpoint/L.width*100)+'%',286,64);
-      c.fillStyle='#202a40';c.fillRect(650,31,300,8);c.fillStyle='#72f3dc';c.fillRect(650,31,300*(p.stamina/p.maxStamina),8);c.fillStyle='#d6e5ff';c.font='8px monospace';c.fillText('STAMINA / '+Math.round(p.stamina)+'%',650,23);
       const progress=YMM.Util.clamp((p.x-game.lastRunnerCheckpoint)/(L.goal.x-game.lastRunnerCheckpoint),0,1);c.fillStyle='#35405a';c.fillRect(650,48,300,4);c.fillStyle='#ff617c';c.fillRect(650,48,300*progress,4);
       c.fillStyle='#7384a5';c.font='8px monospace';c.fillText('CTRL SPRINT · SPACE JUMP · SHIFT DASH · J/F ATTACK · Q ECHO PULSE',22,605);
       c.restore();
