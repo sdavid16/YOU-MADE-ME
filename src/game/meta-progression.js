@@ -140,7 +140,7 @@
     recordTaunt(kind){this.profile.taunts++;this.runTaunts++;this.runUniqueTaunts.add(kind);this.runTauntTypes.add(kind);this.profile.tauntTypes[kind]=true;this.addXP(3);this.checkAchievements();this.save();}
     recordCollectible(count=1){this.profile.collectibles+=count;this.runCollectibles+=count;this.addXP(8*count);this.checkAchievements();this.save();}
     recordDamage(amount=1){this.profile.stats.damageTaken+=amount;this.runDamage+=amount;this.runNoHit=0;this.lastHealth=this.game.player&&this.game.player.health;this.save();}
-    addXP(amount){const gain=Math.max(0,Math.round(amount*this.modifiers.xp));this.profile.xp+=gain;this.profile.credits+=Math.max(1,Math.floor(gain*.22));}
+    addXP(amount){const gain=Math.max(0,Math.round(amount*this.modifiers.xp*(this.game.runModifiers?this.game.runModifiers.xpMultiplier:1)));this.profile.xp+=gain;this.profile.credits+=Math.max(1,Math.floor(gain*.22));}
     notify(message){if(this.game&&this.game.toast)this.game.toast('DOSSIER // '+message);}
     formatTime(s){s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
     update(game,dt){
