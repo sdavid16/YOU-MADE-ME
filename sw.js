@@ -21,6 +21,7 @@ const CORE_ASSETS = [
   './src/game/mission-director.js',
   './src/game/run-modifiers.js',
   './src/game/tutorial-director.js',
+  './src/game/score-system.js',
   './src/game/run-modifiers.js',
   './src/game/codex.js',
   './src/ui/accessibility-settings.js',
