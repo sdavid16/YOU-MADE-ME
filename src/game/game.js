@@ -23,6 +23,8 @@
       if(this.world===1){if(kind==='humiliate'){this.player.tauntLock=.28;const close=Math.abs((this.player.x+this.player.w/2)-(this.enemy.x+15))<170;if(this.ai.phase>=1&&close){this.enemy.windup=Math.max(this.enemy.windup,.35);this.log('Desafío aceptado. La IA castiga la provocación a corta distancia.','danger');}else this.log('Desafío lanzado. Más progreso, menos margen de error.','alert');}this.ai.taunt(kind);this.hud.sync();return;}
       this.ai.record('taunt-after-invasion',{world:this.world});
       if(this.world===2)this.ai.speak(this.fragments>=2?'corruptor':'world2Fragment',true);
+      else if(this.world===4)this.ai.speak('corruptor',true);
+      else if(this.world===5)this.ai.speak('invader',true);
       else this.ai.speak(this.boss&&this.boss.hp<=3?'lowHealth':'world3Start',true);
       this.audio.play('glitch');this.log('La IA ya no necesita que la provoques para recordarte.','danger');this.hud.sync();
     }
@@ -125,7 +127,7 @@
       this.world=4;this.camera=0;this.fragments=0;this.uplinkActive=false;this.hazard=null;
       const L=YMM.Levels.world4;L.shards.forEach(s=>s.taken=false);
       this.sentinels=L.sentinels.map((s,i)=>({...s,id:i,role:['hunter','flanker','warden'][i],attackTimer:1.1+i*.55,windup:0,stun:0,hitFlash:0}));this.squadTactic='crossfire';this.squadCommandTimer=.65;
-      this.player={x:2.5,y:1.5,angle:0,vx:0,vy:0,health:4,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
+      this.player={x:2.5,y:1.5,angle:0,vx:0,vy:0,health:4,maxHealth:4,stamina:100,maxStamina:100,invuln:0,attackTimer:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,parryTimer:0,combo:0,comboTimer:0};
       this.ai.unlockInvasion();this.ai.speak('corruptor');this.ai.dialogueTimer=3.5;this.audio.play('portal');
       this.log('MUNDO 04: la IA ha convertido el código en arquitectura. Busca tres fragmentos y encuentra la salida.','danger');
       this.toast('MUNDO 04 — THE NULL CATHEDRAL / 3D');this.hud.sync();
@@ -197,7 +199,7 @@
       p.sprinting=sprintHeld&&p.stamina>1;p.stamina=YMM.Util.clamp(p.stamina+(p.sprinting?-30:17)*dt,0,p.maxStamina);
       let speed=p.dashTimer>0?590:p.sprinting?385:brake?145:245;
       p.vx=speed;p.x=YMM.Util.clamp(p.x+speed*dt,0,L.width-p.w);
-      if(p.sprinting)this.ai.observe('sprint',{world:5,speed});if(brake)this.ai.observe('brake',{world:5});
+      if(p.sprinting)this.ai.observe('sprint',{world:5,speed});if(brake)this.ai.observe('retreat',{world:5,braking:true});else if(!p.sprinting)this.ai.observe('approach',{world:5,forward:true});
       if(this.input.justPressed('Space','ArrowUp','KeyW')&&p.grounded){p.vy=-455;p.grounded=false;this.ai.observe('jump',{world:5});this.audio.play('attack');this.particles.burst(270,p.y+p.h,'#72f3dc',8,70);}
       if(this.input.justPressed('ShiftLeft','ShiftRight')&&p.dashCooldown<=0){p.dashTimer=.22;p.dashCooldown=.9;p.invuln=Math.max(p.invuln,.22);p.stamina=YMM.Util.clamp(p.stamina-12,0,p.maxStamina);this.ai.observe('dash',{world:5});this.audio.play('attack');this.particles.burst(270,p.y+p.h/2,'#72f3dc',14,110);}
       if(this.input.justPressed('KeyQ')&&this.runnerAlly.pulseCooldown<=0){
