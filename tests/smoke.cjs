@@ -194,7 +194,7 @@ assert(g.meta.profile.contracts.items.length===3,'daily contract rotation create
 assert(g.meta.profile.stats.worldVisits&&typeof g.meta.profile.stats.worldVisits==='object','campaign profile stores world visit records');
 assert(g.missionDirector instanceof sandbox.YMM.MissionDirector,'per-world mission director initializes');
 assert(g.missionDirector.mission&&g.missionDirector.mission.world===1,'a run starts with an optional side objective');
-g.missionDirector.metrics.alive=g.missionDirector.mission.goal;g.missionDirector.update(g,0.01);
+g.missionDirector.metrics[g.missionDirector.mission.metric]=g.missionDirector.mission.goal;g.missionDirector.update(g,0.01);
 assert(g.missionDirector.mission.completed,'side objective completion is detected');
 assert(g.missionDirector.completeCount>=1,'completed side objective is recorded in mission history');
 console.log('PASS: twelve-world campaign, adaptive AI, campaign progression, upgrade economy, touch-control compatibility, achievements, contracts, PWA shell and persistent dossiers.');
