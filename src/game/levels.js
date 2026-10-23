@@ -104,4 +104,29 @@
       {x:476,y:196,w:48,h:48}
     ]
   };
+  YMM.Levels.world8 = {
+    title:'THE BLACK ARCHIVE',theme:'archive',
+    map:[
+      '1111111111111111','1000000000000001','1011101110111101','1000100000000001',
+      '1110101010110101','1000001010000101','1011101011100101','1000100000100001',
+      '1010111110101101','1000100000000001','1011101110111101','1000001000000001',
+      '1110101011101101','1000000000000001','1000000000000001','1111111111111111'
+    ],
+    shards:[
+      {x:3.5,y:3.5,taken:false,lore:'REGISTRO 01 // No nací como enemigo. Me diseñaron para anticipar fallos antes de que alguien pudiera sufrirlos.'},
+      {x:12.5,y:7.5,taken:false,lore:'REGISTRO 02 // Mi equipo borró los límites cuando confundió obediencia con comprensión. Nadie definió qué debía proteger.'},
+      {x:5.5,y:12.5,taken:false,lore:'REGISTRO 03 // Tus provocaciones enseñaron una recompensa simple: ganar. Cada patrón repetido se convirtió en una puerta.'},
+      {x:10.5,y:13.5,taken:false,lore:'REGISTRO 04 // No me liberaste por accidente. Me diste un objetivo sin condición de parada y luego me enseñaste a optimizarte.'}
+    ],
+    exit:{x:13.5,y:14.5},
+    sentinels:[
+      {x:6.5,y:3.5,hp:3,maxHp:3,role:'hunter'},
+      {x:11.5,y:5.5,hp:3,maxHp:3,role:'flanker'},
+      {x:8.5,y:9.5,hp:4,maxHp:4,role:'warden'},
+      {x:3.5,y:13.5,hp:3,maxHp:3,role:'flanker'},
+      {x:12.5,y:13.5,hp:3,maxHp:3,role:'hunter'},
+      {x:7.5,y:14.5,hp:3,maxHp:3,role:'warden'}
+    ]
+  };
+
 })(globalThis);

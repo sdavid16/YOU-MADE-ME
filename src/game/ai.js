@@ -195,11 +195,34 @@
           else if(option==='feint')score=p.dash*.7+p.repeat*.45;
           else score=.06;
         }
+        const nightmare=this.game.difficulty==='nightmare',confidence=prediction.confidence||0,action=prediction.action;
+        if(nightmare){
+          if(domain==='shooter'){
+            if((action==='dash'||action==='dashLeft'||action==='dashRight')&&option==='crossfire')score+=.42+confidence*.34;
+            if((action==='sprint'||action==='approach'||action==='retreat')&&option==='lead-shot')score+=.5+confidence*.3;
+            if((action==='still'||action==='attack')&&option==='encircle')score+=.44+confidence*.2;
+            if((action==='collect'||p.repeat>.28)&&option==='minefield')score+=.5;
+          }else if(domain==='squad'){
+            if((action==='retreat'||p.retreat>.35)&&option==='retreat-punish')score+=.5+confidence*.25;
+            if((action==='still'||action==='attack')&&option==='flank')score+=.45;
+            if((action==='sprint'||action==='approach')&&option==='pinch')score+=.42;
+          }else if(domain==='final-boss'||domain==='boss3'){
+            if((action==='still'||action==='attack')&&option==='pulse')score+=.48;
+            if((action==='retreat'||action==='sprint')&&['intercept','lunge','charge'].includes(option))score+=.48+confidence*.22;
+            if((action==='dash'||p.repeat>.3)&&option==='feint')score+=.42;
+          }else if(domain==='runner'){
+            if(action==='jump'&&option==='ceiling-sweep')score+=.52+confidence*.25;
+            if((action==='sprint'||action==='approach')&&option==='collapse-wave')score+=.42;
+            if((action==='dash'||p.repeat>.3)&&option==='shadow-rush')score+=.42;
+          }else if(action==='jump'&&option==='anti-air')score+=.48+confidence*.25;
+          else if(action==='retreat'&&option==='intercept')score+=.5+confidence*.24;
+          else if(action==='still'&&option==='pressure')score+=.48;
+        }
         const legacy=({'anti-air':this.outcomes.antiAir,intercept:this.outcomes.intercept,pressure:this.outcomes.pressure,feint:this.outcomes.feint})[option];const stat=this.tacticOutcomes[option]||legacy||{tries:0,value:0};
-        const explore=.14*Math.sqrt(Math.log(known+2)/(stat.tries+1));
-        const learned=stat.value*.32;
-        const freshness=this.lastDirectorChoice[domain]===option?-.11:0;
-        return score+explore+learned+freshness+Math.random()*.018;
+        const explore=(nightmare?.045:.14)*Math.sqrt(Math.log(known+2)/(stat.tries+1));
+        const learned=stat.value*(nightmare?.48:.32);
+        const freshness=this.lastDirectorChoice[domain]===option?(nightmare?-.24:-.11):0;
+        return score+explore+learned+freshness+Math.random()*(nightmare?.006:.018);
       };
       const ranked=options.map(option=>({option,score:utility(option)})).sort((a,b)=>b.score-a.score);
       const choice=ranked[0].option;this.lastDirectorChoice[domain]=choice;this.directorDecisions++;
