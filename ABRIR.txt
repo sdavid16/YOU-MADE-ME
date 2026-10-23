@@ -5,7 +5,7 @@ YOU MADE ME — INICIO RÁPIDO
 3. Abre index.html con doble clic.
 4. No necesitas instalar un motor ni compilar. Para los escenarios WebGL 3D se carga Three.js desde internet; si falla, el juego usa el renderizador compatible.
 
-DIEZ MUNDOS
+DOCE MUNDOS
 1. Greenhill: plataformas, salto, carrera y combate.
 2. Memory Maze: recoge tres fragmentos, activa el terminal con E y llega al portal.
 3. No Longer a Joke: jefe adaptativo.
