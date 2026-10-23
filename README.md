@@ -34,9 +34,8 @@ Las superficies frágiles muestran advertencias antes de caer. Los restos dejan 
 - **Mundo 5:** avance automático; Ctrl/D acelerar; A/← frenar; Espacio saltar; Shift dash; J/F atacar; Q pulso de ECHO.
 - **Mundo 6:** WASD/flechas moverte; J/Espacio ataque ligero; F pesado; E parada perfecta; Shift dash.
 - **Mundo 7:** WASD/flechas moverte; J dispara un pulso; F activa un EMP de área con enfriamiento; Shift dash; E abre el canal raíz tras destruir todos los repetidores.
-- **Mundo 8:** W/S avanzar; ←/→ girar; A/D desplazamiento lateral; J/F ataque; Q pulso a distancia; Shift dash; E salir tras cuatro registros.
-- **Mundo 9:** los mismos controles de primera persona; recoge cinco registros, usa Q para disparar el pulso y pulsa E en la salida.
-- **Mundo 10:** WASD moverte; J pulso; K salva triple; F EMP; Shift dash; E extraer después de desactivar los cuatro nodos.
+- **Mundos 4, 8, 9, 11 y 12:** W/S avanzar; ←/→ girar; A/D desplazamiento lateral; J disparo a distancia; Espacio/F ataque cuerpo a cuerpo; Q pulso; Shift dash; E salida tras recoger los registros.
+- **Mundo 10:** WASD moverte; J pulso; K salva triple; F EMP; Shift dash; E extraer después de desactivar los cuatro nodos. La extracción abre el mundo 11.
 - **R** reinicia la sesión. Los botones superiores controlan sonido, pantalla completa y reinicio.
 
 ## Provocación verbal: una mecánica jugable
