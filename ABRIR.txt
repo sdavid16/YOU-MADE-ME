@@ -3,12 +3,14 @@ YOU MADE ME — INICIO RÁPIDO
 1. Descarga el ZIP del repositorio.
 2. Descomprime la carpeta completa manteniendo la estructura de archivos.
 3. Abre index.html con doble clic.
-4. No necesitas Python, terminal, npm, servidor local ni bibliotecas externas.
+4. No necesitas Python, terminal, npm, servidor local ni bibliotecas externas. El mundo 4 utiliza perspectiva por raycasting, dibujada en Canvas.
 
 CONTROLES
 Mundo 1: flechas/A-D mover · Espacio/W/↑ saltar · Shift esquivar · T burla · G desafío de alto riesgo · Esc pausa.
 Mundo 2: flechas o WASD mover · recoger 3 fragmentos · E junto al terminal · ir al portal.
-Mundo 3: flechas o WASD mover · Shift esquivar · J atacar mientras el núcleo está expuesto.
+Mundo 3: flechas o WASD mover · Shift esquivar · J atacar cuando el núcleo se expone.
+Mundo 4 (primera persona): W/S avanzar · ←/→ girar · A/D desplazamiento lateral · J/Espacio atacar · F golpe fuerte · Shift dash · E abrir la salida con 3 fragmentos.
+Mundo 5 (jefe final): WASD/flechas mover · J/Espacio ataque ligero · F pesado · E parada perfecta · Shift dash.
 R reinicia. Los botones de sonido, pantalla completa y reinicio aparecen arriba a la derecha.
 
 IA

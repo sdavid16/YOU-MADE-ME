@@ -4,14 +4,22 @@ Un juego 2D retro de ciencia ficción: empiezas burlándote de un enemigo torpe 
 
 ## Ejecutar
 
-Descarga el ZIP del repositorio y abre `index.html` en un navegador moderno. No necesitas Python, npm, terminal, servidor local ni dependencias externas. El juego usa Canvas, scripts locales clásicos y gráficos dibujados por código.
+Descarga el ZIP del repositorio y abre `index.html` en un navegador moderno. No necesitas Python, npm, terminal, servidor local ni dependencias externas. El juego usa Canvas, scripts locales clásicos y gráficos dibujados por código; el capítulo de primera persona usa raycasting para la perspectiva.
 
 ## Controles
 
 - **Mundo 1:** ←/→ o A/D para moverte; Espacio/W/↑ para saltar; Shift para esquivar; T para burlarte; G para lanzar un desafío de alto riesgo; Esc para pausar.
 - **Mundo 2:** flechas o WASD para moverte, recoge los 3 fragmentos, acércate al terminal y pulsa E, luego llega al portal.
 - **Mundo 3:** flechas o WASD para moverte; Shift para esquivar; J para atacar durante la ventana en que el núcleo queda expuesto.
+- **Mundo 4 (primera persona 3D por raycasting):** W/S avanzar o retroceder; ←/→ girar; A/D desplazamiento lateral; J/Espacio ataque; F golpe fuerte; Shift dash; E activar la salida cuando tengas los 3 fragmentos.
+- **Mundo 5 (arena final):** WASD/flechas moverte; J/Espacio ataque ligero; F ataque pesado; E parada perfecta; Shift dash. Ataca el núcleo solo cuando esté expuesto.
 - **R** reinicia la sesión. Los controles de sonido y pantalla completa están en la esquina superior derecha.
+
+## Campaña ampliada
+
+La campaña contiene cinco mundos conectados: plataformas y provocaciones; laberinto de memoria; jefe adaptativo; una catedral en primera persona renderizada con raycasting, minimapa, centinelas, fragmentos y combate; y una arena final con ataques de área, fintas, embestidas, ataques ligeros/pesados y parada temporizada.
+
+El mundo 4 usa renderizado de perspectiva por raycasting, una técnica clásica de juegos en primera persona; no es un escenario de mallas 3D con WebGL. Todo se dibuja localmente en Canvas y no requiere Python ni servidor.
 
 ## La IA del juego
 

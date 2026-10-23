@@ -38,7 +38,7 @@ for(const f of sandbox.YMM.Levels.world2.fragments){g.player.x=f.x;g.player.y=f.
 assert(g.fragments===3,'all three fragments can be collected');
 g.player.x=sandbox.YMM.Levels.world2.terminal.x+24;g.player.y=sandbox.YMM.Levels.world2.terminal.y+24;g.input.pressed.add('KeyE');g.updateWorld2(.01);g.input.pressed.clear();assert(g.uplinkActive,'terminal activates after fragments');
 g.player.x=sandbox.YMM.Levels.world2.portal.x;g.player.y=sandbox.YMM.Levels.world2.portal.y;g.updateWorld2(.01);assert(g.world===3&&g.boss.hp===8,'portal reaches world 3 boss setup');g.renderer.render(g);
-g.boss.phase='vulnerable';g.boss.hp=1;g.boss.x=g.player.x;g.boss.y=g.player.y;g.input.pressed.add('KeyJ');g.update(1/60);assert(g.screen==='ending'&&g.ending==='escalation','final ending after boss defeat');g.renderer.render(g);
+g.boss.phase='vulnerable';g.boss.hp=1;g.boss.x=g.player.x;g.boss.y=g.player.y;g.input.pressed.add('KeyJ');g.update(1/60);assert(g.screen==='playing'&&g.world===4,'world 3 boss unlocks the 3D cathedral');g.renderer.render(g);
 g.newGame();g.player.x=sandbox.YMM.Levels.world1.goal.x;g.updateWorld1(1/60);assert(g.screen==='ending'&&g.ending==='standard','quiet route has standard ending');g.renderer.render(g);
 // The high-risk challenge adds pressure but may not skip narrative phases.
 g.newGame();
@@ -55,4 +55,20 @@ g.enterWorld3();g.ai.observations=Array.from({length:18},(_,i)=>({action:'still'
 assert(g.boss.attackType==='pulse','stationary profile triggers area pulse');
 g.boss.phase='idle';g.boss.timer=0;g.ai.observations=Array.from({length:18},(_,i)=>({action:i%3===0?'dash':i%2?'dashLeft':'dashRight',t:i,meta:{}}));g.updateWorld3(.04);
 assert(g.boss.attackType==='feint','dash-heavy profile triggers feint');
-console.log('PASS: boot, controls-ready, taunt cooldown, staged evolution, adaptive counter-policy, platform landing, memory shards, terminal, portal, adaptive boss, both endings.');
+// The 3D chapter must load a collision map, collect shards, and render without a WebGL dependency.
+g.enterWorld4();
+assert(g.world===4&&g.player.angle===0,'3D cathedral initializes in first person');
+assert(g.isWorld4Wall(0,0)&&!g.isWorld4Wall(1.5,1.5),'3D map collision distinguishes walls and corridors');
+g.player.x=3.5;g.player.y=3.5;g.updateWorld4(.016);
+assert(g.fragments===1,'3D shard pickup updates objective progress');
+g.renderer.render(g);
+assert(g.sentinels.length===3,'3D chapter initializes three adaptive sentinels');
+// The final arena supports a fifth world, multi-phase boss patterns, and the timed parry.
+g.enterWorld5();
+assert(g.world===5&&g.boss.maxHp===14,'final arena initializes the multi-phase core');
+g.ai.observations=Array.from({length:18},(_,i)=>({action:'still',t:i,meta:{}}));g.boss.timer=0;g.updateWorld5(.04);
+assert(g.boss.phase==='telegraph'&&g.boss.attackType==='ring','final boss selects an area attack against stationary play');
+g.renderer.render(g);
+g.boss.phase='vulnerable';g.boss.timer=1;g.boss.x=g.player.x+20;g.boss.y=g.player.y;g.player.attackTimer=0;g.input.pressed.add('KeyF');g.input.down.add('KeyF');g.updateWorld5(.016);g.input.pressed.clear();g.input.down.clear();
+assert(g.boss.hp===12,'heavy attack deals two damage during vulnerability');
+console.log('PASS: 5 worlds, 3D raycasting, map collision, shards, sentinel initialization, adaptive final boss, heavy attacks, parry state, legacy routes.');
