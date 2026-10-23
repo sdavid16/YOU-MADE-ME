@@ -37,7 +37,7 @@
       const T=this.THREE,L=YMM.Levels['world'+game.world]||YMM.Levels.world8;
       this.world=game.world;this.scene.background=new T.Color(game.world===9?0x110b20:0x080b17);
       this.scene.fog.color.set(game.world===9?0x110b20:0x080b17);
-      for(const child of [...this.scene.children])if(child.userData.ymmWorldObject)this.scene.remove(child);
+      for(const child of [...this.scene.children])if(child.userData.ymmWorldObject){this.scene.remove(child);child.traverse?.(node=>{if(node.geometry)node.geometry.dispose();if(node.material){if(Array.isArray(node.material))node.material.forEach(m=>m.dispose());else node.material.dispose();}});}
       this.entities={walls:[],shards:[],enemies:[],projectiles:[],lockBeams:[],ambience:[]};
       const floor=new T.Mesh(new T.PlaneGeometry(16,16),this.material(game.world===9?0x1c1530:0x10182a,.86,.12));
       floor.rotation.x=-Math.PI/2;floor.position.set(8,0,8);floor.userData.ymmWorldObject=true;this.scene.add(floor);
