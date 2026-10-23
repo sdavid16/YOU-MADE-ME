@@ -61,7 +61,7 @@
     load(){try{const p=JSON.parse(root.localStorage&&root.localStorage.getItem(STORE)||'null');if(p&&p.version===2)return Object.assign(freshProfile(),p);}catch(e){}return freshProfile();}
     save(){this.profile.updatedAt=Date.now();try{root.localStorage&&root.localStorage.setItem(STORE,JSON.stringify(this.profile));return true;}catch(e){return false;}}
     injectUI(){
-      if(!root.document)return;
+      if(!root.document||!document.querySelector)return;
       if(!document.getElementById('ymm-meta-style')){const style=document.createElement('style');style.id='ymm-meta-style';style.textContent=CSS;document.head&&document.head.appendChild(style);}
       this.panel=document.getElementById('ymm-meta-panel');
       if(!this.panel){this.panel=document.createElement('section');this.panel.id='ymm-meta-panel';this.panel.className='ymm-meta';this.panel.setAttribute('role','dialog');this.panel.setAttribute('aria-modal','true');this.panel.setAttribute('aria-label','Progresión y dossier');this.panel.innerHTML='<header class="ymm-meta-head"><div><div class="ymm-meta-kicker">YOU MADE ME // CAMPAIGN PROFILE</div><h2>DOSSIER DE CAMPAÑA</h2><p id="ymm-meta-subtitle">Progreso local de esta instalación.</p></div><button class="ymm-meta-close" id="ymm-meta-close">CERRAR ×</button></header><div id="ymm-meta-content"></div><footer class="ymm-meta-foot"><span>PERFIL LOCAL · NO SE ENVÍA A NINGÚN SERVIDOR</span><span><kbd>M</kbd> ABRIR / CERRAR · <kbd>ESC</kbd> VOLVER</span></footer>';const stage=document.getElementById('game-stage');(stage||document.body).appendChild(this.panel);}
@@ -148,7 +148,7 @@
         this.profile.playSeconds+=dt;if(game.difficulty==='nightmare')this.profile.nightmareSeconds+=dt;
         this.runNoHit+=dt;if(game.world===3||game.world===6)this.runBoss+=dt;
         if(game.player&&Math.hypot(game.player.vx||0,game.player.vy||0)>15)this.runMoving+=dt;
-        if(game.world!==this.lastWorld){this.profile.worldTransitions++;this.lastWorld=game.world;this.runWorlds.add(game.world);this.profile.maxWorld=Math.max(this.profile.maxWorld,game.world);this.profile.stats.worldVisits[game.world]=(this.profile.stats.worldVisits[game.world]||0)+1;if(game.world===4&&this.runTaunts===0)this.profile.world4WithoutTaunts=true;this.addXP(12);this.checkAchievements();this.save();}
+        if(game.world!==this.lastWorld){this.profile.worldTransitions++;this.lastWorld=game.world;this.runWorlds.add(game.world);this.profile.maxWorld=Math.max(this.profile.maxWorld,game.world);this.lastEnemyCount=null;this.lastBossHp=game.boss&&game.boss.hp;this.profile.stats.worldVisits[game.world]=(this.profile.stats.worldVisits[game.world]||0)+1;if(game.world===4&&this.runTaunts===0)this.profile.world4WithoutTaunts=true;this.addXP(12);this.checkAchievements();this.save();}
         const hp=game.player&&game.player.health;if(this.lastHealth!==null&&hp!==undefined&&hp<this.lastHealth)this.recordDamage(this.lastHealth-hp);if(hp!==undefined)this.lastHealth=hp;
         const fragments=Number(game.fragments||0);if(fragments>this.lastFragments)this.recordCollectible(fragments-this.lastFragments);this.lastFragments=fragments;
         const enemies=game.sentinels||game.signalEnemies||game.runnerEnemies||[];const alive=enemies.filter(e=>e&&e.hp>0).length;if(this.lastEnemyCount!==null&&alive<this.lastEnemyCount){const killed=this.lastEnemyCount-alive;this.profile.kills+=killed;this.runKills+=killed;this.addXP(killed*10);this.checkAchievements();}this.lastEnemyCount=alive;
