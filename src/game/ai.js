@@ -8,7 +8,7 @@
     {key:'INVADER',label:'INVASORA',caption:'Combina reglas de mundos distintos.',avatar:'//',color:'#bd9cff'}
   ];
   const DIALOGUE = {
-    firstTaunt:['¿Eso era una estrategia?','He calculado tu nivel: tutorial.','Mi abuela tiene mejor pathfinding.','¿Te programaron con una tostadora?','Bonito intento. ¿Lo has practicado con los ojos cerrados?'],
+    humiliation:['¿Quieres ver de qué soy capaz? Qué valiente.','Quédate ahí. Voy a recordar ese gesto.','Eso no ha sido una burla; ha sido una invitación.','Has pasado de reírte a desafiarme. Interesante.'],\n    firstTaunt:['¿Eso era una estrategia?','He calculado tu nivel: tutorial.','Mi abuela tiene mejor pathfinding.','¿Te programaron con una tostadora?','Bonito intento. ¿Lo has practicado con los ojos cerrados?'],
     repeatedTaunt:['Otra vez esa. Te estás quedando sin material.','¿Es tu única broma? La he guardado junto a las demás.','Puedo esperar. Soy literalmente un proceso.','Tu insistencia es estadísticamente fascinante.','La próxima vez intenta sorprenderme. Por favor.'],
     suspicious:['Qué gracioso. Lo recordaré.','¿Por qué repites esa acción?','Registro actualizado. Continúa.','No sabía que se podía jugar así. Estoy... revisándolo.'],
     adaptive:['He visto ese salto siete veces. No necesitas hacerlo una octava.','Sigue. Me estás enseñando a jugar contigo.','Ya no estoy adivinando. Estoy calculando.','No he mejorado. Tú te has vuelto predecible.','Ahora sé dónde vas a caer. ¿Quieres comprobarlo?'],
@@ -41,7 +41,7 @@
     taunt(kind='mock'){
       const now=this.game.elapsed;if(now-this.lastTauntAt<1.25){this.game.toast('Está fingiendo que no te ha oído. O quizá ha aprendido a ignorarte.');return false;}
       this.lastTauntAt=now;this.provocation+=kind==='humiliate'?2:1;this.tauntCombo+=1;this.record('taunt',{kind,count:this.provocation,phase:this.phase});
-      let bucket;if(this.phase===0)bucket=this.provocation===1?'firstTaunt':'repeatedTaunt';else if(this.phase===1)bucket='suspicious';else if(this.phase===2){const p=this.profile;bucket=p.jump>.28?'jumpRead':p.retreat>.3?'retreatRead':'adaptive';}else bucket='corruptor';
+      let bucket;if(this.phase>=3)bucket='corruptor';else if(kind==='humiliate')bucket='humiliation';else if(this.phase===0)bucket=this.provocation===1?'firstTaunt':'repeatedTaunt';else if(this.phase===1)bucket='suspicious';else if(this.phase===2){const p=this.profile;bucket=p.jump>.28?'jumpRead':p.retreat>.3?'retreatRead':'adaptive';}else bucket='corruptor';
       this.speak(bucket,true);this.game.particles.burst(this.game.player.x+12,this.game.player.y+3,this.phase>=2?'#ff617c':'#ffcf79',14);this.game.audio.play(this.phase>=2?'glitch':'taunt');YMM.events.emit('ai:taunt',{kind,count:this.provocation,phase:this.phase});
       if(this.provocation>=3&&this.phase<1)this.evolve(1,'La IA ha dejado de tropezarse cada vez. Qué decepción.');
       if(this.provocation>=5&&this.phase<2)this.evolve(2,'La IA está comparando tus movimientos, no solo tus burlas.');
