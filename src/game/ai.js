@@ -28,16 +28,37 @@
   class AntagonistAI {
     constructor(game){this.game=game;this.reset();}
     reset(){
+      // Persist only aggregate behavior and reward estimates; raw coordinates and dialogue history stay session-local.
+      let saved={};try{if(root.localStorage)saved=JSON.parse(root.localStorage.getItem('ymm-ai-dossier-v1')||'{}')||{};}catch(e){}
+      this.longTermDossier={version:1,runs:(saved.runs||0)+1,actionCounts:saved.actionCounts||{},tacticOutcomes:saved.tacticOutcomes||{},counterOutcomes:saved.counterOutcomes||{},lastSaved:saved.lastSaved||0};
+      this.persistenceTimer=0;
       this.provocation=0;this.adaptation=0;this.corruption=0;this.phase=0;this.lastTauntAt=-999;this.tauntCombo=0;
       this.phaseKeys=new Set();this.memory=[];this.dialogue='';this.dialogueTimer=0;this.recentLines=[];this.observations=[];
       this.tactics={jump:0,retreat:0,approach:0,still:0,dash:0,dashLeft:0,dashRight:0,attack:0,collect:0};
-      this.outcomes={antiAir:{tries:0,hits:0,value:0},intercept:{tries:0,hits:0,value:0},pressure:{tries:0,hits:0,value:0},feint:{tries:0,hits:0,value:0}};
-      this.tacticOutcomes={};this.lastDirectorChoice={};this.directorDecisions=0;this.lastPrediction={action:'unknown',confidence:0,entropy:1};
+      this.outcomes={antiAir:{tries:0,hits:0,value:0},intercept:{tries:0,hits:0,value:0},pressure:{tries:0,hits:0,value:0},feint:{tries:0,hits:0,value:0},...(this.longTermDossier.counterOutcomes||{})};
+      this.tacticOutcomes={...(this.longTermDossier.tacticOutcomes||{})};this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;this.lastDirectorChoice={};this.directorDecisions=0;this.lastPrediction={action:'unknown',confidence:0,entropy:1};
       this.activeStrategy='stalk';this.strategyTimer=0;this.sampleTimer=0;this.lastDistance=null;this.lastPlayerX=null;this.lastPlayerY=null;this.lastActionAt={};this.behaviorTrace=[];this.fakeDumb=false;this.fakeDumbTimer=0;
     }
     get info(){return STATES[this.phase]||STATES[0];}
     get profile(){const items=this.observations.slice(-24);const count=k=>items.filter(o=>o.action===k).length;const n=Math.max(1,items.length);return {jump:count('jump')/n,retreat:count('retreat')/n,approach:count('approach')/n,still:count('still')/n,dash:count('dash')/n,dashLeft:count('dashLeft')/n,dashRight:count('dashRight')/n,attack:count('attack')/n,collect:count('collect')/n,sprint:count('sprint')/n,parry:count('parry')/n,special:count('special')/n,collapse:count('collapse')/n,repeat:items.length>2?items.slice(-6).filter((o,i,a)=>i>0&&o.action===a[i-1].action).length/5:0,samples:items.length};}
-    get adaptationPct(){const p=this.profile;return Math.min(100,Math.round(this.adaptation*4+(p.samples?((p.jump+p.retreat+p.approach+p.still+p.dash)*30):0)));}
+    historicalProfile(){
+      const counts=this.longTermDossier&&this.longTermDossier.actionCounts||{},total=Object.values(counts).reduce((n,v)=>n+v,0)||1;
+      const rate=k=>(counts[k]||0)/total;
+      return {jump:rate('jump'),retreat:rate('retreat'),approach:rate('approach'),still:rate('still'),dash:rate('dash'),dashLeft:rate('dashLeft'),dashRight:rate('dashRight'),attack:rate('attack'),collect:rate('collect'),sprint:rate('sprint'),parry:rate('parry'),special:rate('special'),collapse:rate('collapse'),repeat:rate('repeat')*.35,samples:total};
+    }
+    learningProfile(){
+      const live=this.profile,h=this.historicalProfile(),weight=h.samples>0?Math.min(.3,.08+h.samples/1800):0,out={...live};
+      for(const k of ['jump','retreat','approach','still','dash','dashLeft','dashRight','attack','collect','sprint','parry','special','collapse','repeat'])out[k]=(live[k]||0)*(1-weight)+(h[k]||0)*weight;
+      out.samples=live.samples+Math.min(12,h.samples);return out;
+    }
+    saveDossier(){
+      try{
+        if(!root.localStorage||!this.longTermDossier)return false;
+        this.longTermDossier.lastSaved=Date.now();this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;
+        root.localStorage.setItem('ymm-ai-dossier-v1',JSON.stringify(this.longTermDossier));return true;
+      }catch(e){return false;}
+    }
+    get adaptationPct(){const p=this.learningProfile();return Math.min(100,Math.round(this.adaptation*4+(p.samples?((p.jump+p.retreat+p.approach+p.still+p.dash)*30):0)));}
     record(type,detail={}){this.memory.push({type,detail,t:this.game.elapsed});if(this.memory.length>80)this.memory.shift();YMM.events.emit('ai:memory',{type,detail});}
     speak(bucket,force=false){const lines=DIALOGUE[bucket]||DIALOGUE.suspicious;const available=lines.filter(line=>!this.recentLines.slice(-4).includes(line));const line=YMM.Util.pick(available.length?available:lines);this.dialogue=line;this.dialogueTimer=2.8;this.recentLines.push(line);if(this.recentLines.length>8)this.recentLines.shift();if(force||this.game.world===1&&this.phase>=2)this.record('dialogue',{bucket,line});return line;}
     taunt(kind='mock'){
@@ -55,6 +76,7 @@
       const now=this.game.elapsed;if(!action)return;const last=this.lastActionAt[action]??-Infinity;
       if(now-last<.22)return;this.lastActionAt[action]=now;
       this.observations.push({action,t:now,meta});if(this.observations.length>40)this.observations.shift();
+      if(this.longTermDossier){const counts=this.longTermDossier.actionCounts;counts[action]=(counts[action]||0)+1;}
       this.tactics[action]=(this.tactics[action]||0)+1;const p=this.profile;
       this.adaptation=Math.min(20,this.observations.length*.22+(p.jump*1.4+p.retreat*1.2+p.dash*.8)*3);
       this.record('observation',{action,profile:{jump:+p.jump.toFixed(2),retreat:+p.retreat.toFixed(2),still:+p.still.toFixed(2),dash:+p.dash.toFixed(2)}});
@@ -70,7 +92,7 @@
       this.lastPlayerX=x;this.lastPlayerY=y;
     }
     evaluateStrategy(){
-      const p=this.profile;if(p.samples<4)return;
+      const p=this.learningProfile();if(p.samples<4)return;
       // Utility-based policy: score counters against the player's recent behavior, then add a
       // small exploration term so the enemy cannot be solved by repeating one action forever.
       const totalTrials=Object.values(this.outcomes).reduce((sum,item)=>sum+item.tries,0);
@@ -104,7 +126,7 @@
     }
     chooseTactic(domain,options){
       if(!options||!options.length)return null;
-      const p=this.profile,prediction=this.predictIntent(),known=Object.values(this.tacticOutcomes).reduce((s,v)=>s+v.tries,0);
+      const p=this.learningProfile(),prediction=this.predictIntent(),known=Object.values(this.tacticOutcomes).reduce((s,v)=>s+v.tries,0);
       const utility=(option)=>{
         let score=0;
         if(domain==='runner'){
@@ -154,6 +176,7 @@
       const key=({'anti-air':'antiAir',intercept:'intercept',pressure:'pressure',feint:'feint'})[strategy];
       const stat=key?this.outcomes[key]:(this.tacticOutcomes[strategy]||(this.tacticOutcomes[strategy]={tries:0,hits:0,value:0}));
       const reward=hit?1:0;stat.tries++;if(hit)stat.hits++;stat.value+=(reward-stat.value)/stat.tries;
+      if(this.longTermDossier){this.longTermDossier.counterOutcomes=this.outcomes;this.longTermDossier.tacticOutcomes=this.tacticOutcomes;}
       this.record('outcome',{strategy,hit,reward,learnedValue:+stat.value.toFixed(3),meta});
     }
     evolve(next,message){
@@ -171,6 +194,7 @@
       this.record('hazardChoice',{x:best.x,y:best.y,playerX:player.x});return best;
     }
     update(dt){
+      this.persistenceTimer=(this.persistenceTimer||0)+dt;if(this.persistenceTimer>=4.5){this.saveDossier();this.persistenceTimer=0;}
       if(this.strategyTimer>0)this.strategyTimer-=dt;
       if(this.game.world!==1)return;const e=this.game.enemy,p=this.game.player;if(!e)return;
       if(e.stunned>0){e.tumble=Math.max(e.tumble,.12);e.y=486;return;}
