@@ -114,6 +114,24 @@
           else if(option==='shadow-rush')score=p.attack*.64+p.repeat*.52+p.approach*.12;
           else if(option==='collapse-wave')score=p.sprint*.78+p.approach*.24+p.collect*.08;
           else score=.08;
+        }else if(domain==='boss3'){
+          if(option==='pulse')score=p.still*1.35+(prediction.action==='still'?prediction.confidence*.2:0);
+          else if(option==='feint')score=p.dash*.92+p.repeat*.4;
+          else if(option==='intercept')score=p.retreat*1.08+p.dashLeft*.2;
+          else if(option==='charge')score=p.approach*.42+(1-p.still)*.14;
+          else score=.05;
+        }else if(domain==='final-boss'){
+          if(option==='ring')score=p.still*1.15+(prediction.action==='still'?prediction.confidence*.18:0);
+          else if(option==='feint')score=p.dash*.88+p.repeat*.44;
+          else if(option==='lunge')score=p.retreat*1.02+p.sprint*.3;
+          else if(option==='lattice')score=p.approach*.38+(1-p.dash)*.22;
+          else score=.05;
+        }else if(domain==='squad'){
+          if(option==='crossfire')score=p.dash*.55+p.retreat*.28+p.sprint*.18;
+          else if(option==='flank')score=p.still*.88+p.attack*.2;
+          else if(option==='pinch')score=p.approach*.45+p.sprint*.62;
+          else if(option==='retreat-punish')score=p.retreat*1.16+p.dashLeft*.22;
+          else score=.05;
         }else{
           if(option==='anti-air')score=p.jump*1.25;
           else if(option==='intercept')score=p.retreat*1.15+p.dashLeft*.25;
