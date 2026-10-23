@@ -33,17 +33,20 @@
         else if(this.world===5&&this.runnerDirectorTimer!==undefined){this.runnerDirectorTimer=Math.min(this.runnerDirectorTimer,.85);this.log('La IA acepta el desafío: la siguiente amenaza llegará antes.','danger');}
         else if((this.world===3||this.world===6)&&this.boss){this.boss.timer=Math.min(this.boss.timer,.48);this.log('El jefe ha reducido el intervalo antes del siguiente patrón.','danger');}
         else if(this.world===4&&this.squadCommandTimer!==undefined){this.squadCommandTimer=Math.min(this.squadCommandTimer,.15);this.log('Los centinelas han recibido una orden nueva.','danger');}
+        else if(this.world===7&&this.signalDirectorTimer!==undefined){this.signalDirectorTimer=Math.min(this.signalDirectorTimer,.2);for(const e of this.signalEnemies)if(e.hp>0)e.attackTimer=Math.min(e.attackTimer,.65);this.log('La amenaza ha acelerado la próxima salva.','danger');}
       }
       if(kind==='psychology'){
         if(this.world===1&&this.enemy){this.enemy.stunned=Math.max(this.enemy.stunned,.58);this.enemy.windup=0;this.enemy.counterWindup=0;}
         if(this.world===4&&this.sentinels){for(const e of this.sentinels){e.stun=Math.max(e.stun,.52);e.windup=0;}this.squadCommandTimer=Math.max(this.squadCommandTimer,.9);}
         if(this.world===5&&this.runnerEnemies){for(const e of this.runnerEnemies)if(e.hp>0&&Math.abs(e.x-p.x)<205){e.stun=Math.max(e.stun,.52);e.windup=0;e.chargeTimer=0;}this.runnerProjectiles=(this.runnerProjectiles||[]).filter(b=>Math.abs(b.x-p.x)>90);}
+        if(this.world===7&&this.signalEnemies){for(const e of this.signalEnemies)if(e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<235){e.stun=Math.max(e.stun,.72);e.attackTimer=Math.max(e.attackTimer,.9);}this.signalProjectiles=this.signalProjectiles.filter(b=>b.from!=='enemy'||Math.hypot(b.x-p.x,b.y-p.y)>150);}
         if((this.world===3||this.world===6)&&this.boss){this.boss.timer+=.42;if(this.boss.phase==='telegraph')this.boss.timer+=.32;}
         this.ai.strategyTimer=Math.max(this.ai.strategyTimer,1.2);this.ai.record('taunt-psychology',{world:this.world});this.toast('INTERFERENCIA PSICOLÓGICA // ventana de 1.2 s');
       }
       if(kind==='humiliate'){
         if(this.world===1){p.tauntLock=.28;const close=Math.abs((p.x+p.w/2)-(this.enemy.x+15))<170;if(this.ai.phase>=1&&close){this.enemy.windup=Math.max(this.enemy.windup,.35);this.log('Desafío aceptado. La IA castiga la provocación a corta distancia.','danger');}else this.log('Desafío lanzado. Más progreso, menos margen de error.','alert');}
         else if(this.world===5&&this.runnerAlly){this.runnerDirectorTimer=Math.min(this.runnerDirectorTimer,.55);this.toast('DESAFÍO ACEPTADO // corre');}
+        else if(this.world===7&&this.signalDirectorTimer!==undefined){this.signalDirectorTimer=Math.min(this.signalDirectorTimer,.2);this.toast('DESAFÍO ACEPTADO // SALVA ACELERADA');}
       }
       if(kind==='intellect')this.ai.record('taunt-intellect',{world:this.world});
       if(kind==='mock')this.ai.record('taunt-mock',{world:this.world});
@@ -72,7 +75,7 @@
       if(this.world!==5)this.ai.observePlayerPosition(this.player.x,this.player.y,dt);
       if(this.input.justPressed('KeyT'))this.openTauntConsole();if(this.input.justPressed('KeyG'))this.provoke('humiliate');
       if(this.input.justPressed('KeyR')){this.newGame();this.input.endFrame();return;}
-      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else this.updateWorld6(dt);
+      if(this.world===1)this.updateWorld1(dt);else if(this.world===2)this.updateWorld2(dt);else if(this.world===3)this.updateWorld3(dt);else if(this.world===4)this.updateWorld4(dt);else if(this.world===5)this.updateWorld5(dt);else if(this.world===6)this.updateWorld6(dt);else this.updateWorld7(dt);
       this.ai.update(dt);this.particles.update(dt);
       if(this.elapsed-this.lastHudSync>.12){this.hud.sync();this.lastHudSync=this.elapsed;}
       this.input.endFrame();
@@ -192,6 +195,19 @@
       this.ai.speak('endThreat');this.ai.dialogueTimer=4;this.audio.play('phase');
       this.log('MUNDO 06: ya no queda ningún juego al que huir. Interrumpe sus ataques y destruye el núcleo.','danger');
       this.toast('MUNDO 06 — THE LAST ARGUMENT');this.hud.sync();
+    }
+    enterWorld7(){
+      const L=YMM.Levels.world7,nodeFactor=this.difficulty==='story'?.75:this.difficulty==='nightmare'?1.45:1;
+      const enemyFactor=this.difficulty==='story'?.8:this.difficulty==='nightmare'?1.4:1;
+      this.world=7;this.camera=0;this.signalExitToast=false;
+      this.signalNodes=L.nodes.map((n,id)=>({...n,id,hp:Math.ceil(n.hp*nodeFactor),maxHp:Math.ceil(n.maxHp*nodeFactor),hitFlash:0}));
+      this.signalEnemies=L.agents.map((e,id)=>({...e,id,spawnX:e.x,spawnY:e.y,hp:Math.ceil(e.hp*enemyFactor),maxHp:Math.ceil(e.maxHp*enemyFactor),vx:0,vy:0,stun:0,hitFlash:0}));
+      this.signalProjectiles=[];this.signalMines=[];this.signalTactic='crossfire';this.signalDirectorTimer=.8;this.signalKills=0;this.signalShotCount=0;
+      const hp=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;
+      this.player={x:488,y:300,w:24,h:24,vx:0,vy:0,health:hp,maxHealth:hp,stamina:100,maxStamina:100,invuln:0,attackTimer:0,fireCooldown:0,specialCooldown:0,dashTimer:0,dashCooldown:0,lastDir:1,stompFlash:0,intelTimer:0};
+      this.ai.speak('invader');this.ai.dialogueTimer=3.5;this.audio.play('phase');
+      this.log('MUNDO 07: SIGNAL BREAK. Destruye los tres repetidores y escapa de la red coordinada.','danger');
+      this.toast('SIGNAL BREAK // J DISPARAR · F PULSO · SHIFT DASH');this.hud.sync();
     }
     isWorld4Wall(x,y){
       const map=YMM.Levels.world4.map,tx=Math.floor(x),ty=Math.floor(y);
@@ -339,7 +355,7 @@
         p.attackTimer=this.input.isDown('KeyF')?.42:.25;this.ai.observe('attack');const d=Math.hypot(p.x-b.x,p.y-b.y);
         if(b.phase==='vulnerable'&&d<(this.input.isDown('KeyF')?150:112)){const dmg=this.input.isDown('KeyF')?2:1;b.hp=Math.max(0,b.hp-dmg);b.hitFlash=.2;b.stagger=.28;this.particles.burst(b.x,b.y,'#72f3dc',25,145);this.audio.tone(760,.08,'triangle',.2,260);this.log('Núcleo dañado: '+b.hp+'/'+b.maxHp+'. Combo '+(++p.combo)+'.','alert');this.ai.reportOutcome('pressure',true);
           if(b.hp===10||b.hp===5){this.ai.speak('lowHealth');this.ai.dialogueTimer=2.8;this.log('La IA está cambiando su modelo de ataque.','danger');}
-          if(b.hp<=0){this.ai.speak('endThreat');this.finish('escalation');return;}
+          if(b.hp<=0){this.ai.speak('invader');this.ai.dialogueTimer=3;this.log('El núcleo cae, pero una transmisión desconocida abre un último juego.','danger');this.enterWorld7();return;}
         }else if(d<145)this.toast(b.phase==='vulnerable'?'Golpe demasiado corto.':'El núcleo está blindado: busca la ventana tras el ataque.');}
       b.hitFlash=Math.max(0,b.hitFlash-dt);b.stagger=Math.max(0,(b.stagger||0)-dt);b.timer-=dt*this.difficultyScale*(p.intelTimer>0?.72:1);
       if(b.stagger>0)return;
@@ -361,6 +377,113 @@
         const d=Math.hypot(p.x-b.x,p.y-b.y);if(d<170&&p.invuln<=0){if(p.parryTimer>0){this.ai.reportOutcome(b.attackType,false,{world:6,parried:true});b.stagger=.7;b.phase='vulnerable';b.timer=1;this.log('La onda ha sido repelida. Contraataca.','alert');}else{this.ai.reportOutcome(b.attackType,true,{world:6,playerHit:true});this.damagePlayer(1,'Onda de choque: abandona el radio o usa el dash.');}}
         if(b.timer<=0){b.phase='vulnerable';b.timer=.78;}
       }else if(b.phase==='vulnerable'&&b.timer<=0){b.phase='idle';b.timer=.48;}
+    }
+    updateWorld7(dt){
+      const p=this.player,L=YMM.Levels.world7,arena=L.arena,scale=this.difficultyScale*(p.intelTimer>0?.68:1);
+      p.fireCooldown=Math.max(0,(p.fireCooldown||0)-dt);
+      p.specialCooldown=Math.max(0,(p.specialCooldown||0)-dt);
+      const ix=(this.input.isDown('ArrowRight','KeyD')?1:0)-(this.input.isDown('ArrowLeft','KeyA')?1:0);
+      const iy=(this.input.isDown('ArrowDown','KeyS')?1:0)-(this.input.isDown('ArrowUp','KeyW')?1:0);
+      let dx=ix,dy=iy;if(dx&&dy){dx*=.7071;dy*=.7071;}
+      const overlaps=(x,y,o)=>x<o.x+o.w&&x+p.w>o.x&&y<o.y+o.h&&y+p.h>o.y;
+      if(this.input.justPressed('ShiftLeft','ShiftRight')&&p.dashCooldown<=0){
+        p.dashTimer=.19;p.dashCooldown=.88;p.invuln=Math.max(p.invuln,.24);this.ai.observe('dash',{world:7});
+        this.particles.burst(p.x+p.w/2,p.y+p.h/2,'#72f3dc',16,115);this.audio.play('attack');
+      }
+      const speed=p.dashTimer>0?610:245;p.vx=dx*speed;p.vy=dy*speed;
+      const nx=YMM.Util.clamp(p.x+p.vx*dt,arena.x,arena.x+arena.w-p.w);
+      if(!L.obstacles.some(o=>overlaps(nx,p.y,o)))p.x=nx;
+      const ny=YMM.Util.clamp(p.y+p.vy*dt,arena.y,arena.y+arena.h-p.h);
+      if(!L.obstacles.some(o=>overlaps(p.x,ny,o)))p.y=ny;
+      if(ix||iy)this.ai.observe(dx<0||dy<0?'retreat':'approach',{world:7});
+      p.lastDir=Math.abs(dx)>=Math.abs(dy)?(Math.sign(dx)||p.lastDir):(Math.sign(dy)||p.lastDir);
+
+      this.signalDirectorTimer-=dt*scale;
+      if(this.signalDirectorTimer<=0){
+        this.signalTactic=this.ai.chooseTactic('shooter',['crossfire','lead-shot','encircle','minefield']);
+        this.signalDirectorTimer=3.5/scale;
+        this.ai.record('signal-directive',{tactic:this.signalTactic,relays:this.signalNodes.filter(n=>n.hp>0).length});
+        this.log('SIGNAL DIRECTOR // '+this.signalTactic.toUpperCase()+'. La red ha cambiado de formación.','alert');
+        if(this.signalTactic==='minefield'&&this.signalMines.filter(m=>!m.dead).length<3){
+          for(const side of [-1,1])this.signalMines.push({x:YMM.Util.clamp(p.x+side*118,arena.x+35,arena.x+arena.w-35),y:YMM.Util.clamp(p.y+(side<0?-86:92),arena.y+35,arena.y+arena.h-35),timer:1.05,armed:false,ttl:4.5,dead:false,r:18});
+        }
+      }
+      if(this.input.justPressed('KeyJ')&&p.fireCooldown<=0){
+        p.fireCooldown=.2;this.ai.observe('attack',{world:7,weapon:'pulse'});
+        const targets=[
+          ...this.signalNodes.filter(n=>n.hp>0).map(ref=>({ref,kind:'relay'})),
+          ...this.signalEnemies.filter(e=>e.hp>0).map(ref=>({ref,kind:'enemy'}))
+        ];
+        targets.sort((a,b)=>Math.hypot(a.ref.x-(p.x+p.w/2),a.ref.y-(p.y+p.h/2))-Math.hypot(b.ref.x-(p.x+p.w/2),b.ref.y-(p.y+p.h/2)));
+        const nearest=targets[0];
+        if(nearest){
+          const t=nearest.ref,lead=this.signalTactic==='lead-shot'&&nearest.kind==='enemy'?.34:.13;
+          const tx=t.x+(nearest.kind==='enemy'?(t.vx||0)*lead:0),ty=t.y+(nearest.kind==='enemy'?(t.vy||0)*lead:0);
+          const angle=Math.atan2(ty-(p.y+p.h/2),tx-(p.x+p.w/2));
+          this.signalProjectiles.push({from:'player',x:p.x+p.w/2,y:p.y+p.h/2,vx:Math.cos(angle)*520,vy:Math.sin(angle)*520,ttl:1.8,damage:1,r:4});
+          this.audio.play('attack');this.signalShotCount++;
+        }else this.toast('TODOS LOS OBJETIVOS ESTÁN FUERA DE SERVICIO. ACTIVA LA SALIDA.');
+      }
+      if(this.input.justPressed('KeyF')&&p.specialCooldown<=0){
+        p.specialCooldown=4.8;this.ai.observe('special',{world:7,weapon:'emp'});let hits=0;
+        for(const e of this.signalEnemies)if(e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<148){e.hp-=2;e.stun=Math.max(e.stun,.85);e.hitFlash=.22;hits++;}
+        for(const n of this.signalNodes)if(n.hp>0&&Math.hypot(n.x-p.x,n.y-p.y)<125){n.hp=Math.max(0,n.hp-1);n.hitFlash=.25;hits++;}
+        this.signalProjectiles=this.signalProjectiles.filter(b=>b.from!=='enemy'||Math.hypot(b.x-p.x,b.y-p.y)>205);
+        this.signalMines=this.signalMines.filter(m=>m.dead||Math.hypot(m.x-p.x,m.y-p.y)>175);
+        this.ai.reportOutcome('signal-emp',hits>0,{hits});this.particles.burst(p.x+p.w/2,p.y+p.h/2,'#b8a0ff',36,175);this.audio.play('phase');this.toast('EMP // '+hits+' OBJETIVOS AFECTADOS');
+      }
+
+      for(const e of this.signalEnemies){
+        if(e.hp<=0)continue;e.stun=Math.max(0,e.stun-dt);e.hitFlash=Math.max(0,e.hitFlash-dt);e.attackTimer-=dt*scale;
+        const toX=p.x+p.w/2-e.x,toY=p.y+p.h/2-e.y,dist=Math.hypot(toX,toY)||1;
+        if(e.type==='hunter'&&e.stun<=0&&dist<510){
+          let tx=p.x+p.w/2,ty=p.y+p.h/2;
+          if(this.signalTactic==='encircle'){const sign=e.id%2?1:-1;tx+=-toY/dist*sign*58;ty+=toX/dist*sign*58;}
+          e.vx=(tx-e.x)/dist*91*scale;e.vy=(ty-e.y)/dist*91*scale;
+          const ex=YMM.Util.clamp(e.x+e.vx*dt,arena.x+18,arena.x+arena.w-18),ey=YMM.Util.clamp(e.y+e.vy*dt,arena.y+18,arena.y+arena.h-18);
+          if(!L.obstacles.some(o=>ex>=o.x&&ex<=o.x+o.w&&ey>=o.y&&ey<=o.y+o.h)){e.x=ex;e.y=ey;}
+          if(dist<28&&e.attackTimer<=0&&p.invuln<=0){e.attackTimer=.95;this.damagePlayer(1,'El cazador ha cerrado la distancia. Usa el dash o el pulso EMP.');}
+        }else if((e.type==='sniper'||e.type==='warden'||e.type==='splitter')&&dist<620&&e.stun<=0&&e.attackTimer<=0){
+          const lead=this.signalTactic==='lead-shot'?.42:.16,targetX=p.x+p.w/2+p.vx*lead,targetY=p.y+p.h/2+p.vy*lead,ang=Math.atan2(targetY-e.y,targetX-e.x);
+          const rate=this.signalTactic==='crossfire'?.72:1;
+          if(e.type==='splitter'){
+            for(const offset of [-.27,0,.27]){const a=ang+offset;this.signalProjectiles.push({from:'enemy',x:e.x,y:e.y,vx:Math.cos(a)*255,vy:Math.sin(a)*255,ttl:2.6,damage:1,r:5,kind:'split'});}
+            e.attackTimer=2.25*rate;
+          }else{
+            const bulletSpeed=e.type==='warden'?335:270;this.signalProjectiles.push({from:'enemy',x:e.x,y:e.y,vx:Math.cos(ang)*bulletSpeed,vy:Math.sin(ang)*bulletSpeed,ttl:2.4,damage:1,r:e.type==='warden'?7:5,kind:e.type});
+            e.attackTimer=(e.type==='warden'?2.05:1.72)*rate;
+          }
+          this.ai.record('signal-agent-fire',{id:e.id,type:e.type,tactic:this.signalTactic});
+        }
+      }
+
+      for(const mine of this.signalMines){
+        if(mine.dead)continue;mine.ttl-=dt*scale;
+        if(!mine.armed){mine.timer-=dt*scale;if(mine.timer<=0){mine.armed=true;mine.timer=2.45;this.ai.record('signal-mine-armed',{x:Math.round(mine.x),y:Math.round(mine.y)});}}
+        else{
+          mine.timer-=dt*scale;
+          if(Math.hypot(p.x+p.w/2-mine.x,p.y+p.h/2-mine.y)<mine.r+10&&p.invuln<=0){this.damagePlayer(1,'Una mina predictiva ha explotado. Observa las señales del suelo.');mine.dead=true;this.particles.burst(mine.x,mine.y,'#ff617c',20,105);}
+          else if(mine.timer<=0)mine.dead=true;
+        }
+        if(mine.ttl<=0)mine.dead=true;
+      }
+      for(const bolt of this.signalProjectiles){
+        if(bolt.ttl<=0)continue;bolt.x+=bolt.vx*dt*scale;bolt.y+=bolt.vy*dt*scale;bolt.ttl-=dt*scale;
+        if(L.obstacles.some(o=>bolt.x>=o.x&&bolt.x<=o.x+o.w&&bolt.y>=o.y&&bolt.y<=o.y+o.h)){bolt.ttl=0;continue;}
+        if(bolt.from==='player'){
+          let hit=false;
+          for(const n of this.signalNodes){if(n.hp>0&&Math.hypot(bolt.x-n.x,bolt.y-n.y)<22){n.hp=Math.max(0,n.hp-bolt.damage);n.hitFlash=.2;bolt.ttl=0;hit=true;this.ai.reportOutcome('relay-shot',true,{id:n.id,hp:n.hp});this.particles.burst(n.x,n.y,n.color||'#72f3dc',15,95);if(n.hp<=0){this.ai.record('relay-destroyed',{id:n.id});this.log('REPETIDOR '+n.id+' DESTRUIDO. La red pierde una parte de su cobertura.','alert');this.toast('RELAY OFFLINE // '+this.signalNodes.filter(x=>x.hp>0).length+' RESTANTES');}break;}}
+          if(!hit){for(const e of this.signalEnemies){if(e.hp>0&&Math.hypot(bolt.x-e.x,bolt.y-e.y)<19){e.hp=Math.max(0,e.hp-bolt.damage);e.hitFlash=.18;e.stun=Math.max(e.stun,.12);bolt.ttl=0;hit=true;this.ai.reportOutcome('enemy-shot',true,{id:e.id,hp:e.hp});this.particles.burst(e.x,e.y,'#ffcf79',10,80);if(e.hp<=0)this.signalKills++;break;}}}
+          for(const m of this.signalMines){if(!m.dead&&Math.hypot(bolt.x-m.x,bolt.y-m.y)<m.r){m.dead=true;bolt.ttl=0;}}
+        }else if(Math.hypot(bolt.x-(p.x+p.w/2),bolt.y-(p.y+p.h/2))<p.w/2+(bolt.r||4)&&p.invuln<=0){this.damagePlayer(1,'Una salva ha conectado. Muévete de forma menos predecible.');bolt.ttl=0;}
+      }
+      this.signalProjectiles=this.signalProjectiles.filter(b=>b.ttl>0);this.signalMines=this.signalMines.filter(m=>!m.dead);
+      const remaining=this.signalNodes.filter(n=>n.hp>0).length;
+      if(remaining===0&&!this.signalExitToast){this.signalExitToast=true;this.log('LOS TRES REPETIDORES ESTÁN FUERA DE SERVICIO. La salida ya responde.','alert');this.toast('SIGNAL BREAK // LLEGA A LA PUERTA Y PULSA E');}
+      if(this.input.justPressed('KeyE')&&Math.hypot(p.x+p.w/2-L.exit.x,p.y+p.h/2-L.exit.y)<L.exit.r+12){
+        if(remaining===0){this.ai.speak('endThreat');this.finish('escalation');return;}
+        this.toast('SALIDA BLOQUEADA // QUEDAN '+remaining+' REPETIDORES');
+      }
     }
     updateWorld3(dt){
       const p=this.player,b=this.boss;let dx=(this.input.isDown('ArrowRight','KeyD')?1:0)-(this.input.isDown('ArrowLeft','KeyA')?1:0),dy=(this.input.isDown('ArrowDown','KeyS')?1:0)-(this.input.isDown('ArrowUp','KeyW')?1:0);if(dx&&dy){dx*=.7071;dy*=.7071;}
@@ -398,7 +521,8 @@
       const p=this.player;if(p.invuln>0)return;p.health-=amount;p.invuln=this.difficulty==='story'?1.5:this.difficulty==='nightmare'?.88:1.15;this.audio.play('hit');
       const px=this.world===5? p.x-this.runnerCamera():p.x,py=p.y;this.particles.burst(px,py,'#ff617c',16,100);this.log(message,'danger');this.toast(message);
       if(p.health<=0){
-        if(this.world===3||this.world===6){p.health=this.world===6?5:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
+        if(this.world===3||this.world===6){p.health=this.world===6?(this.difficulty==='story'?5:this.difficulty==='nightmare'?3:5):this.difficulty==='story'?4:this.difficulty==='nightmare'?2:3;p.x=500;p.y=this.world===6?480:485;this.boss.x=500;this.boss.y=this.world===6?190:210;this.boss.phase='idle';this.boss.timer=1.1;this.log('Reinicio de emergencia. El núcleo conserva el daño recibido.','alert');}
+        else if(this.world===7){p.health=this.difficulty==='story'?5:this.difficulty==='nightmare'?3:4;p.x=488;p.y=300;p.vx=0;p.vy=0;this.signalProjectiles=this.signalProjectiles.filter(b=>b.from!=='enemy'||Math.hypot(b.x-p.x,b.y-p.y)>180);this.signalMines=this.signalMines.filter(m=>Math.hypot(m.x-p.x,m.y-p.y)>140);this.log('Punto de restauración de SIGNAL BREAK. Los repetidores destruidos siguen fuera de servicio.','alert');}
         else if(this.world===4){p.health=4;p.x=2.5;p.y=1.5;p.angle=0;this.log('Reinicio en la entrada de la catedral. Los fragmentos y daños persisten.','alert');}
         else if(this.world===5){p.health=this.difficulty==='story'?5:4;p.x=Math.max(45,(this.lastRunnerCheckpoint||80)-35);p.y=420;p.vx=0;p.vy=0;p.grounded=false;this.repairRunnerCheckpoint();this.runnerShake=.45;this.log('ECHO ha reconstruido el ancla más cercana. Los enemigos recuerdan la pelea.','alert');}
         else{p.health=3;p.x=this.world===1?this.lastCheckpoint:90;p.y=this.world===1?430:550;p.vx=0;p.vy=0;this.log('Punto de restauración activado. La memoria del antagonista persiste.','alert');}
