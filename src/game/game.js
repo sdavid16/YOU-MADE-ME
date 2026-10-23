@@ -84,7 +84,7 @@
     advanceCollapses(items,dt){
       for(const item of items||[]){
         if(item.state==='warning'){
-          item.timer-=dt*this.difficultyScale;
+          item.timer-=dt;
           if(item.timer<=0){item.state='falling';item.timer=.52;item.originalX=item.originalX??item.x;item.originalW=item.originalW??item.w;this.ai.observe('collapse');this.ai.record('terrain-collapse',{id:item.id,x:item.x,world:this.world});this.log('COLAPSO: una sección del escenario acaba de perder sus anclajes.','danger');}
         }else if(item.state==='falling'){
           item.timer-=dt;
@@ -401,7 +401,7 @@
       this.signalDirectorTimer-=dt*scale;
       if(this.signalDirectorTimer<=0){
         this.signalTactic=this.ai.chooseTactic('shooter',['crossfire','lead-shot','encircle','minefield']);
-        this.signalDirectorTimer=3.5/scale;
+        this.signalDirectorTimer=3.5;
         this.ai.record('signal-directive',{tactic:this.signalTactic,relays:this.signalNodes.filter(n=>n.hp>0).length});
         this.log('SIGNAL DIRECTOR // '+this.signalTactic.toUpperCase()+'. La red ha cambiado de formación.','alert');
         if(this.signalTactic==='minefield'&&this.signalMines.filter(m=>!m.dead).length<3){
