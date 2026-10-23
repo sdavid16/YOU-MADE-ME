@@ -20,6 +20,7 @@ const CORE_ASSETS = [
   './src/game/meta-progression.js',
   './src/game/mission-director.js',
   './src/game/run-modifiers.js',
+  './src/game/tutorial-director.js',
   './src/game/run-modifiers.js',
   './src/game/codex.js',
   './src/ui/accessibility-settings.js',
