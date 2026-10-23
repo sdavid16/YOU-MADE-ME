@@ -36,11 +36,20 @@ Las señales visuales son importantes: el jugador debe poder leer la intención,
 ## 4. Diálogo contextual
 Los diálogos dependen de fase, tipo de provocación, repetición de frases, estrategia aprendida y acontecimientos narrativos. Se evita repetir inmediatamente las mismas frases. En las fases iniciales la IA es burlona; tras observar patrones deja de responder como un NPC genérico y empieza a comentar el estilo del jugador.
 
-## 5. Mundos y combate añadidos
+## 5. Escenarios, personajes y progresión
 
-El cuarto mundo usa una cuadrícula de colisiones, vista en primera persona por raycasting, tres fragmentos coleccionables y centinelas que persiguen al jugador y atacan a corta distancia. El jugador puede girar, desplazarse lateralmente, hacer dash y encadenar ataques ligeros/pesados. El quinto mundo incorpora un jefe con más salud, señales previas y cuatro familias de ataque: patrón directo, embestida, finta y onda de área. El jugador puede esquivar, usar una parada con ventana temporal corta y aprovechar la fase vulnerable para castigar el núcleo.
+La campaña está formada por seis mundos con reglas distintas:
 
-La política del jefe consulta el perfil de conducta reciente y un predictor de transiciones para elegir el patrón. El director añade exploración con valores de recompensa para evitar una respuesta fija; registra aciertos y fallos de cada amenaza y ajusta sus estimaciones.
+1. **Greenhill:** plataformas, provocaciones, salto, sprint, dash y ataques ligeros/pesados. Varias plataformas pasan por estados estable, advertencia, caída y desaparición.
+2. **Memory Maze:** laberinto, fragmentos, terminal y amenazas espaciales.
+3. **No Longer a Joke:** primer jefe que reacciona a hábitos de quietud, dash, retirada y aproximación.
+4. **The Null Cathedral:** vista en primera persona por raycasting, colisiones en cuadrícula, tres fragmentos y tres centinelas con roles de cazador, flanqueador y guardián. Un director compartido asigna fuego cruzado, flanqueo, pinza o castigo de retirada.
+5. **Fracture Run:** persecución horizontal de seis kilómetros de juego que fusiona cinco biomas en una ruta continua. Incluye plataformas/suelo colapsables, grietas, drones, sombras, proyectiles, checkpoints, células de memoria y la aliada ECHO, cuyo pulso Q interrumpe enemigos cercanos.
+6. **The Last Argument:** jefe final con ataques de área, fintas, embestidas y carga, más una ventana vulnerable para contraatacar y una parada temporizada.
+
+El mundo 5 contiene varios roles conductuales: stalker (perseguidor), drone (salvas predictivas), brute (ataque cargado), rival (imita el ritmo del jugador), warden (disparo a distancia) y sombras de emboscada. El suelo proporciona señales visuales antes de desmoronarse. ECHO avisa del colapso que viene y puede comprar tiempo, pero su pulso tiene enfriamiento.
+
+El renderizado del mundo 4 usa raycasting de una cuadrícula 2D para simular perspectiva en primera persona. Es 3D perceptual, no un modelo de geometría poligonal ni un motor WebGL.
 
 ## 6. Director táctico y memoria entre mundos
 
