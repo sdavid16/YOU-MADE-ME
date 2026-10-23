@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>YOU MADE ME</title>
+    <style>
+        :root { --c-neon-cyan: #00f3ff; --c-neon-red: #ff003c; --c-neon-green: #0f4; --bg: #050508; }
+        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Courier New', monospace; color: white; overflow: hidden; user-select: none; }
+        #game-container { position: relative; width: 900px; height: 500px; background: var(--bg); box-shadow: 0 0 50px rgba(0, 243, 255, 0.1); overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        /* Efecto CRT y Scanlines */
+        #crt { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 100; box-shadow: inset 0 0 100px rgba(0,0,0,0.9); }
+        
+        /* Interfaz de Usuario */
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 8, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 50; text-align: center; }
+        h1 { font-size: 4.5rem; margin: 0 0 20px 0; text-shadow: 3px 3px var(--c-neon-red), -3px -3px var(--c-neon-cyan); letter-spacing: 5px; }
+        p { font-size: 1.2rem; color: #aaa; max-width: 700px; line-height: 1.5; margin-bottom: 30px; }
+        button { background: transparent; color: var(--c-neon-cyan); border: 2px solid var(--c-neon-cyan); padding: 15px 30px; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; margin: 10px; }
+        button:hover { background: var(--c-neon-cyan); color: #000; box-shadow: 0 0 20px var(--c-neon-cyan); }
+        
+        /* HUD in-game */
+        #hud { position: absolute; top: 15px; left: 15px; z-index: 40; font-weight: bold; font-size: 1.1rem; color: #fff; text-shadow: 1px 1px 0 #000; display: none; }
+        #hud span { color: var(--c-neon-cyan); }
+        #hud.corrupted span { color: var(--c-neon-red); }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="ctx" width="900" height="500"></canvas>
+        <div id="crt"></div>
+        
+        <div id="hud">
+            MUNDO: <span id="hud-mundo">1</span> | IA FASE: <span id="hud-ia">TORPE</span> | BURLAS: <span id="hud-burlas">0</span>
+        </div>
+
+        <!-- Menú Principal / Transiciones / Finales -->
+        <div id="ui-pantalla" class="overlay">
+            <h1 id="ui-titulo">YOU MADE ME</h1>
+            <p id="ui-msj">Mover: FLECHAS | Saltar: ESPACIO | Burlarse: 'T'<br><br>Puedes jugar sin provocar a la anomalía, o puedes presionar los límites del sistema.</p>
+            <div>
+                <button id="btn-start">INICIAR SISTEMA</button>
+                <button id="btn-audio">AUDIO: ON</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (() => {
+        // ==========================================
+        // 1. MOTOR BASE Y SISTEMAS
+        // ==========================================
+        const canvas = document.getElementById('ctx');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+
+        class Bus {
+            constructor() { this.subs = {}; }
+            on(evt, cb) { (this.subs[evt] || (this.subs[evt] = [])).push(cb); }
+            emit(evt, data) { if (this.subs[evt]) this.subs[evt].forEach(cb => cb(data)); }
+        }
+        const bus = new Bus();
+
+        class AudioSys {
+            constructor() { this.ctx = null; this.mute = false; }
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+            play(freq, type, dur, vol = 0.1) {
+                if (this.mute || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + dur);
+            }
+            sJump() { this.play(400, 'square', 0.15, 0.05); }
+            sTaunt() { this.play(200, 'sawtooth', 0.3, 0.08); }
+            sSpam() { this.play(100, 'square', 0.2, 0.05); }
+            sError() { this.play(150, 'triangle', 0.4, 0.1); }
+            sGlitch() { this.play(Math.random() * 600 + 100, 'sawtooth', 0.1, 0.15); }
+            sHit() { this.play(80, 'sawtooth', 0.5, 0.2); }
+            sSwitch() { this.play(600, 'sine', 0.1, 0.1); }
+        }
+        const sfx = new AudioSys();
+
+        class Input {
+            constructor() {
+                this.keys = {}; this.once = {};
+                window.addEventListener('keydown', e => { this.keys[e.code] = true; });
+                window.addEventListener('keyup', e => { this.keys[e.code] = false; this.once[e.code] = false; });
+            }
+            isDown(c) { return !!this.keys[c]; }
+            isPressed(c) {
+                if (this.keys[c] && !this.once[c]) { this.once[c] = true; return true; }
+                return false;
+            }
+        }
+        const input = new Input();
+
+        class Particulas {
+            constructor() { this.p = []; }
+            crear(x, y, col, cant, vel = 200, vida = 1) {
+                for(let i=0; i<cant; i++) this.p.push({ x, y, vx: (Math.random()-0.5)*vel, vy: (Math.random()-0.5)*vel, vida, maxVida: vida, col });
+            }
+            update(dt) {
+                this.p.forEach(p => { p.x += p.vx*dt; p.y += p.vy*dt; p.vida -= dt; });
+                this.p = this.p.filter(p => p.vida > 0);
+            }
+            draw(ctx) {
+                this.p.forEach(p => {
+                    ctx.fillStyle = p.col; ctx.globalAlpha = p.vida/p.maxVida;
+                    ctx.fillRect(p.x, p.y, 4, 4);
+                });
+                ctx.globalAlpha = 1;
+            }
+            clear() { this.p = []; }
+        }
+        const vfx = new Particulas();
+
+        const AABB = (r1, r2) => r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
+        
+        function resolverColisiones(ent, rects) {
+            ent.enSuelo = false;
+            for (let r of rects) {
+                if (!r.activo && r.activo !== undefined) continue; 
+                if (AABB(ent, r)) {
+                    const ox = (ent.x + ent.w/2 < r.x + r.w/2) ? (ent.x + ent.w) - r.x : (r.x + r.w) - ent.x;
+                    const oy = (ent.y + ent.h/2 < r.y + r.h/2) ? (ent.y + ent.h) - r.y : (r.y + r.h) - ent.y;
+                    if (ox < oy) {
+                        ent.x += ent.vx > 0 ? -ox : ox; ent.vx = 0;
+                    } else {
+                        if (ent.vy > 0) { ent.y -= oy; ent.enSuelo = true; } else { ent.y += oy; }
+                        ent.vy = 0;
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // 2. ENTIDADES PRINCIPALES
+        // ==========================================
+        class Jugador {
+            constructor(x, y) {
+                this.x = x; this.y = y; this.w = 24; this.h = 24;
+                this.vx = 0; this.vy = 0; 
+                this.speed = 280; this.jumpF = -550; this.grav = 1400; // Salto mejorado para mundo 2
+                this.estado = 'NORMAL'; this.tBurla = 0; this.color = '#00f3ff';
+                this.ultimaBurla = { t: 0, x: 0, y: 0 };
+            }
+            update(dt, nivel) {
+                if (this.estado === 'BURLA') {
+                    this.tBurla -= dt; this.vx = 0;
+                    if (this.tBurla <= 0) this.estado = 'NORMAL';
+                } else {
+                    this.vx = input.isDown('ArrowLeft') ? -this.speed : input.isDown('ArrowRight') ? this.speed : 0;
+                    if (input.isPressed('Space') && this.enSuelo) {
+                        this.vy = this.jumpF; this.enSuelo = false; sfx.sJump();
+                        vfx.crear(this.x+this.w/2, this.y+this.h, '#fff', 5, 100, 0.3);
+                    }
+                    if (input.isPressed('KeyT')) this.provocar();
+                }
+                this.vy += this.grav * dt;
+                this.x += this.vx * dt; this.y += this.vy * dt;
+                
+                let colliders = [...nivel.plataformas];
+                if (nivel.puertas) colliders.push(...nivel.puertas.filter(p => !p.abierta));
+                resolverColisiones(this, colliders);
+                
+                if (this.x < 0) this.x = 0; if (this.x + this.w > W) this.x = W - this.w;
+                if (this.y > H || (nivel.peligros && nivel.peligros.some(p => AABB(this, p)))) {
+                    bus.emit('jugador_muere');
+                }
+            }
+            provocar() {
+                this.estado = 'BURLA'; this.tBurla = 0.4;
+                const dist = Math.hypot(this.x - this.ultimaBurla.x, this.y - this.ultimaBurla.y);
+                const tiempo = Date.now() - this.ultimaBurla.t;
+                
+                if (tiempo < 2000 && dist < 50) {
+                    sfx.sSpam(); vfx.crear(this.x+this.w/2, this.y, '#888', 5);
+                    bus.emit('burla_spam');
+                } else {
+                    sfx.sTaunt(); vfx.crear(this.x+this.w/2, this.y, this.color, 15);
+                    this.ultimaBurla = { t: Date.now(), x: this.x, y: this.y };
+                    bus.emit('burla_valida');
+                }
+            }
+            draw(ctx) {
+                ctx.shadowBlur = this.estado === 'BURLA' ? 20 : 10; ctx.shadowColor = this.color;
+                ctx.fillStyle = this.estado === 'BURLA' ? '#fff' : this.color;
+                ctx.fillRect(this.x, this.y, this.w, this.h);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class IA {
+            constructor(x, y) {
+                this.x = x; this.y = y; this.w = 24; this.h = 24;
+                this.vx = 0; this.vy = 0; this.grav = 1400; this.enSuelo = false;
+                this.fase = 0; 
+                this.colores = ['#777', '#ff9900', '#ff003c', '#ff003c', '#ff003c'];
+                this.burlas = 0; this.tEstado = 0; this.hp = 3;
+                this.estadoJefe = 'SHOOTING'; this.jefeTimer = 0; this.proyectiles = [];
+                
+                // Sistema de Diálogo en Canvas
+                this.textoDialogo = "";
+                this.tDialogo = 0;
+                this.dialogoRojo = false;
+
+                bus.on('burla_valida', () => {
+                    if (this.fase > 2) {
+                        if (this.fase === 4 && this.estadoJefe === 'STUNNED') {
+                            const dist = Math.hypot(jugador.x - this.x, jugador.y - this.y);
+                            if (dist < 100) {
+                                this.hp--; sfx.sHit(); vfx.crear(this.x, this.y, '#fff', 50, 400);
+                                this.hablar(this.hp === 0 ? "NO..." : "¡CÁLLATE!", 2, true);
+                                this.estadoJefe = 'SHOOTING'; this.jefeTimer = 0;
+                                if (this.hp <= 0) bus.emit('jefe_derrotado');
+                            }
+                        } else {
+                            this.hablar("TUS BURLAS NO SIRVEN", 1.5, true);
+                        }
+                        return;
+                    }
+
+                    this.burlas++;
+                    document.getElementById('hud-burlas').innerText = this.burlas;
+                    
+                    if (this.fase === 0) {
+                        this.tEstado = 1; sfx.sError(); this.hablar("¡Oye! ¡Déjame!", 1.5);
+                        if (this.burlas >= 3) this.evolucionar(1, "SOSPECHOSA", "...¿Me estás analizando?");
+                    } else if (this.fase === 1) {
+                        this.hablar("¡Basta ya!", 1.5);
+                        if (this.burlas >= 6) this.evolucionar(2, "CORRUPTORA", "SE ACABARON LAS REGLAS.");
+                    }
+                });
+
+                bus.on('burla_spam', () => {
+                    if (this.fase < 3) this.hablar("Qué aburrido eres...", 1.5);
+                });
+            }
+            
+            hablar(txt, dur, esRojo = false) {
+                this.textoDialogo = txt;
+                this.tDialogo = dur;
+                this.dialogoRojo = esRojo;
+                if (esRojo) sfx.sGlitch();
+            }
+
+            evolucionar(nuevaFase, nombre, msj) {
+                this.fase = nuevaFase;
+                document.getElementById('hud-ia').innerText = nombre;
+                this.hablar(msj, 3, this.fase >= 2);
+                sfx.sGlitch();
+                bus.emit('ia_evoluciona', this.fase);
+            }
+
+            update(dt, nivel, jug) {
+                if (this.tDialogo > 0) this.tDialogo -= dt;
+                if (this.tEstado > 0) { this.tEstado -= dt; return; }
+
+                let velX = 0;
+                
+                if (this.fase === 0) { 
+                    const dist = Math.abs(jug.x - this.x);
+                    velX = this.x < jug.x ? 40 : -40;
+                    if (dist < 100 && dist > 80 && this.enSuelo && Math.random()<0.03) {
+                        this.vy = -180; this.vx = 0; this.tEstado = 1; this.hablar("*Tropieza*", 1);
+                    }
+                } 
+                else if (this.fase === 1) { 
+                    velX = this.x < jug.x ? 90 : -90;
+                    if (jug.estado === 'BURLA' && this.enSuelo) this.vy = -400; 
+                }
+                else if (this.fase === 2) { 
+                    velX = this.x < jug.x ? 140 : -140;
+                    if (Math.random() < 0.05) vfx.crear(this.x+12, this.y+12, this.colores[2], 1, 50);
+                }
+                else if (this.fase === 3) { // IA MÁS POTENTE (Mundo 2)
+                    velX = this.x < jug.x ? 120 : -120;
+                    if (nivel.switches) {
+                        let obj = nivel.switches.find(s => s.activo);
+                        if (obj) {
+                            velX = this.x < obj.x ? 190 : -190; // Corre desesperada al interruptor
+                            // Súper salto para alcanzar interruptores
+                            if (Math.abs(this.x - obj.x) < 40 && this.enSuelo && obj.y < this.y - 20) {
+                                this.vy = -600; 
+                            }
+                        } else {
+                            // Caza al jugador agresivamente
+                            velX = this.x < jug.x ? 160 : -160;
+                            if (this.enSuelo && jug.y < this.y - 30 && Math.abs(this.x - jug.x) < 60) {
+                                this.vy = -550; 
+                            }
+                        }
+                    }
+                }
+                else if (this.fase === 4) { // JEFE MÁS POTENTE
+                    this.updateBoss(dt, jug, nivel);
+                    return; 
+                }
+
+                this.vx = velX;
+                this.vy += this.grav * dt;
+                this.x += this.vx * dt; this.y += this.vy * dt;
+                
+                let coll = [...nivel.plataformas];
+                if(nivel.puertas) coll.push(...nivel.puertas.filter(p => !p.abierta));
+                resolverColisiones(this, coll);
+            }
+
+            updateBoss(dt, jug, nivel) {
+                this.proyectiles.forEach(p => { p.x += p.vx*dt; p.y += p.vy*dt; p.vida -= dt; });
+                this.proyectiles = this.proyectiles.filter(p => p.vida > 0 && !AABB(p, jug));
+
+                this.jefeTimer += dt;
+                if (this.estadoJefe === 'SHOOTING') {
+                    this.y = 50 + Math.sin(Date.now()*0.005)*30;
+                    this.x += (jug.x - this.x) * 0.05; // Rastrea X mas rápido
+                    
+                    if (this.jefeTimer > 0.8) { // Dispara más seguido y teledirigido
+                        this.jefeTimer = 0; sfx.sGlitch();
+                        let dx = jug.x - this.x; let dy = jug.y - this.y;
+                        let mag = Math.hypot(dx, dy);
+                        this.proyectiles.push({x: this.x+12, y: this.y+24, w: 12, h: 12, vx: (dx/mag)*350, vy: (dy/mag)*350, vida: 3});
+                    }
+                    if (Math.random() < 0.01) {
+                        this.estadoJefe = 'DIVING'; this.jefeTimer = 0;
+                    }
+                } else if (this.estadoJefe === 'DIVING') {
+                    if (this.y < 250) this.x += (jug.x - this.x) * 0.12; // Rastreo mid-air letal
+                    this.y += 1000 * dt; // Cae mucho más rápido
+                    if (this.y > 380) { 
+                        this.y = 380; this.estadoJefe = 'STUNNED'; this.jefeTimer = 0;
+                        sfx.sError(); vfx.crear(this.x, this.y, '#f00', 30, 400);
+                        nivel.shake = 15;
+                    }
+                } else if (this.estadoJefe === 'STUNNED') {
+                    if (this.jefeTimer > 2.0) { // Menos tiempo aturdido
+                        this.estadoJefe = 'SHOOTING'; this.jefeTimer = 0; this.y = 50;
+                    }
+                }
+            }
+
+            draw(ctx) {
+                let col = this.colores[this.fase];
+                if (this.fase >= 2) {
+                    ctx.shadowBlur = 15; ctx.shadowColor = col;
+                    ctx.fillRect(this.x + (Math.random()*4-2), this.y + (Math.random()*4-2), this.w, this.h);
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.fillStyle = col; ctx.fillRect(this.x, this.y, this.w, this.h);
+                }
+
+                if (this.fase === 4) {
+                    ctx.fillStyle = '#ff003c';
+                    this.proyectiles.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
+                    if (this.estadoJefe === 'STUNNED') {
+                        ctx.fillStyle = '#fff'; ctx.font = "bold 14px monospace"; ctx.textAlign = "center";
+                        ctx.fillText("¡BÚRLATE AHORA! (T)", this.x + 12, this.y - 15);
+                    }
+                }
+
+                // DIBUJAR CUADRO DE DIÁLOGO EN CANVAS
+                if (this.tDialogo > 0) {
+                    ctx.font = "bold 13px monospace";
+                    ctx.textAlign = "center";
+                    let txtW = ctx.measureText(this.textoDialogo).width + 24;
+                    let cx = this.x + this.w / 2;
+                    let cy = this.y - 20;
+                    
+                    ctx.fillStyle = "rgba(0,0,0,0.85)";
+                    ctx.strokeStyle = this.dialogoRojo ? "var(--c-neon-red)" : "var(--c-neon-cyan)";
+                    ctx.lineWidth = 2;
+                    
+                    // Fondo y borde del globo
+                    ctx.fillRect(cx - txtW/2, cy - 30, txtW, 25);
+                    ctx.strokeRect(cx - txtW/2, cy - 30, txtW, 25);
+                    
+                    // Pico del globo
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 6, cy - 5);
+                    ctx.lineTo(cx, cy + 2);
+                    ctx.lineTo(cx + 6, cy - 5);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Texto
+                    ctx.fillStyle = this.dialogoRojo ? "var(--c-neon-red)" : "#fff";
+                    ctx.fillText(this.textoDialogo, cx, cy - 13);
+                }
+            }
+        }
+
+        // ==========================================
+        // 3. DISEÑO DE MUNDOS
+        // ==========================================
+        class Mundo1 {
+            constructor() {
+                this.plataformas = [
+                    {x: 0, y: 450, w: 200, h: 50}, {x: 300, y: 450, w: 600, h: 50},
+                    {x: 200, y: 350, w: 100, h: 20}, {x: 450, y: 280, w: 120, h: 20}, 
+                    {x: 100, y: 200, w: 80, h: 20}, {x: 650, y: 220, w: 100, h: 20}
+                ];
+                this.peligros = [ {x: 450, y: 430, w: 50, h: 20} ]; 
+                this.meta = {x: 820, y: 380, w: 50, h: 70};
+                this.metaCorrompida = false; this.shake = 0;
+                bus.on('ia_evoluciona', f => { if(f >= 2) this.metaCorrompida = true; });
+            }
+            update(dt, jug) {
+                if (AABB(jug, this.meta)) {
+                    if (this.metaCorrompida) bus.emit('transicion_mundo', 2);
+                    else bus.emit('final_estandar'); 
+                }
+            }
+            draw(ctx) {
+                ctx.fillStyle = '#222'; this.plataformas.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
+                ctx.fillStyle = '#622'; this.peligros.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
+                
+                if (this.metaCorrompida) {
+                    ctx.shadowBlur = 20; ctx.shadowColor = 'var(--c-neon-red)'; ctx.fillStyle = 'var(--c-neon-red)';
+                    ctx.fillRect(this.meta.x + (Math.random()*6-3), this.meta.y + (Math.random()*6-3), this.meta.w, this.meta.h);
+                } else {
+                    ctx.shadowBlur = 10; ctx.shadowColor = 'var(--c-neon-green)'; ctx.fillStyle = 'var(--c-neon-green)';
+                    ctx.fillRect(this.meta.x, this.meta.y, this.meta.w, this.meta.h);
+                }
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Mundo2 {
+            constructor() {
+                // NIVEL REDISEÑADO CON PLATAFORMAS INTERMEDIAS
+                this.plataformas = [ 
+                    {x: 0, y: 450, w: 900, h: 50}, // Suelo
+                    {x: 120, y: 370, w: 80, h: 20}, // Escalón Izquierdo
+                    {x: 700, y: 370, w: 80, h: 20}, // Escalón Derecho
+                    {x: 60, y: 280, w: 100, h: 20}, // Plat. Switch Izquierdo
+                    {x: 740, y: 280, w: 100, h: 20}, // Plat. Switch Derecho
+                    {x: 400, y: 330, w: 100, h: 20}  // Base para la puerta
+                ];
+                this.switches = [ 
+                    {x: 90, y: 270, w: 40, h: 10, activo: false}, 
+                    {x: 770, y: 270, w: 40, h: 10, activo: false} 
+                ];
+                this.puertas = [ {x: 440, y: 180, w: 20, h: 150, abierta: false} ];
+                this.meta = {x: 425, y: 110, w: 50, h: 70}; 
+                this.shake = 0;
+            }
+            update(dt, jug) {
+                this.switches.forEach(s => {
+                    if (!s.activo && AABB(jug, s)) { s.activo = true; sfx.sSwitch(); }
+                });
+                this.switches.forEach(s => {
+                    if (s.activo && AABB(ia, s)) { s.activo = false; sfx.sError(); vfx.crear(s.x, s.y, '#f00', 5); }
+                });
+
+                let todosActivos = this.switches.every(s => s.activo);
+                this.puertas[0].abierta = todosActivos;
+
+                if (AABB(jug, this.meta)) bus.emit('transicion_mundo', 3);
+            }
+            draw(ctx) {
+                ctx.fillStyle = '#1a1a2e'; this.plataformas.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
+                
+                this.switches.forEach(s => {
+                    ctx.fillStyle = s.activo ? '#0f4' : '#555';
+                    ctx.fillRect(s.x, s.y, s.w, s.h);
+                });
+
+                this.puertas.forEach(p => {
+                    if (!p.abierta) { ctx.fillStyle = '#ff003c'; ctx.fillRect(p.x, p.y, p.w, p.h); }
+                });
+
+                ctx.shadowBlur = 20; ctx.shadowColor = '#a0f'; ctx.fillStyle = '#a0f';
+                ctx.fillRect(this.meta.x + (Math.random()*4-2), this.meta.y, this.meta.w, this.meta.h);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Mundo3 {
+            constructor() {
+                this.plataformas = [ {x: 0, y: 450, w: 900, h: 50}, {x: 0, y: 0, w: 20, h: 500}, {x: 880, y: 0, w: 20, h: 500} ];
+                this.shake = 0;
+            }
+            update(dt, jug) {
+                if (ia.proyectiles.some(p => AABB(jug, p))) bus.emit('jugador_muere');
+            }
+            draw(ctx) {
+                ctx.fillStyle = '#110000'; this.plataformas.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
+                ctx.strokeStyle = '#300'; ctx.lineWidth = 1;
+                for(let i=0; i<W; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,H); ctx.stroke(); }
+            }
+        }
+
+        // ==========================================
+        // 4. BUCLE PRINCIPAL Y GESTIÓN DE JUEGO
+        // ==========================================
+        let estado = 'MENU'; 
+        let mundoActual = null;
+        let numMundo = 1;
+        let ultimoT = 0;
+
+        const uiUI = document.getElementById('ui-pantalla');
+        const uiTit = document.getElementById('ui-titulo');
+        const uiMsj = document.getElementById('ui-msj');
+        const btnStart = document.getElementById('btn-start');
+        const btnAudio = document.getElementById('btn-audio');
+        const hud = document.getElementById('hud');
+
+        function setPantalla(tit, msj, btnTxt) {
+            estado = 'MENU'; uiUI.classList.remove('hidden'); hud.style.display = 'none';
+            uiTit.innerText = tit; uiMsj.innerHTML = msj;
+            if (btnTxt) { btnStart.style.display = 'inline-block'; btnStart.innerText = btnTxt; } 
+            else btnStart.style.display = 'none';
+        }
+
+        function iniciarMundo(num) {
+            numMundo = num;
+            document.getElementById('hud-mundo').innerText = num;
+            uiUI.classList.add('hidden'); hud.style.display = 'block';
+            vfx.clear();
+
+            if (num === 1) {
+                jugador = new Jugador(50, 380); ia = new IA(400, 380); mundoActual = new Mundo1();
+                hud.classList.remove('corrupted');
+            } else if (num === 2) {
+                jugador.x = 50; jugador.y = 380; jugador.vx=0; jugador.vy=0;
+                ia.x = 450; ia.y = 100; ia.fase = 3; document.getElementById('hud-ia').innerText = "INVASORA_P";
+                ia.hablar("ESTO TAMBIÉN ES MÍO.", 4, true);
+                mundoActual = new Mundo2();
+                hud.classList.add('corrupted');
+            } else if (num === 3) {
+                jugador.x = 50; jugador.y = 380;
+                ia.x = 450; ia.y = 50; ia.fase = 4; document.getElementById('hud-ia').innerText = "INVASORA_JEFE";
+                ia.hablar("TE EXTINGUIRÉ.", 4, true);
+                mundoActual = new Mundo3();
+            }
+            estado = 'JUGANDO';
+        }
+
+        btnStart.onclick = () => { sfx.init(); iniciarMundo(1); };
+        btnAudio.onclick = () => { sfx.mute = !sfx.mute; btnAudio.innerText = sfx.mute ? "AUDIO: OFF" : "AUDIO: ON"; };
+
+        bus.on('jugador_muere', () => { sfx.sGlitch(); setPantalla("SISTEMA CAÍDO", "El ente u obstáculo te destruyó.<br>Pero la persistencia es clave.", "REINICIAR MUNDO " + numMundo); btnStart.onclick = () => iniciarMundo(numMundo); });
+        
+        bus.on('final_estandar', () => { setPantalla("EL CICLO INTACTO", "Completaste el recorrido base.<br>No provocaste a la anomalía. El ecosistema original se mantiene puro y funcional.<br><br><b>FINAL ESTÁNDAR ALCANZADO.</b>", "JUGAR DE NUEVO"); btnStart.onclick = () => { sfx.init(); iniciarMundo(1); }; });
+        
+        bus.on('transicion_mundo', (siguiente) => { sfx.sGlitch(); setPantalla("R U P T U R A", "La entidad ha quebrado las barreras del nivel.<br>Ha asimilado tu capacidad de salto e invade otros sectores de memoria.", "RASTREAR AL MUNDO " + siguiente); btnStart.onclick = () => iniciarMundo(siguiente); });
+
+        bus.on('jefe_derrotado', () => { 
+            estado = 'MENU'; 
+            setTimeout(() => { 
+                setPantalla("CREADOR Y DESTRUCTOR", "Alimentaste a la entidad con tus burlas. La obligaste a evolucionar y destruir.<br>Y cuando fue omnipotente, usaste esa misma arrogancia (T) para aniquilarla.<br><br><b>FINAL DE ESCALADA ALCANZADO.</b>", "REINICIAR SISTEMA"); 
+                btnStart.onclick = () => { window.location.reload(); };
+            }, 2000);
+        });
+
+        function update(dt) {
+            if (estado !== 'JUGANDO') return;
+            jugador.update(dt, mundoActual);
+            ia.update(dt, mundoActual, jugador);
+            mundoActual.update(dt, jugador);
+            vfx.update(dt);
+            if (mundoActual.shake > 0) mundoActual.shake = Math.max(0, mundoActual.shake - dt * 20);
+        }
+
+        function draw() {
+            ctx.fillStyle = 'var(--bg)'; ctx.fillRect(0,0,W,H);
+            if (estado !== 'JUGANDO') return;
+
+            ctx.save();
+            if (mundoActual.shake > 0) ctx.translate((Math.random()-0.5)*mundoActual.shake, (Math.random()-0.5)*mundoActual.shake);
+            
+            mundoActual.draw(ctx);
+            ia.draw(ctx);
+            jugador.draw(ctx);
+            vfx.draw(ctx);
+            
+            ctx.restore();
+        }
+
+        function loop(ts) {
+            if (!ultimoT) ultimoT = ts;
+            const dt = Math.min((ts - ultimoT) / 1000, 0.1);
+            ultimoT = ts;
+            update(dt); draw();
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+
+    })();
+    </script>
+</body>
+</html>
