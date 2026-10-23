@@ -139,7 +139,7 @@
           else if(option==='feint')score=p.dash*.7+p.repeat*.45;
           else score=.06;
         }
-        const stat=this.tacticOutcomes[option]||{tries:0,value:0};
+        const legacy=({'anti-air':this.outcomes.antiAir,intercept:this.outcomes.intercept,pressure:this.outcomes.pressure,feint:this.outcomes.feint})[option];const stat=this.tacticOutcomes[option]||legacy||{tries:0,value:0};
         const explore=.14*Math.sqrt(Math.log(known+2)/(stat.tries+1));
         const learned=stat.value*.32;
         const freshness=this.lastDirectorChoice[domain]===option?-.11:0;
