@@ -137,7 +137,7 @@
       if(this.input.justPressed('KeyE')&&Math.hypot(p.x-L.exit.x,p.y-L.exit.y)<1.25){if(this.fragments>=3)this.enterWorld5();else this.toast('SALIDA BLOQUEADA: '+(3-this.fragments)+' FRAGMENTOS PENDIENTES');}
       for(const s of this.sentinels){
         if(s.hp<=0)continue;s.stun=Math.max(0,s.stun-dt);s.hitFlash=Math.max(0,s.hitFlash-dt);s.attackTimer-=dt;const wasLocking=s.windup>0;s.windup=Math.max(0,s.windup-dt);
-        const d=Math.hypot(p.x-s.x,p.y-s.y),a=Math.atan2(p.y-s.y,s.x-p.x);
+        const d=Math.hypot(p.x-s.x,p.y-s.y),a=Math.atan2(p.y-s.y,p.x-s.x);
         if(d<6&&s.stun<=0){
           let tx=p.x,ty=p.y;
           if(s.role==='flanker'){const side=s.id%2?1:-1;tx=p.x+Math.cos(a+Math.PI/2*side)*.9+p.vx*.004;ty=p.y+Math.sin(a+Math.PI/2*side)*.9+p.vy*.004;}
