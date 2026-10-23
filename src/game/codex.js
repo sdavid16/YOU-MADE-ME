@@ -58,6 +58,7 @@
     }
     unlock(entry,announce=true){if(this.unlocked.has(entry.id))return false;this.unlocked.add(entry.id);this.save();if(announce)this.game.toast('ARCHIVO DESBLOQUEADO // '+entry.title);return true;}
     update(game){
+      if(game.screen==='ending'){for(const entry of ENTRIES)if(entry.type==='ending'&&entry.ending===game.ending)this.unlock(entry,true);return;}
       if(game.screen!=='playing')return;
       if(game.world!==this.lastWorld){this.lastWorld=game.world;for(const entry of ENTRIES)if(entry.type==='story'&&entry.world<=game.world)this.unlock(entry,entry.world===game.world);}
       const total=game.meta?game.meta.profile.collectibles:Number(game.fragments||0);
