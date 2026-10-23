@@ -17,7 +17,9 @@ Descarga el ZIP, descomprímelo y abre `index.html` en un navegador moderno. No 
 7. **Signal Break** — shooter táctico cenital. Destruye tres repetidores, sobrevive a escuadrones con diferentes roles y abre el canal raíz. En Pesadilla la IA despliega dos agentes adicionales.
 8. **The Black Archive** — escenario 3D en primera persona, seis centinelas, cuatro registros narrativos y la revelación del objetivo original.
 9. **Echo Labyrinth** — otro mapa WebGL en primera persona, cinco registros, siete centinelas, rutas asimétricas y un ataque a distancia nuevo. En Pesadilla se añaden tres guardias.
-10. **The Singularity Engine** — arena táctica final con cuatro nodos, nueve agentes en Pesadilla y una salva triple de alto daño. Desactivar el motor desbloquea el desenlace de la campaña.
+10. **The Singularity Engine** — arena táctica con cuatro nodos, nueve agentes en Pesadilla y una salva triple. Desactivar el motor abre el archivo de origen.
+11. **The Redacted Wing** — escenario 3D, seis registros, siete centinelas y Warden con ataques marcados. Rompe la línea de visión o abandona la zona fijada.
+12. **The Origin Room** — escenario 3D final con cinco registros que revelan el objetivo original y una salida que cierra la simulación.
 
 ### Derrumbes sin bloqueo de ruta
 
