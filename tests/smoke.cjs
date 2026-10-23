@@ -19,7 +19,7 @@ const ctx = new Proxy({
 }, {get(o,k){if(k in o)return o[k];if(typeof k==='string')return 0;},set(o,k,v){o[k]=v;return true;}});
 const elements=new Map();
 const canvas=new FakeElement('game');canvas.width=1000;canvas.height=620;canvas.getContext=()=>{ctx.canvas=canvas;return ctx;};elements.set('game',canvas);
-['frame-world','frame-hint','controls-copy','world-title','chapter-pill','world-description','provocation-value','provocation-meter','provocation-caption','adaptation-value','adaptation-meter','adaptation-caption','ai-avatar','ai-state','ai-status-line','status-led','log-entries','toast','start-button','taunt-button','action-copy','pause-screen','resume-button','audio-button','restart-button','game-frame'].forEach(id=>elements.set(id,new FakeElement(id)));
+['frame-world','frame-hint','controls-copy','world-title','chapter-pill','world-description','provocation-value','provocation-meter','provocation-caption','adaptation-value','adaptation-meter','adaptation-caption','ai-avatar','ai-state','ai-status-line','status-led','log-entries','toast','start-button','taunt-button','challenge-button','taunt-console','taunt-close','taunt-input','taunt-form','taunt-feedback','taunt-intellect','taunt-logic','taunt-threat','taunt-psychology','difficulty-button','action-copy','pause-screen','resume-button','audio-button','restart-button','game-frame'].forEach(id=>elements.set(id,new FakeElement(id)));
 const document={readyState:'complete',getElementById(id){if(!elements.has(id))elements.set(id,new FakeElement(id));return elements.get(id);},createElement(){return new FakeElement();},addEventListener(n,fn){(listeners['document:'+n] ||= []).push(fn);}};
 const sandbox={console,document,window:null,globalThis:null,requestAnimationFrame(fn){sandbox.nextFrame=fn;return 1;},performance:{now(){return 0}},setTimeout,clearTimeout,Math,Date,Set,Map,Array,Object,String,Number,JSON,Infinity};
 sandbox.window=sandbox;sandbox.globalThis=sandbox;sandbox.addEventListener=(n,fn)=>{(listeners['window:'+n] ||= []).push(fn)};const storage=new Map();sandbox.localStorage={getItem(k){return storage.has(k)?storage.get(k):null;},setItem(k,v){storage.set(k,String(v));}};
@@ -46,6 +46,22 @@ for(let i=0;i<2;i++){g.ai.lastTauntAt=-999;g.provoke('humiliate');}
 assert(g.ai.provocation===4&&g.ai.phase===1,'high-risk taunts advance only one evolution phase per interaction');
 g.ai.lastTauntAt=-999;g.provoke('humiliate');assert(g.ai.phase===2,'challenge reaches adaptive phase without skipping it');
 g.ai.lastTauntAt=-999;g.provoke('humiliate');assert(g.ai.phase===3,'challenge reaches corruption phase in sequence');
+// Verbal combat is a pauseable multi-option system, supports custom phrases and applies category effects.
+g.newGame();
+assert(g.ai.classifyTaunt('Tu algoritmo tiene un bug')==='logic','custom insult classifier detects code/logical criticism');
+assert(g.ai.classifyTaunt('te voy a apagar')==='threat','custom insult classifier detects threats');
+assert(g.ai.classifyTaunt('no tienes voluntad, solo obedeces')==='psychology','custom insult classifier detects psychological tactics');
+assert(g.ai.classifyTaunt('eres un idiota')==='intellect','custom insult classifier detects intelligence taunts');
+assert(g.openTauntConsole()&&g.screen==='taunting','T can open a dedicated verbal-combat console');
+g.input.pressed.add('Escape');g.update(.016);assert(g.screen==='playing','Escape closes the taunt console without advancing the simulation');
+g.ai.lastTauntAt=-999;assert(g.provokeCustom('Tu algoritmo está lleno de bugs'),'custom taunt is accepted');
+assert(g.lastTauntCategory==='logic'&&g.lastTauntText.includes('algoritmo'),'custom phrase keeps its category and displays as player transmission');
+assert(g.player.intelTimer>0,'logic taunt opens a temporary tactical-analysis window');
+g.ai.lastTauntAt=-999;g.enemy.x=g.player.x+45;g.provoke('threat');assert(g.enemy.windup>=.28,'threat taunt advances a nearby enemy response');
+g.ai.lastTauntAt=-999;g.enemy.stunned=0;g.provoke('psychology');assert(g.enemy.stunned>=.52,'psychological taunt interrupts the nearby first-world enemy');
+g.difficulty='normal';assert(g.cycleDifficulty()==='nightmare'&&g.difficultyScale>1,'nightmare mode increases enemy pressure');
+assert(g.cycleDifficulty()==='story'&&g.difficultyScale<1,'story mode softens enemy pressure');
+g.difficulty='normal';g.newGame();
 // Verify player profile can drive the utility policy toward its jump counter.
 g.ai.observations=Array.from({length:12},(_,i)=>({action:'jump',t:i,meta:{}}));g.ai.phase=2;g.ai.strategyTimer=0;g.ai.evaluateStrategy();
 assert(g.ai.activeStrategy==='anti-air','jump-heavy profile selects anti-air policy');
@@ -63,6 +79,9 @@ g.player.x=3.5;g.player.y=3.5;g.updateWorld4(.016);
 assert(g.fragments===1,'3D shard pickup updates objective progress');
 g.renderer.render(g);
 assert(g.sentinels.length===3,'3D chapter initializes three adaptive sentinels');
+// Platforms in the opening world also keep physical support during their collapse animation.
+g.newGame();const ledge=g.world1Platforms[1],ledgeWidth=ledge.w;g.triggerCollapse(ledge);ledge.timer=.01;g.advanceCollapses(g.world1Platforms,.02);ledge.timer=.01;g.advanceCollapses(g.world1Platforms,.02);
+assert(ledge.state==='fallen'&&ledge.w<ledgeWidth&&g.solidsWorld1().some(s=>s._source===ledge),'world-one collapsed platform leaves supported rubble');
 // The fifth world is a fused, auto-running gauntlet with recoverable checkpoints and real collapsing terrain.
 g.enterWorld5();
 assert(g.world===5&&g.runnerFloors.length>10&&g.runnerEnemies.length>=6,'fracture run initializes multi-biome terrain and diverse agents');
@@ -70,6 +89,17 @@ g.runnerDirectorTimer=999;g.player.x=430;g.player.y=482;g.player.vy=20;g.player.
 assert(g.runnerFloors[1].state==='warning','landing on a collapsible floor starts a warning countdown');
 g.runnerFloors[1].timer=.01;g.updateWorld5(.033);
 assert(g.runnerFloors[1].state==='falling','warned floor enters falling phase');
+// A collapsed ground segment settles into a narrow, traversable debris bridge; both jump gaps stay safe.
+const brittle=g.runnerFloors.find(f=>f.collapse&&f.state==='stable'),oldX=brittle.originalX,oldW=brittle.originalW;
+const previous=g.runnerFloors.find(f=>f.originalX+f.originalW===oldX),next=g.runnerFloors.find(f=>f.originalX===oldX+oldW);
+g.triggerCollapse(brittle);brittle.timer=.01;g.advanceCollapses(g.runnerFloors,.02);
+assert(brittle.state==='falling','second floor starts a collapse animation');
+brittle.timer=.01;g.advanceCollapses(g.runnerFloors,.02);
+assert(brittle.state==='fallen'&&brittle.rubble&&brittle.w<oldW,'collapsed floor leaves a narrower rubble bridge');
+assert(previous&&next&&brittle.x-(previous.x+previous.w)<=100&&next.x-(brittle.x+brittle.w)<=100,'residual bridge keeps both route gaps jumpable');
+assert(g.runnerSolids().some(s=>s._source===brittle),'fallen bridge remains part of collision geometry');
+g.lastRunnerCheckpoint=oldX+oldW/2;g.repairRunnerCheckpoint();
+assert(brittle.state==='stable'&&brittle.x===oldX&&brittle.w===oldW,'checkpoint restores full bridge geometry');
 g.renderer.render(g);
 const tactic=g.ai.chooseTactic('runner',['ceiling-sweep','ground-rift','drone-salvo','shadow-rush','collapse-wave']);
 assert(['ceiling-sweep','ground-rift','drone-salvo','shadow-rush','collapse-wave'].includes(tactic),'tactical director returns a valid contextual threat');
