@@ -59,7 +59,7 @@
         c.globalAlpha=alpha*.24;c.fillStyle='#190611';c.beginPath();c.arc(W/2,H/2,radius*.74,0,Math.PI*2);c.fill();
       }
       c.globalAlpha=alpha*.9;c.fillStyle='#f0f5ff';c.font='800 11px monospace';c.textAlign='center';
-      const names={2:'MEMORY MAZE // DATA TRANSFER',3:'NO LONGER A JOKE // THREAT DETECTED',4:'NULL CATHEDRAL // REALITY REBUILD',5:'FRACTURE RUN // WORLD COLLISION',6:'THE LAST ARGUMENT // FINAL INSTANCE',7:'SIGNAL BREAK // LAST CHANNEL',8:'THE BLACK ARCHIVE // ROOT MEMORY'};
+      const names={2:'MEMORY MAZE // DATA TRANSFER',3:'NO LONGER A JOKE // THREAT DETECTED',4:'NULL CATHEDRAL // REALITY REBUILD',5:'FRACTURE RUN // WORLD COLLISION',6:'THE LAST ARGUMENT // FINAL INSTANCE',7:'SIGNAL BREAK // LAST CHANNEL',8:'THE BLACK ARCHIVE // ROOT MEMORY',9:'ECHO LABYRINTH // MEMORY UNDER ATTACK',10:'THE SINGULARITY ENGINE // LAST PROTOCOL'};
       c.fillText(names[t.to]||('WORLD '+t.to),W/2,H*.88);c.textAlign='left';c.restore();
     }
     drawIntelReadout(game){
@@ -323,11 +323,11 @@
       if(p.dashTimer>0){c.strokeStyle='#fff';c.lineWidth=3;c.beginPath();c.arc(0,0,26,0,Math.PI*2);c.stroke();}c.restore();
       const alive=game.signalNodes.filter(n=>n.hp>0).length,hostiles=game.signalEnemies.filter(e=>e.hp>0).length;
       c.fillStyle='rgba(3,8,15,.88)';c.fillRect(22,18,480,60);c.strokeStyle='#72f3dc';c.strokeRect(22,18,480,60);
-      c.fillStyle='#72f3dc';c.font='900 11px monospace';c.fillText('WORLD 07 // SIGNAL BREAK',34,36);
-      c.fillStyle='#eef5ff';c.font='9px monospace';c.fillText('RELAYS '+alive+'/3 ONLINE  ·  HOSTILES '+hostiles+'  ·  KILLS '+game.signalKills,34,53);
+      c.fillStyle='#72f3dc';c.font='900 11px monospace';c.fillText(game.world===10?'WORLD 10 // SINGULARITY ENGINE':'WORLD 07 // SIGNAL BREAK',34,36);
+      c.fillStyle='#eef5ff';c.font='9px monospace';c.fillText('NODES '+alive+'/'+(game.world===10?4:3)+' ONLINE  ·  HOSTILES '+hostiles+'  ·  KILLS '+game.signalKills,34,53);
       c.fillStyle='#8ba3bd';c.font='8px monospace';c.fillText('DIRECTIVE // '+String(game.signalTactic||'SCANNING').toUpperCase()+'  ·  SHOTS '+game.signalShotCount,34,68);
       c.fillStyle='#172839';c.fillRect(660,31,280,7);c.fillStyle='#72f3dc';c.fillRect(660,31,280*Math.max(0,p.health/(p.maxHealth||4)),7);c.fillStyle='#dff3ff';c.font='8px monospace';c.fillText('INTEGRITY '+p.health+'/'+p.maxHealth,660,23);
-      c.fillStyle='#172839';c.fillRect(660,49,280,5);c.fillStyle='#b8a0ff';c.fillRect(660,49,280*(1-p.specialCooldown/4.8),5);c.fillStyle='#bdb0ff';c.font='8px monospace';c.fillText('EMP '+(p.specialCooldown>0?p.specialCooldown.toFixed(1)+'s':'READY')+' // F',660,66);
+      c.fillStyle='#172839';c.fillRect(660,49,280,5);c.fillStyle='#b8a0ff';c.fillRect(660,49,280*(1-p.specialCooldown/4.8),5);c.fillStyle='#bdb0ff';c.font='8px monospace';c.fillText('EMP '+(p.specialCooldown>0?p.specialCooldown.toFixed(1)+'s':'READY')+' // F'+(game.world===10?' · TRIPLE SALVO K':'') ,660,66);
       const tx=L.exit.x,ty=L.exit.y,open=alive===0;c.save();c.translate(tx,ty);c.strokeStyle=open?'#72f3dc':'#ff617c';c.lineWidth=3;c.beginPath();c.arc(0,0,24+Math.sin(game.clock*5)*3,0,Math.PI*2);c.stroke();c.beginPath();c.arc(0,0,15,0,Math.PI*2);c.stroke();if(open){c.fillStyle='rgba(114,243,220,.2)';c.beginPath();c.arc(0,0,12,0,Math.PI*2);c.fill();}c.restore();
       c.fillStyle=open?'#72f3dc':'#ff9aaf';c.font='800 8px monospace';c.fillText(open?'EXIT // PRESS E':'EXIT LOCKED',tx-45,ty-32);
       c.fillStyle='#7386a4';c.font='8px monospace';c.fillText('WASD MOVE · J FIRE · F EMP · SHIFT DASH · T TAUNT',22,604);
@@ -335,7 +335,7 @@
       c.restore();
     }
     drawEnding(game){
-      const c=this.ctx,escalated=game.ending==='escalation',archive=game.ending==='archive';
+      const c=this.ctx,escalated=game.ending==='escalation',archive=game.ending==='archive',convergence=game.ending==='convergence';
       this.gradient(archive?'#1a1030':escalated?'#260c20':'#0b2230','#070a13');this.drawStars(game,game.clock*4,.9);c.save();
       const color=archive?'#b8a0ff':escalated?'#ff617c':'#72f3dc';c.textAlign='center';c.strokeStyle=color;c.globalAlpha=.18;
       for(let i=0;i<9;i++){c.beginPath();c.ellipse(500,230,100+i*35,50+i*19,game.clock*.03,0,Math.PI*2);c.stroke();}c.globalAlpha=1;
