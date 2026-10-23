@@ -18,7 +18,7 @@
   class TouchControls{
     constructor(game){
       this.game=game;this.active=new Map();this.buttons=new Map();this.visible=false;
-      if(!root.document||!document.getElementById('game-stage'))return;
+      if(!root.document||!document.querySelector||!document.getElementById('game-stage'))return;
       if(!document.getElementById('ymm-touch-style')){const s=document.createElement('style');s.id='ymm-touch-style';s.textContent=STYLE;document.head&&document.head.appendChild(s);}
       this.root=document.createElement('div');this.root.className='ymm-touch';this.root.setAttribute('aria-label','Controles táctiles');
       this.root.innerHTML='<div class="ymm-touch-left"><button data-key="ArrowUp" aria-label="Arriba">▲</button><button data-key="ArrowLeft" aria-label="Izquierda">◀</button><button data-key="ArrowDown" aria-label="Abajo">▼</button><button data-key="ArrowRight" aria-label="Derecha">▶</button></div><div class="ymm-touch-extra"><button data-key="KeyQ" aria-label="Pulso">Q</button><button data-key="KeyF" aria-label="Ataque fuerte">F</button><button data-key="KeyE" aria-label="Interactuar">E</button></div><div class="ymm-touch-right"><button data-key="Space" aria-label="Saltar">SALTAR</button><button data-key="ShiftLeft" aria-label="Dash">DASH</button><button data-key="KeyJ" aria-label="Atacar">ATQ</button></div><div class="ymm-touch-hint">CONTROLES TÁCTILES · LOS BOTONES SE ADAPTAN POR MUNDO</div>';
