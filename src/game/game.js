@@ -32,14 +32,14 @@
         if(this.world===1&&Math.abs((p.x+p.w/2)-(this.enemy.x+15))<200){this.enemy.windup=Math.max(this.enemy.windup,.28);this.enemy.attackCooldown=Math.min(this.enemy.attackCooldown,.7);this.log('La amenaza ha provocado una respuesta inmediata.','danger');}
         else if(this.world===5&&this.runnerDirectorTimer!==undefined){this.runnerDirectorTimer=Math.min(this.runnerDirectorTimer,.85);this.log('La IA acepta el desafío: la siguiente amenaza llegará antes.','danger');}
         else if((this.world===3||this.world===6)&&this.boss){this.boss.timer=Math.min(this.boss.timer,.48);this.log('El jefe ha reducido el intervalo antes del siguiente patrón.','danger');}
-        else if(this.world===4&&this.squadCommandTimer!==undefined){this.squadCommandTimer=Math.min(this.squadCommandTimer,.15);this.log('Los centinelas han recibido una orden nueva.','danger');}
-        else if(this.world===7&&this.signalDirectorTimer!==undefined){this.signalDirectorTimer=Math.min(this.signalDirectorTimer,.2);for(const e of this.signalEnemies)if(e.hp>0)e.attackTimer=Math.min(e.attackTimer,.65);this.log('La amenaza ha acelerado la próxima salva.','danger');}
+        else if((this.world===4||this.world===9)&&this.squadCommandTimer!==undefined){this.squadCommandTimer=Math.min(this.squadCommandTimer,.15);this.log('Los centinelas han recibido una orden nueva.','danger');}
+        else if((this.world===7||this.world===10)&&this.signalDirectorTimer!==undefined){this.signalDirectorTimer=Math.min(this.signalDirectorTimer,.2);for(const e of this.signalEnemies)if(e.hp>0)e.attackTimer=Math.min(e.attackTimer,.65);this.log('La amenaza ha acelerado la próxima salva.','danger');}
       }
       if(kind==='psychology'){
         if(this.world===1&&this.enemy){this.enemy.stunned=Math.max(this.enemy.stunned,.58);this.enemy.windup=0;this.enemy.counterWindup=0;}
-        if(this.world===4&&this.sentinels){for(const e of this.sentinels){e.stun=Math.max(e.stun,.52);e.windup=0;}this.squadCommandTimer=Math.max(this.squadCommandTimer,.9);}
+        if((this.world===4||this.world===8||this.world===9)&&this.sentinels){for(const e of this.sentinels){e.stun=Math.max(e.stun,.52);e.windup=0;}this.squadCommandTimer=Math.max(this.squadCommandTimer,.9);}
         if(this.world===5&&this.runnerEnemies){for(const e of this.runnerEnemies)if(e.hp>0&&Math.abs(e.x-p.x)<205){e.stun=Math.max(e.stun,.52);e.windup=0;e.chargeTimer=0;}this.runnerProjectiles=(this.runnerProjectiles||[]).filter(b=>Math.abs(b.x-p.x)>90);}
-        if(this.world===7&&this.signalEnemies){for(const e of this.signalEnemies)if(e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<235){e.stun=Math.max(e.stun,.72);e.attackTimer=Math.max(e.attackTimer,.9);}this.signalProjectiles=this.signalProjectiles.filter(b=>b.from!=='enemy'||Math.hypot(b.x-p.x,b.y-p.y)>150);}
+        if((this.world===7||this.world===10)&&this.signalEnemies){for(const e of this.signalEnemies)if(e.hp>0&&Math.hypot(e.x-p.x,e.y-p.y)<235){e.stun=Math.max(e.stun,.72);e.attackTimer=Math.max(e.attackTimer,.9);}this.signalProjectiles=this.signalProjectiles.filter(b=>b.from!=='enemy'||Math.hypot(b.x-p.x,b.y-p.y)>150);}
         if((this.world===3||this.world===6)&&this.boss){this.boss.timer+=.42;if(this.boss.phase==='telegraph')this.boss.timer+=.32;}
         this.ai.strategyTimer=Math.max(this.ai.strategyTimer,1.2);this.ai.record('taunt-psychology',{world:this.world});this.toast('INTERFERENCIA PSICOLÓGICA // ventana de 1.2 s');
       }
