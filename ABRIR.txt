@@ -5,14 +5,15 @@ YOU MADE ME — INICIO RÁPIDO
 3. Abre index.html con doble clic.
 4. No necesitas Python, terminal, npm, servidor local ni bibliotecas externas.
 
-SIETE MUNDOS
+OCHO MUNDOS
 1. Greenhill: plataformas, salto, carrera y combate.
 2. Memory Maze: recoge tres fragmentos, activa el terminal con E y llega al portal.
 3. No Longer a Joke: jefe adaptativo.
 4. The Null Cathedral: primera persona por raycasting, tres fragmentos y centinelas.
 5. Fracture Run: carrera por cinco biomas, suelo y plataformas frágiles, puntos de anclaje y ECHO.
 6. The Last Argument: jefe final con parada perfecta.
-7. Signal Break: shooter cenital. Destruye tres repetidores y abre la salida.
+7. Signal Break: shooter cenital. Destruye tres repetidores y abre el canal raíz.
+8. The Black Archive: otra zona 3D en primera persona, cuatro registros de historia y un final narrativo; seis centinelas (ocho en Pesadilla).
 
 CONTROLES
 Mundo 1: flechas/A-D mover · Espacio/W/↑ saltar · Ctrl correr · Shift esquivar · J ligero · F pesado · T consola verbal · G desafío.
@@ -21,13 +22,14 @@ Mundo 3: WASD/flechas mover · Shift esquivar · J atacar cuando el núcleo est�
 Mundo 4: W/S avanzar · ←/→ girar · A/D desplazamiento lateral · J/Espacio ataque · F fuerte · Shift dash · E salida.
 Mundo 5: Ctrl/D acelerar · A/← frenar · Espacio saltar · Shift dash · J/F atacar · Q pulso de ECHO.
 Mundo 6: WASD/flechas mover · J/Espacio ligero · F pesado · E parada perfecta · Shift dash.
-Mundo 7: WASD/flechas mover · J disparar · F EMP · Shift dash · E activar salida después de destruir los tres repetidores.
+Mundo 7: WASD/flechas mover · J disparar · F EMP · Shift dash · E abrir el canal tras destruir los tres repetidores.
+Mundo 8: W/S avanzar · ←/→ girar · A/D desplazamiento lateral · J/F atacar · Shift dash · E extraer tras recoger cuatro registros.
 
 PROVOCACIÓN
 Pulsa T para abrir la consola verbal. Elige inteligencia, lógica/código, amenaza o guerra psicológica, o escribe una frase de hasta 140 caracteres. El clasificador local selecciona una respuesta contextual; lógica facilita brevemente la lectura táctica, la amenaza acelera el siguiente patrón y psicología puede interrumpir a los enemigos. 1–4 son atajos; Escape cierra.
 
 DIFICULTAD
-El botón superior DIF alterna Historia, Normal y Pesadilla.
+El botón superior DIF alterna Historia, Normal y Pesadilla. Pesadilla es más agresiva: 1,62× de presión, ventanas de aviso reducidas y refuerzos en los mundos 7 y 8.
 
 IA
 El juego combina perfil conductual, predicción de acciones, elección de amenazas, coordinación por roles y aprendizaje de recompensas. Si el navegador permite almacenamiento local, mantiene estadísticas agregadas entre partidas; no guarda coordenadas ni transcripciones. No usa servicios de IA externos.
