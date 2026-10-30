@@ -17,7 +17,7 @@
     get difficultyScale(){return this.difficulty==='story'?.78:this.difficulty==='nightmare'?1.62:1;}
     cycleDifficulty(){const modes=['story','normal','nightmare'];this.difficulty=modes[(modes.indexOf(this.difficulty)+1)%modes.length];const label={story:'HISTORIA',normal:'NORMAL',nightmare:'PESADILLA'}[this.difficulty];this.toast('DIFICULTAD // '+label);this.log('Parámetros de dificultad cambiados: '+label+'.','alert');if(this.hud)this.hud.sync();return this.difficulty;}
     openTauntConsole(){if(this.screen!=='playing')return false;this.screen='taunting';if(this.hud){this.hud.sync();this.hud.focusTauntInput();}return true;}
-    closeTauntConsole(){if(this.screen!=='taunting')return false;this.screen='playing';if(this.hud)this.hud.sync();return true;}
+    closeTauntConsole(){if(this.screen!=='taunting')return false;this.screen='playing';if(this.hud){this.hud.sync();this.hud.restoreFocusAfterTaunt();}return true;}
     provokeCustom(text){const phrase=String(text||'').trim().replace(/\s+/g,' ').slice(0,140);if(!phrase){this.toast('Escribe una provocación antes de transmitirla.');return false;}const kind=this.ai.classifyTaunt(phrase);if(this.screen==='taunting')this.closeTauntConsole();if(!this.provoke(kind))return false;this.lastTauntText=phrase;this.lastTauntCategory=kind;this.lastTauntTimer=3.6;this.ai.record('custom-taunt',{category:kind,length:phrase.length});return true;}
     pause(){if(this.screen==='playing'){this.screen='paused';this.hud.sync();}}
     resume(){if(this.screen==='paused'){this.screen='playing';this.audio.unlock();this.hud.sync();}}
