@@ -4,7 +4,7 @@
     constructor() {
       const $=id=>document.getElementById(id);
       this.el={frameWorld:$('frame-world'),frameHint:$('frame-hint'),controls:$('controls-copy'),worldTitle:$('world-title'),chapter:$('chapter-pill'),worldDescription:$('world-description'),provocationValue:$('provocation-value'),provocationMeter:$('provocation-meter'),provocationCaption:$('provocation-caption'),adaptationValue:$('adaptation-value'),adaptationMeter:$('adaptation-meter'),adaptationCaption:$('adaptation-caption'),aiAvatar:$('ai-avatar'),aiState:$('ai-state'),aiStatusLine:$('ai-status-line'),statusLed:$('status-led'),logEntries:$('log-entries'),toast:$('toast'),start:$('start-button'),taunt:$('taunt-button'),challenge:$('challenge-button'),tauntConsole:$('taunt-console'),tauntClose:$('taunt-close'),tauntInput:$('taunt-input'),tauntForm:$('taunt-form'),tauntFeedback:$('taunt-feedback'),tauntIntellect:$('taunt-intellect'),tauntLogic:$('taunt-logic'),tauntThreat:$('taunt-threat'),tauntPsychology:$('taunt-psychology'),difficulty:$('difficulty-button'),actionCopy:$('action-copy'),pause:$('pause-screen')};
-      this.game=null;this.toastTimer=null;this.logs=[];
+      this.game=null;this.toastTimer=null;this.logs=[];this.lastFocusedElement=null;
     }
     bind(game){
       this.game=game;
@@ -15,7 +15,16 @@
         button.addEventListener('click',()=>{this.game.closeTauntConsole();this.game.provoke(kind);});
       }
       this.el.tauntForm.addEventListener('submit',event=>{event.preventDefault();const value=this.el.tauntInput.value;if(this.game.provokeCustom(value))this.el.tauntInput.value='';});
-      this.el.tauntInput.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();this.game.closeTauntConsole();}});
+      this.el.tauntConsole.addEventListener('keydown',event=>{
+        if(event.key==='Escape'){event.preventDefault();this.game.closeTauntConsole();return;}
+        if(event.key==='Tab'){
+          const focusables=Array.from(this.el.tauntConsole.querySelectorAll('button, input, [tabindex="0"]')).filter(el=>!el.disabled&&el.offsetWidth>0&&el.offsetHeight>0);
+          if(!focusables.length)return;
+          const first=focusables[0],last=focusables[focusables.length-1];
+          if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+          else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+        }
+      });
       this.el.tauntInput.addEventListener('input',()=>{const value=this.el.tauntInput.value.trim();const labels={intellect:'INTELIGENCIA',logic:'LÓGICA / CÓDIGO',threat:'AMENAZA',psychology:'GUERRA PSICOLÓGICA',custom:'IMPROVISACIÓN'};this.el.tauntFeedback.textContent=value?'CLASIFICACIÓN EN TIEMPO REAL // '+labels[this.game.ai.classifyTaunt(value)]+' · Texto local, no se envía.':'Escribe una frase o selecciona una estrategia verbal.';});
       this.el.difficulty.addEventListener('click',()=>this.game.cycleDifficulty());
       document.getElementById('resume-button').addEventListener('click',()=>this.game.resume());
@@ -26,7 +35,20 @@
       document.getElementById('fullscreen-button').addEventListener('click',async()=>{try{if(!document.fullscreenElement){await document.getElementById('game-shell').requestFullscreen();}else await document.exitFullscreen();}catch(e){this.toast('El navegador no permite pantalla completa aquí.');}});
       this.sync(true);
     }
-    focusTauntInput(){if(this.el.tauntInput&&typeof this.el.tauntInput.focus==='function')this.el.tauntInput.focus();}
+    focusTauntInput(){
+      this.lastFocusedElement=document.activeElement;
+      if(this.el.taunt&&typeof this.el.taunt.setAttribute==='function')this.el.taunt.setAttribute('aria-expanded','true');
+      if(this.el.tauntInput&&typeof this.el.tauntInput.focus==='function')this.el.tauntInput.focus();
+    }
+    restoreFocusAfterTaunt(){
+      if(this.el.taunt&&typeof this.el.taunt.setAttribute==='function')this.el.taunt.setAttribute('aria-expanded','false');
+      if(this.lastFocusedElement&&typeof this.lastFocusedElement.focus==='function'){
+        this.lastFocusedElement.focus();
+      }else if(this.game&&this.game.canvas&&typeof this.game.canvas.focus==='function'){
+        this.game.canvas.focus();
+      }
+      this.lastFocusedElement=null;
+    }
     clearLog(){this.logs=[];this.renderLog();}
     addLog(message,kind='normal'){this.logs.unshift({message,kind,time:this.game?this.game.elapsed:0});this.logs=this.logs.slice(0,5);this.renderLog();}
     renderLog(){const box=this.el.logEntries;if(!box)return;box.replaceChildren();if(!this.logs.length){const p=document.createElement('p');p.className='log-empty';p.textContent='Nada que reportar. Por ahora.';box.appendChild(p);return;}for(const item of this.logs){const row=document.createElement('div');row.className='log-entry '+item.kind;const tm=document.createElement('span');tm.className='log-time';tm.textContent=YMM.Util.formatTime(item.time);const text=document.createElement('span');text.className='log-text';text.textContent=item.message;row.append(tm,text);box.appendChild(row);}}
